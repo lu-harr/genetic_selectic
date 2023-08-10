@@ -53,9 +53,9 @@ values(ras) = 0
 # (0.5, 1), (0.5555556, 0.9)
 
 # create some example objs
-noisy = data.frame(obj1 = rexp(500),
-                   obj2 = rexp(500),
-                   obj3 = rexp(500))
+noisy = data.frame(obj1 = rexp(1000),
+                   obj2 = rexp(1000),
+                   obj3 = rexp(1000))
 
 {png("~/Desktop/knowlesi/multi_site/exploratory_plots/truncate_intersect.png",
      height=1200, 
@@ -123,28 +123,38 @@ min_obj = sapply(1:nrow(noisy),
 # apply probability chop before product
 plot(noisy$obj1,
      pr_chop(noisy$obj1) * pr_chop(noisy$obj2),
-     xlab="First objective", ylab="Utility = chopped(first obj) * chopped(second obj)",
-     main="Apply rounding down before\n product operation",
+     xlab="Factor 1", ylab="Alpha = truncated(factor 1) * chopped(factor 2)",
+     main="Apply truncation before\n product operation",
      col=viridis(100)[cut_number(min_obj, n=100)],
      pch=16)
 # points(noisy$obj1[okay_points],
 #        pr_chop(noisy$obj1[okay_points]) * pr_chop(noisy$obj2[okay_points]), col="blue")
 # points(noisy$obj1[best_points],
 #        pr_chop(noisy$obj1[best_points]) * pr_chop(noisy$obj2[best_points]), col="red")
+points(noisy$obj1,
+       pr_chop(noisy$obj1) * pr_chop(noisy$obj2), 
+       col=alpha("red", noisy$obj2/max(noisy$obj2)), lwd=4, cex=1.5)
 abline(a=0, b=1)
 
 # apply probability chop after product
 plot(noisy$obj1,
      pr_chop(noisy$obj1 * noisy$obj2),
-     xlab="First objective", ylab="Utility = chopped(first obj * second obj)",
-     main="Apply rounding after before\n product operation",
+     xlab="Factor 1", ylab="Alpha = truncated(factor 1 * factor 2)",
+     main="Apply truncation after\n product operation",
      col=viridis(100)[cut_number(min_obj, n=100)],
      pch=16)
 # points(noisy$obj1[okay_points],
 #        pr_chop(noisy$obj1[okay_points] * noisy$obj2[okay_points]), col="blue")
 # points(noisy$obj1[best_points],
 #        pr_chop(noisy$obj1[best_points] * noisy$obj2[best_points]), col="red")
+points(noisy$obj1,
+       pr_chop(noisy$obj1 * noisy$obj2), 
+       col=alpha("red", noisy$obj2/max(noisy$obj2)), lwd=4, cex=1.5)
+# points(noisy$obj1,
+#        pr_chop(noisy$obj1 * noisy$obj2), 
+#        col=alpha("blue", noisy$obj1/max(noisy$obj1)), lwd=4, cex=2)
 gradient_legend(cut_number(min_obj, n=20), cols = viridis(20))
+mtext("min(factor 1, factor 2)", side=4)
 abline(a=0, b=1)
 mtext("How does chopping affect alternatives good for *one* of the objectives?", outer = TRUE)
 

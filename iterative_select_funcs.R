@@ -56,14 +56,14 @@ compare_objectives = function(current, proposed, obj_list, site_catchment_list,
 
 
 sim_an_anneal = function(site_catchment_list = list(), 
-                            nselect = 0, 
-                            niters = 0,
-                            raster_stack = stack(),
-                            dist_mat = matrix(NA),
-                            site_catchment_weights_list = list(),
-                            obj_list = list(),
-                            find_union = FALSE,
-                            max_temperature = 1){
+                          nselect = 0, 
+                          niters = 0,
+                          raster_stack = stack(),
+                          dist_mat = matrix(NA),
+                          site_catchment_weights_list = list(),
+                          obj_list = list(),
+                          find_union = FALSE,
+                          max_temperature = 1){
   
   nsites = length(site_catchment_list)
   # initialise object to keep track of selected sites
@@ -108,14 +108,80 @@ sim_an_anneal = function(site_catchment_list = list(),
       }
     }
   }
-  return(list(outdf=outdf,
+  
+  return(list(outdf=outdf, # contains accepted designs
               acc_rat=acc_rat / (nrow(outdf) - 1),
               pr_accs=pr_accs,
-              deets=deets))
+              deets=deets # contains utilities of current/proposed designs
+              ))
 }
 
 
-tmp = sim_an_anneal(site_catchment_list = playcatch,
+sim_a_wander = function(site_catchment_list = list(), 
+                         nselect = 0, 
+                         niters = 0,
+                         raster_stack = stack(),
+                         dist_mat = matrix(NA),
+                         site_catchment_weights_list = list(),
+                         obj_list = list(),
+                         find_union = FALSE,
+                         max_temperature = 1,
+                        proposal_sd = 5){
+  
+  nsites = length(site_catchment_list)
+  # initialise object to keep track of selected sites
+  outdf = data.frame(matrix(NA, 
+                            nrow = niters*nselect + 1, 
+                            ncol = nselect))
+  outdf[1, ] = sample.int(nsites, 
+                          size = nselect,
+                          replace = FALSE)
+  temperatures = seq(1, max_temperature, length.out = nrow(outdf))
+  acc_rat = 0
+  pr_accs = c()
+  deets = data.frame()
+  # outer loop: niters (Metropolis)
+  for (t in 1: niters){
+    # inner loop: nselect (Gibbs)
+    for (i in 1: nselect){
+      # propose new design
+      current = outdf[(t - 1) * nselect + i,]
+      proposed = current
+      #message(setdiff(1: nsites, proposed))
+      proposed[i] = sample(x = 1: nsites,
+                           size = 1,
+                           prob = sapply(1:nsites, function(x){
+                             ifelse(x %in% current, 0, dnorm(x, current[i], sd = proposal_sd))}))
+      
+      # calculate acceptance probability: obj(current_design, proposed_design)
+      pr_acc = compare_objectives(current, proposed, obj_list,
+                                  site_catchment_list,
+                                  dist_mat, raster_stack, site_catchment_weights_list,
+                                  find_union)
+      pr_acc$pr_acc = pr_acc$pr_acc ** temperatures[(t - 1) * nselect + i]
+      deets = rbind(deets, pr_acc$the_details)
+      pr_acc = pr_acc$pr_acc
+      pr_accs = c(pr_accs, unlist(pr_acc))
+      
+      # accept / reject
+      if (runif(1) <= pr_acc){
+        outdf[(t - 1) * nselect + i + 1,] = proposed
+        acc_rat = acc_rat + 1
+      } else {
+        outdf[(t - 1) * nselect + i + 1,] = current
+      }
+    }
+  }
+  
+  return(list(outdf=outdf, # contains accepted designs
+              acc_rat=acc_rat / (nrow(outdf) - 1),
+              pr_accs=pr_accs,
+              deets=deets # contains utilities of current/proposed designs
+  ))
+}
+
+
+tmp = sim_a_wander(site_catchment_list = playcatch,
                     nselect = 2, 
                     niters = 100, 
                     raster_stack = sandcastle,
@@ -125,6 +191,8 @@ tmp = sim_an_anneal(site_catchment_list = playcatch,
 
 
 wrap_sim_plots = function(out){
+  # should work for applications with one objective, 
+  # for as many sites per design as I like
   {par(mfrow=c(2, 2), mar=c(4.1,4.1,3.1,4.1))
     # histogram of sites selected
     out_hist = hist(unlist(out$outdf), breaks=100, main="Histogram of sites selected", xlab="Site ID")
