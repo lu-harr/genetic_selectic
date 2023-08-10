@@ -175,6 +175,18 @@ obj2 = locs[,2]
   par(mfrow=c(1,2))
 
 par(mfrow=c(1,2), mar=c(5.1, 4.1, 4.1, 5.1))
+
+values(ras) = pr_chop(obj1) * pr_chop(obj2)
+plot(ras, main="Acceptance probability: Pre-truncate", xlab="Factor 1", 
+     ylab="Factor 2", col=viridis(100))
+abline(h = 1, lty = 2)
+abline(v = 1, lty = 2)
+lines(seq(0.1, 2, length.out=100),
+      0.5/seq(0.1, 2, length.out=100),
+      col="grey60")
+lines(c(0.5, 0.5, seq(0.5,1,length.out=50), 1, 2),
+      c(2, 1, 0.5/seq(0.5,1,length.out=50), 0.5, 0.5), col="white", lwd=2)
+
 values(ras) = pr_chop(obj1 * obj2)
 #values(ras) = obj1*obj2
 plot(ras, main="Acceptance probability: Post-truncate", xlab="Factor 1", 
@@ -188,16 +200,7 @@ lines(seq(0.1, 2, length.out=100),
       0.5/seq(0.1, 2, length.out=100), col="white", lwd=2)
 
 
-values(ras) = pr_chop(obj1) * pr_chop(obj2)
-plot(ras, main="Acceptance probability: Pre-truncate", xlab="Factor 1", 
-     ylab="Factor 2", col=viridis(100))
-abline(h = 1, lty = 2)
-abline(v = 1, lty = 2)
-lines(seq(0.1, 2, length.out=100),
-      0.5/seq(0.1, 2, length.out=100),
-      col="grey60")
-lines(c(0.5, 0.5, seq(0.5,1,length.out=50), 1, 2),
-      c(2, 1, 0.5/seq(0.5,1,length.out=50), 0.5, 0.5), col="white", lwd=2)
+
 dev.off()}
 # interesting ...
 

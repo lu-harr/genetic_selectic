@@ -63,16 +63,22 @@ sim_an_anneal = function(site_catchment_list = list(),
                           site_catchment_weights_list = list(),
                           obj_list = list(),
                           find_union = FALSE,
-                          max_temperature = 1){
+                          max_temperature = 1,
+                         init_sites = c()){
   
   nsites = length(site_catchment_list)
   # initialise object to keep track of selected sites
   outdf = data.frame(matrix(NA, 
                             nrow = niters*nselect + 1, 
                             ncol = nselect))
-  outdf[1, ] = sample.int(nsites, 
-                          size = nselect,
-                          replace = FALSE)
+  if (length(init_sites) == nselect){
+    outdf[1, ] = init_sites
+  } else {
+    outdf[1, ] = sample.int(nsites, 
+                            size = nselect,
+                            replace = FALSE)
+  }
+  
   temperatures = seq(1, max_temperature, length.out = nrow(outdf))
   acc_rat = 0
   pr_accs = c()
@@ -126,6 +132,7 @@ sim_a_wander = function(site_catchment_list = list(),
                          obj_list = list(),
                          find_union = FALSE,
                          max_temperature = 1,
+                        init_sites = c(),
                         proposal_sd = 5){
   
   nsites = length(site_catchment_list)
@@ -133,9 +140,13 @@ sim_a_wander = function(site_catchment_list = list(),
   outdf = data.frame(matrix(NA, 
                             nrow = niters*nselect + 1, 
                             ncol = nselect))
-  outdf[1, ] = sample.int(nsites, 
-                          size = nselect,
-                          replace = FALSE)
+  if (length(init_sites) == nselect){
+    outdf[1, ] = init_sites
+  } else {
+    outdf[1, ] = sample.int(nsites, 
+                            size = nselect,
+                            replace = FALSE)
+  }
   temperatures = seq(1, max_temperature, length.out = nrow(outdf))
   acc_rat = 0
   pr_accs = c()
@@ -151,7 +162,8 @@ sim_a_wander = function(site_catchment_list = list(),
       proposed[i] = sample(x = 1: nsites,
                            size = 1,
                            prob = sapply(1:nsites, function(x){
-                             ifelse(x %in% current, 0, dnorm(x, current[i], sd = proposal_sd))}))
+                             #message(current[i])
+                             ifelse(x %in% current, 0, dnorm(x, as.numeric(current[i]), sd = proposal_sd))}))
       
       # calculate acceptance probability: obj(current_design, proposed_design)
       pr_acc = compare_objectives(current, proposed, obj_list,
@@ -183,42 +195,63 @@ sim_a_wander = function(site_catchment_list = list(),
 
 tmp = sim_a_wander(site_catchment_list = playcatch,
                     nselect = 2, 
-                    niters = 100, 
+                    niters = 2000, 
                     raster_stack = sandcastle,
                     obj_list = objective_list,
-                    find_union = TRUE,
-                    max_temperature = 5)
+                    find_union = TRUE, # only count each pixel once ... so there is a penalty to overlap ...
+                    max_temperature = 5,
+                    init_sites = c(1,200),
+                    proposal_sd = 5)
+
+wrap_sim_plots(tmp, two_by_two = FALSE)
 
 
-wrap_sim_plots = function(out){
+wrap_sim_plots = function(out, 
+                          two_by_two = TRUE, 
+                          path = "",
+                          trace = FALSE,
+                          temperature_superimpose = c()){
   # should work for applications with one objective, 
   # for as many sites per design as I like
-  {par(mfrow=c(2, 2), mar=c(4.1,4.1,3.1,4.1))
-    # histogram of sites selected
-    out_hist = hist(unlist(out$outdf), breaks=100, main="Histogram of sites selected", xlab="Site ID")
-    site_objs = sapply(1:length(playcatch), 
-                       function(x){objective_list[[1]](pix_in_catch = playcatch[[x]],
-                                                       raster_stack = sandcastle)})
-    # superimpose objective values for single sites
-    points(site_objs * max(out_hist$counts) / max(site_objs), cex=0.8)
-    axis(4, at = seq(0, max(out_hist$counts), length.out=5), 
-         labels = seq(0, max(site_objs), length.out=5))
-    mtext("Site obj", side=4, line = 2, cex=0.8)
-    
-    # acceptance probabilities as simulation goes, with spline over top
-    plot(out$pr_accs, cex=0.8,  main="Acceptance probabilities over simulation",
-         ylab="Pr(acc)")
-    lines(smooth.spline(x=1:length(out$pr_accs), y=out$pr_accs))
-    
-    # trace plot of current/proposed design utility
-    matplot(out$deets[seq(1,nrow(out$deets)),]/37, type="l", 
-            main="Toy problem: current/proposed designs", xlab="Iteration", ylab="Utility")
-    
-    # Want to sort below plot by individual site objective
-    matplot(out$outdf, xlab="Iteration", ylab="Site ID", pch=1, main="Which sites get stuck?")}
+  if (path != ""){png(path, height=1800, width=2400, pointsize=35)}
+  
+  if (two_by_two == TRUE){par(mfrow=c(2, 2), mar=c(4.1,4.1,3.1,4.1))}
+  # histogram of sites selected
+  out_hist = hist(unlist(out$outdf), breaks=100, main="Histogram of sites selected", xlab="Site ID")
+  site_objs = sapply(1:length(playcatch), 
+                     function(x){objective_list[[1]](pix_in_catch = playcatch[[x]],
+                                                     raster_stack = sandcastle)})
+  # superimpose objective values for single sites
+  points(site_objs * max(out_hist$counts) / max(site_objs), cex=0.8)
+  axis(4, at = seq(0, max(out_hist$counts), length.out=5), 
+       labels = seq(0, max(site_objs), length.out=5))
+  mtext("Site obj", side=4, line = 2, cex=0.8)
+  
+  # acceptance probabilities as simulation goes, with spline over top
+  plot(out$pr_accs, cex=0.8,  main="Acceptance probabilities over simulation",
+       ylab="Pr(acc)")
+  lines(smooth.spline(x=1:length(out$pr_accs), y=out$pr_accs))
+  
+  # trace plot of current/proposed design utility
+  matplot(out$deets[seq(1,nrow(out$deets)),]/37, type="l", 
+          main="Toy problem: current/proposed designs", xlab="Iteration", ylab="Utility")
+  
+  # Want to sort below plot by individual site objective
+  # matplot(out$outdf, xlab="Iteration", ylab="Site ID", pch=1, main="Which sites get stuck?"
+  pal = brewer.pal(ncol(out$outdf), "Set1")
+  plot(0,0, xlab="Iteration", ylab="Site ID", pch=16, xlim=c(0,nrow(out$outdf)),
+       ylim=c(0, length(site_objs)), type="n",
+      main = "Which sites get stuck?")
+  for (i in 1:ncol(out$outdf)){
+    points(1:nrow(out$outdf), out$outdf[,i], col = alpha(pal[i], site_objs[out$outdf[,i]] / max(site_objs)))
+  }
+  
+  if (path != ""){dev.off()}
+  
+  if (trace == TRUE){plot(out$outdf, type="l")}
 }
 
-wrap_sim_plots(tmp)
+
 
 
 

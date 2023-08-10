@@ -30,7 +30,14 @@ playsites = 1:ncell(sandbox)
 playcatch = lapply(1:ncell(sandbox), function(x){adjacent(sandbox, x, directions=8, pairs=FALSE)})
 
 sandbox[unlist(playcatch)] = 4
-plot(sandbox)
+plot(sandbox, col=brewer.pal(9, "Purples"))
+single_site_utility = sapply(1:length(playcatch), 
+                             function(x){objective_list[[1]](pix_in_catch = playcatch[[x]],
+                                         raster_stack = sandcastle)})
+points(rasterToPoints(sandbox)[,1:2],
+       col=alpha("orange", single_site_utility/max(single_site_utility)),
+       pch=16)
+
 
 # for example ...
 # obj_list[[1]](pix_in_catch = c(53,54,55,68,69,70), raster_stack = sandcastle)
@@ -45,7 +52,8 @@ plot(sandbox)
 
 # Here's an example objective_list
 objective_list = list(
-  obj1 = function(site_ids = c(), pix_in_catch = c(), 
+  obj1 = function(site_ids = c(), 
+                  pix_in_catch = c(), # a vector of all pixels across all catchments in design
                   dist_mat = matrix(NA), 
                   raster_stack = stack(), 
                   pix_weights = c()){
@@ -58,18 +66,25 @@ objective_list = list(
   #                 pix_weights = c()){
   #   message(pix_in_catch)
   #   mean(raster_stack[[1]][pix_in_catch])
-  # }
+  # },
+  obj3 = function(site_ids = c(), pix_in_catch = c(),
+                  dist_mat = matrix(NA),
+                  raster_stack = stack(),
+                  pix_weights = c()){
+    values(raster_stack[[1]])[site_ids]
+  }
 )
 
 tmp = sim_an_anneal(site_catchment_list = playcatch,
-                    nselect = 2, 
+                    nselect = 3, 
                     niters = 500, 
                     raster_stack = sandcastle,
                     obj_list = objective_list,
                     find_union = TRUE,
-                    max_temperature = 20)
+                    max_temperature = 1)
 
-
+wrap_sim_plots(tmp, two_by_two = TRUE,
+               path = "~/Desktop/knowlesi/multi_site/exploratory_plots/sim1.png")
 
 {par(mfrow=c(2, 2))
 
