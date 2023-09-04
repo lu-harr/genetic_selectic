@@ -1,3 +1,9 @@
+library(raster)
+library(RColorBrewer)
+library(scales)
+library(dplyr)
+
+plotpath = "~/Desktop/knowlesi/multi_site/exploratory_plots/"
 
 
 ##############################################################################
@@ -29,14 +35,6 @@ plot(sandbox)
 playsites = 1:ncell(sandbox)
 playcatch = lapply(1:ncell(sandbox), function(x){adjacent(sandbox, x, directions=8, pairs=FALSE)})
 
-sandbox[unlist(playcatch)] = 4
-plot(sandbox, col=brewer.pal(9, "Purples"))
-single_site_utility = sapply(1:length(playcatch), 
-                             function(x){objective_list[[1]](pix_in_catch = playcatch[[x]],
-                                         raster_stack = sandcastle)})
-points(rasterToPoints(sandbox)[,1:2],
-       col=alpha("orange", single_site_utility/max(single_site_utility)),
-       pch=16)
 
 
 # for example ...
@@ -67,13 +65,24 @@ objective_list = list(
   #   message(pix_in_catch)
   #   mean(raster_stack[[1]][pix_in_catch])
   # },
-  obj3 = function(site_ids = c(), pix_in_catch = c(),
-                  dist_mat = matrix(NA),
-                  raster_stack = stack(),
-                  pix_weights = c()){
-    values(raster_stack[[1]])[site_ids]
-  }
+  # obj3 = function(site_ids = c(), pix_in_catch = c(),
+  #                 dist_mat = matrix(NA),
+  #                 raster_stack = stack(),
+  #                 pix_weights = c()){
+  #   values(raster_stack[[1]])[site_ids]
+  # }
 )
+
+
+plot(sandbox, col=brewer.pal(9, "Purples"))
+single_site_utility = sapply(1:length(playcatch), 
+                             function(x){objective_list[[1]](pix_in_catch = playcatch[[x]],
+                                                             raster_stack = sandcastle)})
+points(rasterToPoints(sandbox)[,1:2],
+       col=alpha("orange", single_site_utility/max(single_site_utility)),
+       pch=16)
+
+
 
 tmp = sim_an_anneal(site_catchment_list = playcatch,
                     nselect = 3, 
@@ -83,33 +92,46 @@ tmp = sim_an_anneal(site_catchment_list = playcatch,
                     find_union = TRUE,
                     max_temperature = 1)
 
-wrap_sim_plots(tmp, two_by_two = TRUE,
-               path = "~/Desktop/knowlesi/multi_site/exploratory_plots/sim1.png")
+wrap_sim_plots(tmp, two_by_two = TRUE, main="Select 3 sites from sandbox: no annealing",
+               path = paste0(plotpath,"sim_max_temp1.png"))
 
-{par(mfrow=c(2, 2))
+# increasing temperature does slow things down ..
+tmp = sim_an_anneal(site_catchment_list = playcatch,
+                    nselect = 3, 
+                    niters = 500, 
+                    raster_stack = sandcastle,
+                    obj_list = objective_list,
+                    find_union = TRUE,
+                    max_temperature = 10)
 
-out_hist = hist(unlist(tmp$outdf), breaks=100, main="Histogram of sites selected", xlab="Site ID")
-site_objs = sapply(1:length(playcatch), 
-                   function(x){objective_list[[1]](pix_in_catch = playcatch[[x]],
-                                                   raster_stack = sandcastle)})
-points(site_objs * max(out_hist$counts) / max(site_objs), cex=0.8)
-axis(4, at = seq(0, max(out_hist$counts), length.out=5), 
-     labels = seq(0, max(site_objs), length.out=5))
-mtext("Site obj", side=4, line = 2, cex=0.8)
+wrap_sim_plots(tmp, two_by_two = TRUE, main="Select 3 sites from sandbox: with annealing (temp 1 -> 10)",
+               path = paste0(plotpath,"sim_max_temp10.png"))
 
-
-#hist(tmp$pr_accs, breaks=50, main="Histogram of acceptance probabilities", xlab="Pr(accept)")
-plot(tmp$pr_accs, cex=0.8,  main="Acceptance probabilities over simulation",
-     ylab="Pr(acc)")
-lines(smooth.spline(x=1:length(tmp$pr_accs), y=tmp$pr_accs))
-
-matplot(tmp$deets[seq(1,nrow(tmp$deets)),]/37, type="l", 
-        main="Toy problem: current/proposed designs", xlab="Iteration", ylab="Utility")
-
-# Want to sort below plot by individual site objective
-matplot(tmp$outdf, xlab="Iteration", ylab="Site ID", pch=1, main="Which sites get stuck?")}
-
-plot(seq(1, 10, length.out = nrow(tmp$outdf)-1), tmp$pr_accs)
+# The below code is now wrapped up in wrap_sim_plots():
+# {par(mfrow=c(2, 2))
+# 
+# out_hist = hist(unlist(tmp$outdf), breaks=100, main="Histogram of sites selected", xlab="Site ID")
+# site_objs = sapply(1:length(playcatch), 
+#                    function(x){objective_list[[1]](pix_in_catch = playcatch[[x]],
+#                                                    raster_stack = sandcastle)})
+# points(site_objs * max(out_hist$counts) / max(site_objs), cex=0.8)
+# axis(4, at = seq(0, max(out_hist$counts), length.out=5), 
+#      labels = seq(0, max(site_objs), length.out=5))
+# mtext("Site obj", side=4, line = 2, cex=0.8)
+# 
+# 
+# #hist(tmp$pr_accs, breaks=50, main="Histogram of acceptance probabilities", xlab="Pr(accept)")
+# plot(tmp$pr_accs, cex=0.8,  main="Acceptance probabilities over simulation",
+#      ylab="Pr(acc)")
+# lines(smooth.spline(x=1:length(tmp$pr_accs), y=tmp$pr_accs))
+# 
+# matplot(tmp$deets[seq(1,nrow(tmp$deets)),]/37, type="l", 
+#         main="Toy problem: current/proposed designs", xlab="Iteration", ylab="Utility")
+# 
+# # Want to sort below plot by individual site objective
+# matplot(tmp$outdf, xlab="Iteration", ylab="Site ID", pch=1, main="Which sites get stuck?")}
+# 
+# plot(seq(1, 10, length.out = nrow(tmp$outdf)-1), tmp$pr_accs)
 
 
 

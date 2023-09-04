@@ -193,29 +193,22 @@ sim_a_wander = function(site_catchment_list = list(),
 }
 
 
-tmp = sim_a_wander(site_catchment_list = playcatch,
-                    nselect = 2, 
-                    niters = 2000, 
-                    raster_stack = sandcastle,
-                    obj_list = objective_list,
-                    find_union = TRUE, # only count each pixel once ... so there is a penalty to overlap ...
-                    max_temperature = 5,
-                    init_sites = c(1,200),
-                    proposal_sd = 5)
-
-wrap_sim_plots(tmp, two_by_two = FALSE)
 
 
 wrap_sim_plots = function(out, 
                           two_by_two = TRUE, 
                           path = "",
                           trace = FALSE,
-                          temperature_superimpose = c()){
+                          temperature_superimpose = c(),
+                          main = ""){
   # should work for applications with one objective, 
   # for as many sites per design as I like
   if (path != ""){png(path, height=1800, width=2400, pointsize=35)}
   
   if (two_by_two == TRUE){par(mfrow=c(2, 2), mar=c(4.1,4.1,3.1,4.1))}
+  
+  if (main != ""){par(oma=c(0,0,2.1,0))}
+  
   # histogram of sites selected
   out_hist = hist(unlist(out$outdf), breaks=100, main="Histogram of sites selected", xlab="Site ID")
   site_objs = sapply(1:length(playcatch), 
@@ -246,6 +239,8 @@ wrap_sim_plots = function(out,
     points(1:nrow(out$outdf), out$outdf[,i], col = alpha(pal[i], site_objs[out$outdf[,i]] / max(site_objs)))
   }
   
+  if (main != ""){mtext(main, outer=TRUE)}
+  
   if (path != ""){dev.off()}
   
   if (trace == TRUE){plot(out$outdf, type="l")}
@@ -253,7 +248,17 @@ wrap_sim_plots = function(out,
 
 
 
+tmp = sim_a_wander(site_catchment_list = playcatch,
+                   nselect = 2, 
+                   niters = 2000, 
+                   raster_stack = sandcastle,
+                   obj_list = objective_list,
+                   find_union = TRUE, # only count each pixel once ... so there is a penalty to overlap ...
+                   max_temperature = 5,
+                   init_sites = c(1,200),
+                   proposal_sd = 5)
 
+wrap_sim_plots(tmp, two_by_two = FALSE)
 
 
 
