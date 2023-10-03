@@ -39,6 +39,17 @@ playcatch = lapply(1:ncell(sandbox), function(x){adjacent(sandbox, x, directions
                                                           pairs=FALSE, include=TRUE)})
 
 
+distance_matrix <- dist(rasterToPoints(sandbox)[,1:2]) %>%
+  as.matrix()
+
+{png(paste0(plotpath, "distance_matrix_sandbox.png"),
+    height = 1100, width=1300, pointsize = 30)
+par(bty="n", mar=c(0.1,4.1,6.1,4.1))
+plot(raster(distance_matrix, xmn=0, xmx=16*16, ymn=0, ymx=16*16), col=viridis(100),
+     main="'Distance' matrix", bty="n", xaxt="n", yaxt="n")
+axis(2, at=seq(16,256,20), labels=rev(seq(0,250,20)))
+axis(3, at=seq(0,250,20), labels=seq(0,250,20))
+dev.off()}
 
 # for example ...
 # obj_list[[1]](pix_in_catch = c(53,54,55,68,69,70), raster_stack = sandcastle)
@@ -95,7 +106,7 @@ tmp = sim_an_anneal(site_catchment_list = playcatch,
                     find_union = TRUE,
                     max_temperature = 1)
 
-wrap_sim_plots(tmp, two_by_two = TRUE, single_site_utility = single_site_utility,
+wrap_sim_plots(tmp, panelled_plot = TRUE, single_site_utility = single_site_utility,
                main="Select 3 sites from sandbox: no annealing",
                path = paste0(plotpath,"sim_max_temp1.png"))
 
@@ -110,7 +121,7 @@ tmp = sim_an_anneal(site_catchment_list = playcatch,
                     find_union = TRUE,
                     max_temperature = 10)
 
-wrap_sim_plots(tmp, two_by_two = TRUE,  single_site_utility = single_site_utility,
+wrap_sim_plots(tmp, panelled_plot = TRUE,  single_site_utility = single_site_utility,
                main="Select 3 sites from sandbox: with annealing (temp 1 -> 10)",
                path = paste0(plotpath,"sim_max_temp10.png"))
 
@@ -123,7 +134,8 @@ tmp = sim_an_anneal(site_catchment_list = playcatch,
                     raster_stack = sandcastle,
                     obj_list = objective_list,
                     find_union = TRUE,
-                    max_temperature = 50)
+                    max_temperature = 50,
+                    init_sites = order(single_site_utility)[1:3])
 set.seed(3)
 tmp2 = sim_an_anneal(site_catchment_list = playcatch,
                     nselect = 3, 
@@ -131,7 +143,8 @@ tmp2 = sim_an_anneal(site_catchment_list = playcatch,
                     raster_stack = sandcastle,
                     obj_list = objective_list,
                     find_union = TRUE,
-                    max_temperature = 50)
+                    max_temperature = 50,
+                    init_sites = order(single_site_utility)[1:3])
 # set.seed(7)
 # tmp3 = sim_an_anneal(site_catchment_list = playcatch,
 #                      nselect = 3, 
@@ -190,13 +203,108 @@ dev.off()
 
 
 
+###############################################################
+# non-uniform proposal distribution
+
+distance_matrix[which(distance_matrix == 0, arr.ind = TRUE)] = NA
+inv_distance_matrix = 1/distance_matrix
+plot(raster(inv_distance_matrix), col=viridis(100))
+
+# want it so that every row and column sums to one .. 
+inv_distance_matrix = apply(inv_distance_matrix, 2, function(x){x / sum(x, na.rm=TRUE)})
+# that's not how ya do it silly billy! need to sum!
+inv_distance_matrix[is.na(inv_distance_matrix)] = 0
+
+# an alternative to "distance": let's try just zeroes and ones
+neigh_mat = sapply(1:length(playcatch), function(row){
+  return(ifelse(1:length(playcatch) %in% playcatch[[row]], 1, 0))
+})
+diag(neigh_mat) = 0
+inv_neigh_mat = apply(neigh_mat, 2, function(x){x/sum(x)})
+
+par(mfrow=c(1,2), mar=c(3.1,2.1,4.1,6.1))
+plot(raster(inv_distance_matrix, xmn=0, xmx=256, ymn=0, ymx=256), col=viridis(100),
+     main="Sample sites proportional to \ninverse distance")
+plot(raster(inv_neigh_mat, xmn=0, xmx=256, ymn=0, ymx=256), col=viridis(100),
+     main="Sample sites from \ndirect neighbourhood")
+
+set.seed(24)
+tmp = sim_a_wander(site_catchment_list = playcatch,
+                    nselect = 3, 
+                    niters = 500, 
+                    raster_stack = sandcastle,
+                    obj_list = objective_list,
+                    connectivity_mat = inv_neigh_mat,
+                    #connectivity_mat = inv_distance_matrix,
+                    find_union = TRUE,
+                    max_temperature = 10)
+
+wrap_sim_plots(tmp, panelled_plot = TRUE,  single_site_utility = single_site_utility,
+               main="Select 3 sites from sandbox: with annealing (temp 1 -> 10) and direct neighbour wandering",
+               path = paste0(plotpath,"sim_max_temp10_wander_neigh.png"),
+               trace_in_sandbox_panel = TRUE, sandbox=sandbox)
+
+tmp = sim_a_wander(site_catchment_list = playcatch,
+                   nselect = 3, 
+                   niters = 500, 
+                   raster_stack = sandcastle,
+                   obj_list = objective_list,
+                   #connectivity_mat = inv_neigh_mat,
+                   connectivity_mat = inv_distance_matrix,
+                   find_union = TRUE,
+                   max_temperature = 10)
+
+wrap_sim_plots(tmp, panelled_plot = TRUE,  single_site_utility = single_site_utility,
+               main="Select 4 sites from sandbox: with annealing (temp 1 -> 10) and distance-based wandering",
+               path = paste0(plotpath,"sim_max_temp10_wander_dist.png"),
+               trace_in_sandbox_panel = TRUE, sandbox=sandbox)
+
+tmp2 = sim_an_anneal(site_catchment_list = playcatch,
+                    nselect = 3, 
+                    niters = 500, 
+                    raster_stack = sandcastle,
+                    obj_list = objective_list,
+                    find_union = TRUE,
+                    max_temperature = 10)
 
 
 
+# time for something multiobjective !
+# Here's another example objective_list
+objective_list = list(
+  obj1 = function(site_ids = c(), 
+                  pix_in_catch = c(), # a vector of all pixels across all catchments in design
+                  dist_mat = matrix(NA), 
+                  raster_stack = stack(), 
+                  pix_weights = c()){
+    # mean objective values of pix in catch (first stack in raster)
+    mean(raster_stack[[1]][pix_in_catch])
+  },
+   obj2 = function(site_ids = c(), pix_in_catch = c(),
+                  dist_mat = matrix(NA),
+                  raster_stack = stack(),
+                  pix_weights = c()){
+    length(pix_in_catch)
+  }
+)
 
+# do need to enumerate all possibilities
 
+tmp = sim_a_wander(site_catchment_list = playcatch,
+                   nselect = 3, 
+                   niters = 500, 
+                   raster_stack = sandcastle,
+                   obj_list = objective_list,
+                   #connectivity_mat = inv_neigh_mat,
+                   connectivity_mat = inv_distance_matrix,
+                   find_union = TRUE,
+                   max_temperature = 10)
 
-
+# This guy's a bit rubbish but I'm not sweating too much about that for now:
+wrap_sim_plots(tmp, panelled_plot = TRUE,  single_site_utility = single_site_utility,
+               main="Select 4 sites from sandbox: with annealing (temp 1 -> 10) and distance-based wandering.\nHopefully multi-objective.",
+               path = paste0(plotpath,"sim_max_temp10_wander_dist_multiobj.png"),
+               trace_in_sandbox_panel = TRUE, sandbox=sandbox)
 
 
 
@@ -237,8 +345,18 @@ dev.off()
 # Do some reading about acceptance probabilities (Muller papers)
 # Do that before you do anything else!!!!
 
+
+
+
+
+
+
+
+
+
+
 ################################################################################
-# Enumerate all combinations and check overlaps are not advantageous..
+# Enumerate all combinations (of 2) and check overlaps are not advantageous..
 # surface of x/y sorted by single site utility, coloured by joint utility
 
 # site_catchment_list = playcatch,
@@ -274,26 +392,122 @@ neigh_mat = sapply(1:length(playcatch), function(row){
   return(ifelse(1:length(playcatch) %in% playcatch[[row]], 1, 0))
 })
 diag(neigh_mat) = NA
+neigh_mat = neigh_mat[order(single_site_utility, decreasing = TRUE),]
+neigh_mat = neigh_mat[, order(single_site_utility, decreasing = TRUE)]
+
+share_mat = sapply(1:length(playcatch), function(row){
+  sapply(1:length(playcatch), function(col){
+    if (row != col){
+      return(length(intersect(playcatch[[row]], playcatch[[col]])))
+    } else {
+      return(NA)
+    }
+  })
+})
+order_share_mat = share_mat[order(single_site_utility, decreasing = TRUE),]
+order_share_mat = order_share_mat[, order(single_site_utility, decreasing = TRUE)]
 
 zoomed_pairs = ordered_pairwise_objs[1:64,1:64]
 plot(raster(zoomed_pairs))
 
 {png(paste0(plotpath, "sandbox_2combs_surface.png"),
-    height=1500, width=1500, pointsize=35)
-par(mfrow=c(2,2), mar=c(2,2,2,2), bty="n")
+    height=1800, width=1500, pointsize=35)
+par(mfrow=c(3,2), mar=c(0,2,2,2), bty="n", oma=c(0,0,0,0), xpd=NA)
 plot(raster(pairwise_objs), col=viridis(100), xaxt="n", yaxt="n", 
      main="Joint utility (combinations of 2) by site ID")
+
+plot(raster(share_mat), main="Number of shared sites", xaxt="n", yaxt="n")
 
 plot(raster(ordered_pairwise_objs), col=viridis(100), xaxt="n", yaxt="n",
      main="Joint utility (combs of 2) by indiv site utility")
 lines(c(0,0.25,0.25,0,0), c(0.75,0.75,1,1,0.75), col="red", lty=2, lwd=4)
 
+par(xpd=NA)
 plot(raster(zoomed_pairs),
      col=viridis(100), xaxt="n", yaxt="n",
      main="Zoom on best sites in middle panel")
+points(sort(single_site_utility,decreasing = TRUE)[1:64] / max(single_site_utility) / 5,
+     64:1 / 64, cex=0.3, col="red")
+lines(sort(single_site_utility,decreasing = TRUE)[1:64] / max(single_site_utility) / 5,
+       64:1 / 64, col="red")
+
 
 # panel highlighting combs of adjacent sites?
-plot(raster(neigh_mat[1:64, 1:64]), xaxt="n", yaxt="n", main="Neighbours")
+plot(raster(neigh_mat[1:64, 1:64]), xaxt="n", yaxt="n", main="Direct neighbours")
+
+plot(raster(order_share_mat[1:64, 1:64]), xaxt="n", yaxt="n", main="Number of shared sites")
+
+dev.off()}
+
+################################################################################
+# Enumerate all possible designs and give me the hist of net objective
+# Heat map sites in best designs?
+
+three_site_utility = combn(1:length(playcatch), 3, function(x){
+  c(x, objective_list[[1]](site_ids = x,
+    pix_in_catch = unique(c(playcatch[[x[1]]],
+                            playcatch[[x[2]]],
+                            playcatch[[x[3]]])),
+    raster_stack = sandcastle))
+})
+
+three_site_utility = as.data.frame(t(three_site_utility))
+names(three_site_utility) = c("site1", "site2", "site3", "net_utility")
+write.csv(three_site_utility,
+          "~/Desktop/knowlesi/multi_site/sandbox_three_site_utility.csv", row.names=FALSE)
+three_site_rows_by_utility = order(three_site_utility$net_utility, decreasing=TRUE)
+
+three_site_no_unique = apply(three_site_utility[three_site_rows_by_utility[1:2000],1:3], 
+      1, function(x){
+        length(unique(c(playcatch[[x[1]]], playcatch[[x[2]]], playcatch[[x[3]]])))
+      })
+
+{png(paste0(plotpath, "sandbox_three_combs.png"),
+    height=2000, width=1600, pointsize=35)
+par(mfrow=c(3,2), mar=c(2.1,2.1,2.1,4.1))
+hist(three_site_utility$net_utility, breaks=100, main="Joint utility")
+abline(v=max(three_site_utility$net_utility), col="red", lty=2)
+site_locs = rasterToPoints(sandbox)
+
+purples = brewer.pal(9, "Purples")
+plot(sandcastle$one, col=alpha(purples, 0.3), xaxt="n", yaxt="n",
+     main="Best 20 combinations of 3 sites")
+n_combs = 200
+reds = brewer.pal(9, "Reds")
+reds = rev(colorRampPalette(reds)(n_combs))
+sapply(20:1, function(x){
+  lines(site_locs[t(three_site_utility[three_site_rows_by_utility[x],
+                                       c("site1", "site2", "site3", "site1")]),"x"],
+        site_locs[t(three_site_utility[three_site_rows_by_utility[x],
+                                       c("site1", "site2", "site3", "site1")]),"y"],
+        col=reds[seq(1,200,length.out=20)][x])
+})
+
+plot(sandcastle$one, col=alpha(purples, 0.3), xaxt="n", yaxt="n",
+     main="Best 100 combinations of 3 sites")
+sapply(100:1, function(x){
+  lines(site_locs[t(three_site_utility[three_site_rows_by_utility[x],
+                                       c("site1", "site2", "site3", "site1")]),"x"],
+        site_locs[t(three_site_utility[three_site_rows_by_utility[x],
+                                       c("site1", "site2", "site3", "site1")]),"y"],
+        col=reds[seq(1,200,length.out=100)][x])
+})
+
+plot(sandcastle$one, col=alpha(purples, 0.3), xaxt="n", yaxt="n",
+     main="Best 200 combinations of 3 sites")
+sapply(200:1, function(x){
+  lines(site_locs[t(three_site_utility[three_site_rows_by_utility[x],
+                                       c("site1", "site2", "site3", "site1")]),"x"],
+        site_locs[t(three_site_utility[three_site_rows_by_utility[x],
+                                       c("site1", "site2", "site3", "site1")]),"y"],
+        col=reds[seq(1,200,length.out=200)][1:200][x])
+})
+
+par(mfrow=c(3,1), new=TRUE, mar=c(4.1,4.1,1.5,2.1))
+
+plot(three_site_utility$net_utility[three_site_rows_by_utility[1:2000]],
+     three_site_no_unique,  type="l", xlab="Joint utility", ylab="Number of unique pixels",
+     main="Do the best designs have less overlaps?")
 
 dev.off()}
 
