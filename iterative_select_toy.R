@@ -455,6 +455,7 @@ three_site_utility = as.data.frame(t(three_site_utility))
 names(three_site_utility) = c("site1", "site2", "site3", "net_utility")
 write.csv(three_site_utility,
           "~/Desktop/knowlesi/multi_site/sandbox_three_site_utility.csv", row.names=FALSE)
+three_site_utility = read.csv("~/Desktop/knowlesi/multi_site/sandbox_three_site_utility.csv")
 three_site_rows_by_utility = order(three_site_utility$net_utility, decreasing=TRUE)
 
 three_site_no_unique = apply(three_site_utility[three_site_rows_by_utility[1:2000],1:3], 

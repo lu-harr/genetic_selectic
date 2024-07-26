@@ -1,4 +1,5 @@
 library(rPref)
+# write something to extend chain
 
 
 obj_to_pr = function(obj_out){
@@ -61,7 +62,7 @@ sim_an_anneal = function(site_catchment_list = list(),
                           niters = 0,
                           raster_stack = stack(),
                           dist_mat = matrix(NA),
-                          site_catchment_weights_list = list(),
+                          site_catchment_weights_list = 0,  # hacking this for the poster
                           obj_list = list(),
                           find_union = FALSE,
                           max_temperature = 1,
@@ -84,6 +85,9 @@ sim_an_anneal = function(site_catchment_list = list(),
   acc_rat = 0
   pr_accs = c()
   deets = data.frame()
+  step1 = 0
+  step2 = 0
+  step3 = 0
   # outer loop: niters (Metropolis)
   for (t in 1: niters){
     # inner loop: nselect (Gibbs)
@@ -91,21 +95,31 @@ sim_an_anneal = function(site_catchment_list = list(),
       # propose new design
       current = outdf[(t - 1) * nselect + i,]
       proposed = current
-      #message(setdiff(1: nsites, proposed))
-      proposed[i] = sample(x = 1: nsites,
-                           size = 1,
-                           prob = sapply(1:nsites, function(x){ifelse(x %in% current, 0, 1)}))
-      
+      t1 = Sys.time()
+      # dropping this step as it's taking up a bunch of time?
+      #probs = rep(1, nsites)
+      #probs[unlist(current)] = 0
+      proposed[i] = sample(x = as.vector(1: nsites)[-unlist(current)],
+                           size = 1)#, # maybe prob is taking a while?
+                           #prob = sapply(1:nsites, function(x){ifelse(x %in% current, 0, 1)}))
+                           #prob = ifelse(1:nsites %in% current, 0, 1),
+                           #prob = probs)
+      t2 = Sys.time()
       # calculate acceptance probability: obj(current_design, proposed_design)
       pr_acc = compare_objectives(current, proposed, obj_list,
                                   site_catchment_list,
                                   dist_mat, raster_stack, site_catchment_weights_list,
                                   find_union)
+      t3 = Sys.time()
       pr_acc$pr_acc = pr_acc$pr_acc ** temperatures[(t - 1) * nselect + i]
       deets = rbind(deets, unlist(pr_acc$the_details))
       pr_acc = pr_acc$pr_acc
       pr_accs = c(pr_accs, unlist(pr_acc))
+      t4 = Sys.time()
       
+      step1 = step1 + t2 - t1
+      step2 = step2 + t3 - t2
+      step3 = step3 + t4 - t3
       # accept / reject
       if (runif(1) <= pr_acc){
         outdf[(t - 1) * nselect + i + 1,] = proposed
@@ -124,8 +138,8 @@ sim_an_anneal = function(site_catchment_list = list(),
   return(list(outdf=outdf, # contains accepted designs
               acc_rat=acc_rat / (nrow(outdf) - 1),
               pr_accs=pr_accs,
-              deets=deets # contains utilities of current/proposed designs
-              ))
+              deets=deets, # contains utilities of current/proposed designs
+              step1=step1,step2=step2,step3=step3))
 }
 
 
@@ -209,44 +223,63 @@ sim_a_wander = function(site_catchment_list = list(),
 
 wrap_sim_plots = function(out, 
                           single_site_utility,
-                          nsites = 256,
+                          map_to_single_site_utility = c(),
                           panelled_plot = TRUE, 
                           path = "",
-                          trace = FALSE,
-                          temperature_superimpose = c(),
                           main = "",
-                          trace_in_sandbox_panel = FALSE,
-                          sandbox=raster()){
+                          burn_in = 0,
+                          trace = FALSE,
+                          sandbox = raster(),
+                          heat_map_panel = FALSE,
+                          sandbox_shp = c(),
+                          site_ids = c(),
+                          temperature_superimpose = c(), # not yet implemented
+                          trace_in_sandbox_panel = FALSE){
   # should work for applications with one objective, 
   # for as many sites per design as I like
   if (path != ""){
-    if (trace_in_sandbox_panel == TRUE){png(path, height=2400, width=2400, pointsize=35)}
-    else {png(path, height=1800, width=2400, pointsize=35)}
+    if (trace_in_sandbox_panel == TRUE & length(map_to_single_site_utility) == 0){
+      png(path, height=2400, width=2400, pointsize=35)
+    } else {png(path, height=1800, width=2400, pointsize=35)}
   }
   
   if (panelled_plot == TRUE){
-    if (trace_in_sandbox_panel == TRUE){ par(mfrow=c(3, 2), mar=c(4.1,4.1,3.1,4.1)) }
-    else { par(mfrow=c(2, 2), mar=c(4.1,4.1,3.1,4.1)) }
+    if (trace_in_sandbox_panel == TRUE & length(map_to_single_site_utility) == 0){ 
+      par(mfrow=c(3, 2), mar=c(4.1,4.1,3.1,4.1)) 
+    } else { par(mfrow=c(2, 2), mar=c(4.1,4.1,3.1,4.1)) }
   }
 
-  
   if (main != ""){par(oma=c(0,0,2.1,0))}
   
-  #nsites = max(out$outdf) #for some reason this isn't right
-  map_to_single_site_utility = sapply(1:nsites, 
-                                      function(x){which(order(single_site_utility, 
-                                                              decreasing = TRUE) == x)})
+  if (burn_in != 0){
+    out$outdf = out$outdf[burn_in:nrow(out$outdf),]
+    out$deets = out$deets[burn_in:nrow(out$deets),]
+  }
   
-  # histogram of sites selected
-  out_hist = hist(map_to_single_site_utility[unlist(out$outdf)], breaks=100, 
-                  main="Histogram of sites selected", xlab="", xaxt="n")
+  nsites = length(single_site_utility)
   
-  # superimpose objective values for single sites
-  points(map_to_single_site_utility,
-         single_site_utility * max(out_hist$counts) / max(single_site_utility), cex=0.8)
-  axis(4, at = seq(0, max(out_hist$counts), length.out=5), 
-       labels = seq(0, max(single_site_utility), length.out=5))
-  mtext("Site obj", side=4, line = 2, cex=0.8)
+  # partitioned this outside the function ...
+  if (length(map_to_single_site_utility) == 0){
+    flag = TRUE
+    map_to_single_site_utility = sapply(1:nsites, 
+                                        function(x){which(order(single_site_utility, 
+                                                                decreasing = TRUE) == x)})
+    # histogram of sites selected
+    out_hist = hist(map_to_single_site_utility[unlist(out$outdf)], breaks=100, 
+                    main="Histogram of sites selected", xlab="", xaxt="n")
+    
+    # superimpose objective values for single sites
+    points(map_to_single_site_utility,
+           single_site_utility * max(out_hist$counts) / max(single_site_utility), cex=0.8)
+    axis(4, at = seq(0, round(max(out_hist$counts), 2), length.out=5), 
+         labels = seq(0, round(max(single_site_utility), 2), length.out=5))
+    mtext("Site obj", side=4, line = 2, cex=0.8)
+  } else { # alternatively, design utility
+    flag = FALSE
+    hist(out$deets$Current1, breaks=100, 
+         main="Histogram of accepted design utilities", xlab="")
+  }
+  
   
   # acceptance probabilities as simulation goes, with spline over top
   plot(out$pr_accs, cex=0.8,  main="Acceptance probabilities over simulation",
@@ -257,20 +290,37 @@ wrap_sim_plots = function(out,
   matplot(out$deets[seq(1,nrow(out$deets)),], type="l", 
           main="Toy problem: current/proposed designs", xlab="Iteration", ylab="Utility")
   
-  # Want to sort below plot by individual site objective
-  # matplot(out$outdf, xlab="Iteration", ylab="Site ID", pch=1, main="Which sites get stuck?"
-  pal = brewer.pal(ncol(out$outdf), "Set1")
-  plot(0,0, xlab="Iteration", ylab="Site (by single site utility)", 
-       pch=16, xlim=c(0,nrow(out$outdf)),
-       ylim=c(0, length(single_site_utility)), type="n",
-      main = "Which sites get stuck?")
-  for (i in 1:ncol(out$outdf)){
-    points(1:nrow(out$outdf), map_to_single_site_utility[out$outdf[,i]], 
-           col = alpha(pal[i], single_site_utility[out$outdf[,i]] / max(single_site_utility)))
-  }
-  
   if (trace_in_sandbox_panel == TRUE){
     trace_in_sandbox(out$outdf, sandbox, main="Trace plot in 'geographic' space")
+  }
+  
+  if (heat_map_panel == TRUE){
+    # colour pix where there are sites?
+    # would be good to colour pix covered by design
+    
+    # not sure if this crumbles when I don't end up sampling all of the sites
+    # works for now ... :/ might need an intermediate step to create empty df then populate
+    tmp2 = apply(out$outdf, 2, table)
+    tmp2 = rowSums(tmp2)
+    sandbox[] = NA
+    values(sandbox)[site_ids] = tmp2
+    plot(trim(sandbox, padding=5), col=alpha(viridis(100)), main="Frequently selected sites",
+         bty="n", xaxt="n", yaxt="n")
+    if (length(sandbox_shp) != 0){plot(sandbox_shp, add=TRUE, border=viridis(100)[1])}
+  } else {
+    # Want to sort below plot by individual site objective
+    # matplot(out$outdf, xlab="Iteration", ylab="Site ID", pch=1, main="Which sites get stuck?"
+    pal = brewer.pal(min(9, ncol(out$outdf)), "Set1")
+    if (flag == TRUE){
+      plot(0,0, xlab="Iteration", ylab="Site (by single site utility)", 
+           pch=16, xlim=c(0,nrow(out$outdf)),
+           ylim=c(0, length(single_site_utility)), type="n",
+           main = "Which sites get stuck?")
+      for (i in 1:ncol(out$outdf)){
+        points(1:nrow(out$outdf), map_to_single_site_utility[out$outdf[,i]], 
+               col = alpha(pal[i], single_site_utility[out$outdf[,i]] / max(single_site_utility)))
+      }
+    }
   }
   
   if (main != ""){mtext(main, outer=TRUE)}
@@ -281,6 +331,7 @@ wrap_sim_plots = function(out,
 }
 
 
+# atm this grabs coords from rasterToPoints
 trace_in_sandbox <- function(outdf, sandbox, 
                              trace_pal=brewer.pal(ncol(outdf), "Set1"),
                              bg_pal=brewer.pal(9,"Purples"),
@@ -367,7 +418,7 @@ post_hoc_pareto <- function(outdf, outobjs, ras, tol=0.2, jitter_fac=1,
   }
 }
 
-tmp2=post_hoc_pareto(tmp$outdf, tmp$deets, sandbox, tol=0.01, jitter_fac=0.5)
+# tmp2=post_hoc_pareto(tmp$outdf, tmp$deets, sandbox, tol=0.01, jitter_fac=0.5)
 # columns in outobjs aren't ordered right ..
 
 site_polys_in_space_plot <- function(site_id_df, site_loc_df, ras, jitter_fac,
