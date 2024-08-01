@@ -27,6 +27,8 @@ states = st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AU
 
 guelphia_extent <- c(141, 146, -37.9,-32.9)
 
+# tmp <- crop(obj_stack, c(-37.5, -36.65, 144.1, 144.9))
+
 # vic_shp <- states %>%
 #   filter(STE_NAME21 == "Victoria") %>%
 #   st_simplify(dTolerance = 1000)
@@ -283,12 +285,55 @@ catch_membership_mat <- catch_membership_mat[!is.na(values(trim(blurred_potentia
   t3 = Sys.time()
 }
 
-(t3-t1)/choose(22,10)*choose(3600,10)/60/60/24/365 # time to do this for all sites in years
+(t3-t1)/choose(22,10)*choose(12**2,5)/60/60 # time to do this for all sites in years
 obj1_choose10 = t(obj1_choose10)
 dim(obj1_choose10)
 plot(obj1_choose10[, 11]) # objective
 saveRDS(obj1_choose10, "~/Desktop/jev/anziam24/obj1_choose10.rds")
 obj1_choose10 <- readRDS("~/Desktop/jev/anziam24/obj1_choose10.rds")
+
+# I do want to try hpop?
+best_sites_hpop <- order(site_ids$hpop, decreasing = TRUE)[1:100]
+{t1 = Sys.time()
+  tmp = combn(22,10)
+  #tmp = tmp[, sample.int(ncol(tmp), 100)]
+  t2 = Sys.time()
+  obj_hpop_choose10 <- apply(tmp, 2, function(x){
+    #c(x, sum(site_ids$catch_potential[best_sites[x]])) # removed "id" here
+    # can't count sites in more than one catchment twice:
+    c(x, sum(site_ids$hpop[unique(as.vector(catch_membership_mat[best_sites_hpop[x],]))], na.rm=TRUE))
+  })
+  t3 = Sys.time()
+}
+obj_hpop_choose10 = t(obj_hpop_choose10)
+dim(obj_hpop_choose10)
+plot(obj_hpop_choose10[, 11]) # objective
+saveRDS(obj_hpop_choose10, "~/Desktop/jev/anziam24/obj_hpop_choose10.rds")
+obj_hpop_choose10 <- readRDS("~/Desktop/jev/anziam24/obj_hpop_choose10.rds")
+
+potent_best <- data.frame(apply(obj1_choose10[,1:10], 2, function(x){
+                                  best_sites[x]
+                                }),
+                          obj1_choose10[,11])
+names(potent_best) <- c(paste0("site", 1:10), "potential")
+hpop_best <- data.frame(apply(obj_hpop_choose10[,1:10], 2, function(x){
+                          best_sites_hpop[x]
+                        }),
+                        obj_hpop_choose10[,11])
+names(hpop_best) <- c(paste0("site", 1:10), "hpop")
+
+potent_best$hpop <- apply(potent_best[,1:10], 1, function(x){
+  sum(site_ids$hpop[unique(as.vector(catch_membership_mat[x,]))], 
+      na.rm=TRUE)
+})
+
+hpop_best$potential <- apply(hpop_best[,1:10], 1, function(x){
+  sum(site_ids$potential[unique(as.vector(catch_membership_mat[x]))], 
+      na.rm=TRUE)
+})
+
+obj_potential_hpop <- rbind(potent_best,
+                            hpop_best)
 
 # Approach 3: go straight for combn?
 # {t1 = Sys.time()
@@ -365,6 +410,7 @@ lines(pareto10[,11], pareto10[,12], col="#6DCD59FF", lwd=2)
 
 ###############################################################################
 # BELOW CODE DOES UN-AGGREGATED CASE:
+# (I think this was for the jev report ...)
 
 id_ras <- potential_vic_buffered
 id_ras[!is.na(id_ras)] <- which(!is.na(values(potential_vic_buffered)))
