@@ -1,4 +1,5 @@
 # toy problem set up ....
+AGG_FACTOR = 10
 
 guelphia_potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif') %>%
   crop(c(141, 146, -37.9, -32.9)) %>%
@@ -7,7 +8,7 @@ guelphia_potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuo
   crop(c(-37.5, -36.65, 144.1, 144.9)) # don't ask :)
 
 guelphia_hpop <- raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif') %>%
-  crop(guelphia_extent) %>%
+  crop(c(141, 146, -37.9, -32.9)) %>%
   aggregate(AGG_FACTOR) %>%
   t() %>%
   crop(c(-37.5, -36.65, 144.1, 144.9))
@@ -48,8 +49,12 @@ tmp <- apply(enumerated, 2, function(x){
 write.csv(cbind(enumerated, tmp),
           "~/Desktop/knowlesi/multi_site/output/toy_enumerated.csv")
 
-tmp2 <- apply(enumerated, 2, function(x)){
-  sum(site_ids$[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE)
-}
+tmp2 <- apply(enumerated, 2, function(x){
+  sum(site_ids$potent[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE)
+})
+
+enumerated <- combn(10, 5, function(x){
+  c(x, sum(x), sd(x))
+})
 
 # illustrate that genetic algot finds Pareto front
