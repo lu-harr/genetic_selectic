@@ -1,4 +1,6 @@
 # toy problem set up ....
+getwd()
+
 AGG_FACTOR = 10
 
 guelphia_potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif') %>%
@@ -12,6 +14,18 @@ guelphia_hpop <- raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus
   aggregate(AGG_FACTOR) %>%
   t() %>%
   crop(c(-37.5, -36.65, 144.1, 144.9))
+
+# methods figure: show objective surfaces
+{png("figures/toy_problem_obj.png")
+par(mfrow=c(1,2))
+plot(guelphia_potential, col=pinks, main="Potential risk", axes=FALSE, xlab="", ylab="")
+# actually may not need to log this ...
+plot(log10(guelphia_hpop), col=purps, main="Human population density",
+     legend=FALSE, axes=FALSE, xlab="", ylab="")
+plot(log10(guelphia_hpop), col=purps, legend.only=TRUE,
+     legend.args=list(title="Distance-weighted human population density (per kmsq)"), # check???
+     axis.args=list()) # un-log
+dev.off()}
 
 wtmat = matrix(1, nrow=3, ncol=3)
 # should I worry about boundary effects? probably ...
@@ -39,22 +53,31 @@ site_ids <- data.frame(id=1:ncell(toy_objective),
                        hpop=values(toy_objective$hpop))
 
 # enumerate for all designs of five sites
-enumerated <- combn(ncell(toy_objective$potent), 5)
+{t1 = Sys.time()
+enumerated <- combn(ncell(toy_objective$potent), 5, function(x){
+  c(x, 
+    sum(site_ids$hpop[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE), 
+    sum(site_ids$potent[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE))
+})
+t2 = Sys.time()}
+t2-t1 # 35 mins
 
-tmp <- apply(enumerated, 2, function(x){
-    # can't count sites in more than one catchment twice:
-    sum(site_ids$hpop[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE)
-  })
-
-write.csv(cbind(enumerated, tmp),
+{t1 = Sys.time()
+write.csv(enumerated,
           "~/Desktop/knowlesi/multi_site/output/toy_enumerated.csv")
+t2 = Sys.time()}
+t2-t1
 
-tmp2 <- apply(enumerated, 2, function(x){
-  sum(site_ids$potent[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE)
-})
+# illustrate that genetic algot finds Pareto front ...
+# do run-up to genetic algot ...
 
-enumerated <- combn(10, 5, function(x){
-  c(x, sum(x), sd(x))
-})
+# find exact pareto front
+toy_pareto <- psel(high("potent") + high("hpop"))
 
-# illustrate that genetic algot finds Pareto front
+# results figure: show exact solution
+{png("figures/toy_problem_obj.png")
+  par(mfrow=c(1,2))
+  plot(toy_pareto)
+  dev.off()}
+
+
