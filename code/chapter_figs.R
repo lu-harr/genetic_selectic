@@ -1,0 +1,61 @@
+# methods figure: show objective surfaces
+{png("figures/toy_problem_obj.png",
+     height=1000,
+     width=2200,
+     pointsize=40)
+  par(mfrow=c(1,2), mar=c(0.1,2.1,4.1,4.1))
+  plot(guelphia_potential, col=pinks(100), main="Potential risk", axes=FALSE, xlab="", ylab="")
+  # actually may not need to log this ...
+  plot(log10(guelphia_hpop), col=purps(100), main="Human population density",
+       axes=FALSE, xlab="", ylab="") # legend will need a title :)
+  dev.off()}
+
+############################################################################
+# demo ``neighbourhood'' concept for methods: 
+# pink transmission suitability bg
+# with orange catch overlaid
+
+pn_cols <- colorRampPalette(colors = c("#f7f7f7", "#c23375"))(1000)
+ext = c(147.3,147.7,-35.2,-34.8)
+
+pot_eg = crop(potential, extent(ext))
+maskmat = pot_eg
+values(maskmat) = NA
+maskmat = as.matrix(maskmat)
+allx = unique(rasterToPoints(pot_eg)[,1])
+ally = unique(rasterToPoints(pot_eg)[,2])
+mid = c(allx[length(allx)/2], ally[length(ally)/2])
+
+wtmat = focalWeight(pot_eg, 0.05,
+                    type="circle")
+wtmat[wtmat != 0] = 1
+
+maskmat[((dim(maskmat)[1] - dim(wtmat)[1] + 1)/2):((dim(maskmat)[1] - dim(wtmat)[1] + 1)/2 + dim(wtmat)[1] - 1),
+        ((dim(maskmat)[2] - dim(wtmat)[2] + 1)/2):((dim(maskmat)[2] - dim(wtmat)[2] + 1)/2 + dim(wtmat)[2] - 1)] = wtmat
+maskmat[maskmat == 0] = NA
+
+maskras = pot_eg
+values(maskras) = maskmat
+
+{png(paste0(plotpath, "neighbourhood_eg.png"),
+     height=1800,
+     width=2200, pointsize=50)
+  par(bty="n", mar=c(4.1,0.1,4.1,4.1))
+  plot(pot_eg, col=pn_cols, xaxt="n", yaxt="n",
+       axis.args=list(at=c(minValue(pot_eg), maxValue(pot_eg)), 
+                      labels=c("Low","High"), cex.axis=1.4),
+       legend.args=list("JEV transmission suitability", side=2, line=2, cex=1.4),
+       main="Neighbourhood around a point", cex.main=1.4,
+       legend.mar=12)
+  axis(1, at=c(147.45, 147.55), labels=c("",""), lwd=3)
+  mtext("0.1 degrees", 1, 1, cex=1.3)
+  plot(maskras, col=alpha("orange", 0.5), add=TRUE, legend=FALSE)
+  points(mid[1], mid[2], pch=4, lwd=5, cex=1.5)
+  
+  par(mfrow=c(1,1), new=TRUE, mar=c(0,0,0,0))
+  plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
+  legend(0.65,0.9, fill=alpha("orange", 0.5), "Pixels in \nneighbourhood", 
+         cex=1.4, bty="n")
+  #text(0.65,0.1)
+  
+  dev.off()}

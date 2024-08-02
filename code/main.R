@@ -8,7 +8,13 @@ library(dplyr)
 library(terra)
 library(RColorBrewer)
 library(scales)
-source("retired_code/iterative_select_funcs.R")
+#source("code/iterative_select_funcs.R")
+
+pinks <- colorRampPalette(colors = c("#ECCFDC", "#c23375"))
+purps <- colorRampPalette(brewer.pal(9,"Purples"))
+extreme_purps = colorRampPalette(purps[c(seq(1,30,5),30:100)])(100)
+
+
 
 all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/national_mozzie_data/mosquito_detections_all_w_qld_sa.csv')
 potential_continuous <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')

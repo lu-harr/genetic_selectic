@@ -15,18 +15,6 @@ guelphia_hpop <- raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus
   t() %>%
   crop(c(-37.5, -36.65, 144.1, 144.9))
 
-# methods figure: show objective surfaces
-{png("figures/toy_problem_obj.png")
-par(mfrow=c(1,2))
-plot(guelphia_potential, col=pinks, main="Potential risk", axes=FALSE, xlab="", ylab="")
-# actually may not need to log this ...
-plot(log10(guelphia_hpop), col=purps, main="Human population density",
-     legend=FALSE, axes=FALSE, xlab="", ylab="")
-plot(log10(guelphia_hpop), col=purps, legend.only=TRUE,
-     legend.args=list(title="Distance-weighted human population density (per kmsq)"), # check???
-     axis.args=list()) # un-log
-dev.off()}
-
 wtmat = matrix(1, nrow=3, ncol=3)
 # should I worry about boundary effects? probably ...
 
@@ -62,9 +50,10 @@ enumerated <- combn(ncell(toy_objective$potent), 5, function(x){
 t2 = Sys.time()}
 t2-t1 # 35 mins
 
+library(data.table)
 {t1 = Sys.time()
-write.csv(enumerated,
-          "~/Desktop/knowlesi/multi_site/output/toy_enumerated.csv")
+fwrite(t(enumerated),
+     file="~/Desktop/knowlesi/multi_site/output/toy_enumerated.csv")
 t2 = Sys.time()}
 t2-t1
 
