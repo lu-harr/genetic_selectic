@@ -37,7 +37,7 @@ maskmat[maskmat == 0] = NA
 maskras = pot_eg
 values(maskras) = maskmat
 
-{png(paste0(plotpath, "neighbourhood_eg.png"),
+{png("figures/neighbourhood_eg.png",
      height=1800,
      width=2200, pointsize=50)
   par(bty="n", mar=c(4.1,0.1,4.1,4.1))
