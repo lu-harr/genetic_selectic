@@ -36,8 +36,6 @@ genetic_algot <- function(site_ids,
     pool <- psel(pool, high("sum_risk") * high("sum_pop"), top_level=top_level, show_level=FALSE)
   }
   
-  #message(names(pool))
-  
   # keep track of addition and removal from pool
   progress <- data.frame(new_additions_to_pool=rep(NA,niters),
                          total_on_pareto_front=rep(NA,niters),
@@ -46,7 +44,7 @@ genetic_algot <- function(site_ids,
   # this is where I would keep obj vals of specific sites on front? A list of 2-col dfs?
   pareto_progress <- list()
   
-  #if (plot_out){
+  if (plot_out){
   png("~/Desktop/knowlesi/multi_site/output/toy_movie/iter0.png", 
       width=2200, height=1400, pointsize=40)
   par(mfrow=c(1,2), mar=c(5.1,4.1,2,2), oma=c(0,0,4.1,1.1))
@@ -55,7 +53,7 @@ genetic_algot <- function(site_ids,
        ylab="Total potential risk captured", xlab="Total human population captured", 
        cex.lab=1.3, cex.main=1.3,
        main="Objective space")
-  #}
+  }
   
   # keep track of geographic location of selected sites:
   tmp_pit <- sandpit
@@ -63,18 +61,18 @@ genetic_algot <- function(site_ids,
   tmp_pit[as.numeric(as.character(freqtab$Var1))] <- freqtab$Freq
   tmp_pit[tmp_pit == 0] = NA
   
-  #if (plot_out){
+  if (plot_out){
   plot(tmp_pit, col=greens(100), xaxt="n", yaxt="n", cex.main=1.3, main="Geographic space")
   mtext("Longitude", 1, 1.5, cex=1.3)
   mtext("Latitude", 2, 1.5, cex=1.3)
   mtext("Initial front", outer=TRUE, side=3, line=2, font=2, cex=1.5)
   dev.off()
-  #}
+  }
   
   starting_front <- pool
   
   for (iter in 1:niters){
-    message(iter)
+    #message(iter)
     n_add <- poolsize - nrow(pool)
     
     if (sample_method == "random"){
@@ -92,7 +90,7 @@ genetic_algot <- function(site_ids,
       # check this is definitely doing what I think it is ...
     }
     
-    names(additions) <- paste("site", 1:nselect)
+    names(additions) <- paste("site", 1:nselect, sep="")
     
     obj <- data.frame(sum_risk = apply(additions, 1, objective_func, 
                                        catch_mem=catch_membership_mat,
@@ -105,7 +103,7 @@ genetic_algot <- function(site_ids,
     additions <- cbind(obj, additions)
     pool <- rbind(pool, as.matrix(additions))
     
-    #if (plot_out){
+    if (plot_out){
     png(paste0("~/Desktop/knowlesi/multi_site/output/toy_movie/iter", iter, ".png"), 
         width=2200, height=1400, pointsize=40)
     par(mfrow=c(1,2), mar=c(5.1,4.1,2,2), oma=c(0,0,4.1,1.1))
@@ -116,7 +114,7 @@ genetic_algot <- function(site_ids,
          main="Objective space", cex.main=1.3, cex.lab=1.3)
     points(pool$sum_pop[pool$addition == FALSE], pool$sum_risk[pool$addition == FALSE],
            col=apple, pch=16)
-    #}
+    }
     
     # find pareto front + remove dominated designs
     pool <- psel(pool, high("sum_risk") * high("sum_pop"), top_level=top_level, show_level=FALSE)
@@ -130,13 +128,13 @@ genetic_algot <- function(site_ids,
     tmp_pit[as.numeric(as.character(freqtab$Var1))] <- freqtab$Freq
     tmp_pit[tmp_pit == 0] = NA
     
-    #if (plot_out){
+    if (plot_out){
     plot(tmp_pit, col=greens(100), xaxt="n", yaxt="n", main="Geographic space", cex.main=1.3)
     mtext("Longitude", 1, 1.5, cex=1.3)
     mtext("Latitude", 2, 1.5, cex=1.3)
     mtext(paste("Step", iter), outer=TRUE, side=3, line=2, font=2, cex=1.5)
     dev.off()
-    #}
+    }
     
     sandcastle <- addLayer(sandcastle, tmp_pit)
     
@@ -165,7 +163,7 @@ pareto_progress_contour <- function(pareto_progress,
   
   pal=greens(length(pareto_progress))
   for (ind in 1:length(pareto_progress)){
-    pareto <- pareto_progress[[ind]][grep("^(?!.*site).*", names(pareto_progress[[1]]), perl = TRUE)]
+    pareto <- pareto_progress[[ind]][grep("^(?!.*site).*", names(pareto_progress[[ind]]), perl = TRUE)]
     lines(pareto[order(pareto[,1]),2:1], col=pal[ind])
     points(pareto[order(pareto[,1]),2:1], col=pal[ind])
   }
@@ -179,11 +177,68 @@ pareto_progress_contour <- function(pareto_progress,
   
 }
 
-tmp2 = pareto_progress_contour(tmp$pareto_progress,
-                               box_extent = c(100, max(exact_toy_pareto$hpop), 
-                                              3, max(exact_toy_pareto$potent)), # play around with this I guess ....
-                               exact_soln = exact_toy_pareto[,c("hpop","potent")])
+# tmp2 = pareto_progress_contour(tmp$pareto_progress,
+#                                box_extent = c(95, max(exact_toy_pareto$hpop), 
+#                                               3, max(exact_toy_pareto$potent)), # play around with this I guess ....
+#                                exact_soln = exact_toy_pareto[,c("hpop","potent")])
 # shade underneath hull?
+
+
+pareto_progress_pc_pts <- function(pareto_progress,
+                                      exact_soln){
+  # find number of shared_designs
+  out <- c()
+  for (ind in 1:length(pareto_progress)){
+    tmp <- pareto_progress[[ind]][,grep("site", names(pareto_progress[[ind]]))]
+    tmp <- as.data.frame(t(apply(tmp, 1, sort)))
+    names(tmp) <- paste("site", 1:ncol(tmp), sep="")
+    shared_designs <- tmp %>%
+      inner_join(as.data.frame(exact_soln)[,grep("site", names(exact_soln))]) %>%
+      suppressMessages()
+    out <- c(out, nrow(shared_designs))
+  }
+  
+  out
+}
+
+# tmp3 <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
+
+
+library(bayestestR)
+pareto_progress_auc <- function(pareto_progress,
+                                exact_soln,
+                                minx=0, miny=0){
+  # using area_under_curve implemented in bayestestR
+  # trapezoid = sum((rowMeans(cbind(y[-length(y)], y[-1]))) * (x[-1] - x[-length(x)])), 
+  # step = sum(y[-length(y)] * (x[-1] - x[-length(x)])), 
+  # spline = stats::integrate(stats::splinefun(x, y, method = "natural"), lower = min(x), upper = max(x))$value)
+  
+  # order exact and add end points
+  exact_soln <- as.data.frame(exact_soln)[,grep("site", names(exact_soln), invert=TRUE)]
+  exact_soln <- exact_soln[order(exact_soln[,1]),]
+  exact_soln <- rbind(c(minx, max(exact_soln[,2])),
+                      exact_soln,
+                      c(max(exact_soln[,1]), miny))
+  exact_auc <- area_under_curve(exact_soln[,1], exact_soln[,2], method="step")
+  out <- c()
+  
+  for (ind in 1:length(pareto_progress)){
+    # order and add end points
+    tmp <- pareto_progress[[ind]][,grep("site|addition", names(pareto_progress[[ind]]), invert=TRUE)]
+    tmp <- tmp[order(tmp[,2]),2:1] # I'm swapping the columns to match what's in exact!
+    tmp <- rbind(c(minx, max(tmp[,2])),
+                 tmp,
+                 c(max(tmp[,1]), miny))
+    #return(tmp)
+    out <- c(out, exact_auc - area_under_curve(tmp[,1], tmp[,2], method="step"))
+  }
+  
+  out
+}
+# 
+# aucs <- data.frame(auc1000=pareto_progress_auc(tmp1$pareto_progress, exact_toy_pareto),
+#                    auc5000=pareto_progress_auc(tmp2$pareto_progress, exact_toy_pareto),
+#                    auc10000=pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto))
 
 
 

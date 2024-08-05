@@ -155,8 +155,11 @@ get_catch_ras <- function(ras, ids){
 set.seed(834904)
 starting_point <- matrix(sample(ncell(toy_objective), 2000, replace=TRUE), ncol=5) %>%
   as.data.frame()
-names(starting_point) <- paste("site", 1:5)
+names(starting_point) <- paste("site", 1:5, sep="")
 
+# let's run some experiments ...
+
+{t1 = Sys.time()
 tmp = genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
                     nselect = 5, 
                     poolsize = 10000,
@@ -171,6 +174,37 @@ tmp = genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one funct
                     box_extent = c(0, max(exact_toy_pareto$hpop), 
                                    1, max(exact_toy_pareto$potent)),
                     top_level = 1)
+t2 = Sys.time()
+t2-t1} # 2.5 mins per run ...
+
+{set.seed(834903)
+  t1 = Sys.time()
+  niters=100
+  progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
+  
+  for (ind in 1:nruns){
+    tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
+                         nselect = 5, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = toy_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
+                         pool = starting_point, # matrix of nselect columns
+                         box_extent = c(0, max(exact_toy_pareto$hpop), 
+                                        1, max(exact_toy_pareto$potent)),
+                         top_level = 1,
+                         plot_out = FALSE)
+    
+    progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+  }
+  
+t2 = Sys.time()
+t2-t1}
 
 # can restart by giving it current pool ...
 # perhaps make it more explorative ?
