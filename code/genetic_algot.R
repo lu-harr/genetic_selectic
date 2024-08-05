@@ -159,9 +159,10 @@ pareto_progress_contour <- function(pareto_progress,
                                     xlab="Sum(Pop)",
                                     ylab="Sum(Risk)"){
   
-  plot(0, xlim=box_extent[1:2], ylim=box_extent[3:4], type="n", xlab=xlab, ylab=ylab)
+  plot(0, xlim=box_extent[1:2], ylim=box_extent[3:4], type="n", xlab=xlab, ylab=ylab,
+       main="Pareto front over iteration?")
   
-  pal=greens(length(pareto_progress))
+  pal=viridis(length(pareto_progress))
   for (ind in 1:length(pareto_progress)){
     pareto <- pareto_progress[[ind]][grep("^(?!.*site).*", names(pareto_progress[[ind]]), perl = TRUE)]
     lines(pareto[order(pareto[,1]),2:1], col=pal[ind])
@@ -172,6 +173,8 @@ pareto_progress_contour <- function(pareto_progress,
     lines(exact_soln, col="orange")
     points(exact_soln, col="orange")
   }
+  
+  legend("bottomleft", "Exact solution", fill="orange")
   
   # can I shade in the points that are in the exact solution?
   
@@ -229,22 +232,57 @@ pareto_progress_auc <- function(pareto_progress,
     tmp <- rbind(c(minx, max(tmp[,2])),
                  tmp,
                  c(max(tmp[,1]), miny))
-    #return(tmp)
     out <- c(out, exact_auc - area_under_curve(tmp[,1], tmp[,2], method="step"))
   }
   
   out
 }
-# 
-# aucs <- data.frame(auc1000=pareto_progress_auc(tmp1$pareto_progress, exact_toy_pareto),
-#                    auc5000=pareto_progress_auc(tmp2$pareto_progress, exact_toy_pareto),
-#                    auc10000=pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto))
 
 
-
-
-
-
+library(idpalette)
+auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE, 
+                        pal=c("orange", "#8612ff", apple),
+                        legend_labs=c(), main="", legend_title=""){
+  
+  miny = min(inlst[[1]])
+  maxy = max(inlst[[1]])
+  plotlst <- list()
+  
+  for (ind in 1:length(inlst)){
+    if (min(inlst[[ind]]) < miny){
+      miny = min(inlst[[ind]])
+    }
+    
+    if (max(inlst[[ind]]) > maxy){
+      maxy = max(inlst[[ind]])
+    }
+    
+    if (!lines_only){
+      plotlst[[ind]] <- data.frame(mins=apply(inlst[[ind]], 1, min), 
+                           maxs=apply(inlst[[ind]], 1, max), 
+                           meds=apply(inlst[[ind]], 1, median))
+    }
+  }
+  
+  plot(0, type="n", xlim=c(0,niters), ylim=log(c(miny, maxy)), 
+       xlab="Iteration", ylab="Area between current and exact Pareto front",
+       main=main)
+  
+  for (ind in 1:length(inlst)){
+    if (!lines_only){
+      polygon(c(1:niters, niters:1), log(c(plotlst[[ind]][,"mins"], rev(plotlst[[ind]][,"maxs"]))), 
+              col=alpha(pal[ind], 0.5), border=NA)
+      lines(1:niters, log(plotlst[[ind]][,"meds"]), col="black", lwd=2)
+    }
+      
+    matplot(log(inlst[[ind]]), col=pal[ind], lty=1, lwd=0.8, add=TRUE, type="l")
+  }
+  
+  if (length(legend_labs) > 0){
+    legend("topright", legend_labs, fill=pal[1:length(inlst)], title=legend_title)
+  }
+  
+}
 
 
 
