@@ -125,6 +125,11 @@ get_catch_ras <- function(ras, ids){
     # don't quite care enough for now ...
   #}
   
+  par(new=TRUE, oma=c(0,0,0,0), mar=c(0,0,0,0), mfrow=c(1,1))
+  empty_plot_for_legend()
+  subfigure_label(par()$usr, 0.1,0.94, "(a)")
+  subfigure_label(par()$usr, 0.55,0.94, "(b)")
+  
   dev.off()}
 
 {png("figures/toy_problem_enumerated_pop_logged.png")
@@ -138,5 +143,28 @@ get_catch_ras <- function(ras, ids){
   points(log10(exact_toy_pareto$hpop),
          exact_toy_pareto$potent, col=brat, pch=16)
   dev.off()}
+
+# let's see how we go with a random starting point ...
+
+set.seed(834904)
+starting_point <- matrix(sample(ncell(toy_objective), 2000, replace=TRUE), ncol=10)
+tmp = potential_hpop_genetic_algot(site_ids = 1: nrow(site_ids), 
+                                   objective_list = non_raster_objective_list, 
+                                   nselect = 5, 
+                                   poolsize = 2000,
+                                   niters = 50,
+                                   sandpit = toy_objective,
+                                   potential_vec = site_ids$potential,
+                                   pop_vec = site_ids$hpop,
+                                   sample_method = "neighbours",
+                                   catchment_matrix = catch_membership_mat,
+                                   neighbourhood_matrix = neigh_membership_mat,
+                                   pool = pareto10[,1:10], # matrix of nselect columns
+                                   top_level = 3)
+
+
+
+
+
 
 

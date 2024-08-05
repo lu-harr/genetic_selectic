@@ -16,10 +16,22 @@ purps <- colorRampPalette(brewer.pal(9,"Purples"))
 
 brat = "#8ACE00"
 
+subfigure_label = function(plot_region, x_displacement, y_displacement, label,
+                           cex.label=1){
+  # gives me an (a)
+  text(plot_region[1] + (plot_region[2] - plot_region[1])*x_displacement, 
+       plot_region[3] + (plot_region[4] - plot_region[3])*y_displacement,
+       label, cex=cex.label)
+}
 
+empty_plot_for_legend = function(){
+  plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", bty="n")
+}
+
+potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
 
 all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/national_mozzie_data/mosquito_detections_all_w_qld_sa.csv')
-potential_continuous <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
+#potential_continuous <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
 states <- st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp")
 hpop <- raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif')
 
