@@ -14,6 +14,8 @@ pinks <- colorRampPalette(colors = c("#ECCFDC", "#c23375"))
 purps <- colorRampPalette(brewer.pal(9,"Purples"))
 #extreme_purps = colorRampPalette(purps[c(seq(1,30,5),30:100)])(100)
 
+greens = colorRampPalette(colors = c("#e0fbb7","#8ACE00","#6DCD59FF","#2f9a16"))
+apple = "#6DCD59FF"
 brat = "#8ACE00"
 
 subfigure_label = function(plot_region, x_displacement, y_displacement, label,

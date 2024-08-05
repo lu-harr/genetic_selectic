@@ -144,24 +144,36 @@ get_catch_ras <- function(ras, ids){
          exact_toy_pareto$potent, col=brat, pch=16)
   dev.off()}
 
+
+###############################################################################
+# GA starts here
+
 # let's see how we go with a random starting point ...
 
-set.seed(834904)
-starting_point <- matrix(sample(ncell(toy_objective), 2000, replace=TRUE), ncol=10)
-tmp = potential_hpop_genetic_algot(site_ids = 1: nrow(site_ids), 
-                                   objective_list = non_raster_objective_list, 
-                                   nselect = 5, 
-                                   poolsize = 2000,
-                                   niters = 50,
-                                   sandpit = toy_objective,
-                                   potential_vec = site_ids$potential,
-                                   pop_vec = site_ids$hpop,
-                                   sample_method = "neighbours",
-                                   catchment_matrix = catch_membership_mat,
-                                   neighbourhood_matrix = neigh_membership_mat,
-                                   pool = pareto10[,1:10], # matrix of nselect columns
-                                   top_level = 3)
+# also need to set box_extent
 
+set.seed(834904)
+starting_point <- matrix(sample(ncell(toy_objective), 2000, replace=TRUE), ncol=5) %>%
+  as.data.frame()
+names(starting_point) <- paste("site", 1:5)
+
+tmp = genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
+                    nselect = 5, 
+                    poolsize = 10000,
+                    niters = 100,
+                    sandpit = toy_objective$potent,
+                    potential_vec = site_ids$potent,
+                    pop_vec = site_ids$hpop,
+                    sample_method = "neighbours",
+                    catchment_matrix = catch_membership_mat,
+                    neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
+                    pool = starting_point, # matrix of nselect columns
+                    box_extent = c(0, max(exact_toy_pareto$hpop), 
+                                   1, max(exact_toy_pareto$potent)),
+                    top_level = 1)
+
+# can restart by giving it current pool ...
+# perhaps make it more explorative ?
 
 
 
