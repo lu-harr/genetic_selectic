@@ -8,7 +8,7 @@ AGG_FACTOR = 10
 
 guelphia_potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif') %>%
   crop(c(141, 146, -37.9, -32.9)) %>%
-  aggregate(AGG_FACTOR) %>%
+  aggregate(AGG_FACTOR) %>% # aggregated by mean .... just so you know ...
   t() %>%
   crop(c(-37.5, -36.65, 144.1, 144.9)) # don't ask :)
 
@@ -160,6 +160,14 @@ set.seed(834904)
 starting_point <- matrix(sample(ncell(toy_objective), 2000, replace=TRUE), ncol=5) %>%
   as.data.frame()
 names(starting_point) <- paste("site", 1:5, sep="")
+
+educated_guess <- matrix(c(sample(order(values(toy_objective$potent), 
+                                     decreasing = TRUE)[1:20], 1000, replace = TRUE),
+                         sample(order(values(toy_objective$hpop),
+                                      decreasing = TRUE)[1:20], 1000, replace = TRUE)),
+                         ncol=5, byrow=TRUE) %>%
+  as.data.frame()
+names(educated_guess) <- paste("site", 1:5, sep="")
 
 # let's run some experiments ...
 
@@ -432,6 +440,7 @@ auc_agg_fig(list(progress_neigh1[,2:ncol(progress_neigh1)],
 write.csv(progress_auc, "output/toy_auc_pool5000_iters100_runs10_neigh2.csv", row.names=FALSE)
 write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10_neigh2.csv", row.names=FALSE)
 
+
 {set.seed(834903)
   t1 = Sys.time()
   niters = 100
@@ -475,4 +484,123 @@ write.csv(progress_auc, "output/toy_auc_pool5000_iters100_runs10_neigh3.csv", ro
 write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10_neigh3.csv", row.names=FALSE)
 
                            
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  
+  for (ind in 1:nruns){
+    tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
+                         nselect = 5, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = toy_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
+                         pool = educated_guess, # matrix of nselect columns
+                         box_extent = c(0, max(exact_toy_pareto$hpop), 
+                                        1, max(exact_toy_pareto$potent)),
+                         top_level = 1,
+                         plot_out = FALSE)
+    
+    progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+  }
+  
+  t2 = Sys.time()
+  t2-t1}
+write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_loaded_start.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_loaded_start.csv", row.names=FALSE)
+
+progress_uneducated <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
+progress_educated <- read.csv("output/toy_auc_pool1000_iters100_runs10_loaded_start.csv")
+
+auc_agg_fig(list(progress_uneducated,
+                  progress_educated),
+                 legend_labs=c("Random", "Educated guess"),
+                 legend_title="Starting pool",
+                 main="Educated guess doesn't seem to help?")
+
+
+# test for Pareto totality ?
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  
+  for (ind in 1:nruns){
+    tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
+                         nselect = 5, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = toy_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
+                         pool = starting_point, # matrix of nselect columns
+                         box_extent = c(0, max(exact_toy_pareto$hpop), 
+                                        1, max(exact_toy_pareto$potent)),
+                         top_level = 2,
+                         plot_out = FALSE)
+    
+    progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+  }
+  
+  t2 = Sys.time()
+  t2-t1}
+write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_pareto2.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_pareto2.csv", row.names=FALSE)
+
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  
+  for (ind in 1:nruns){
+    tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
+                         nselect = 5, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = toy_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
+                         pool = starting_point, # matrix of nselect columns
+                         box_extent = c(0, max(exact_toy_pareto$hpop), 
+                                        1, max(exact_toy_pareto$potent)),
+                         top_level = 3,
+                         plot_out = FALSE)
+    
+    progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+  }
+  
+  t2 = Sys.time()
+  t2-t1}
+write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_pareto3.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_pareto3.csv", row.names=FALSE)
+
+progress_pareto1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
+progress_pareto2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto2.csv")
+progress_pareto3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto3.csv")
+
+auc_agg_fig(list(progress_uneducated,
+                 progress_educated),
+            legend_labs=c("Random", "Educated guess"),
+            legend_title="Starting pool",
+            main="Educated guess doesn't seem to help?")
 
