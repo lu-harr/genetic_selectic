@@ -2,9 +2,9 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="181.93369mm"
+   width="221.34901mm"
    height="165.71558mm"
-   viewBox="0 0 181.93369 165.71557"
+   viewBox="0 0 221.34902 165.71557"
    version="1.1"
    id="svg1"
    inkscape:version="1.3.2 (091e20e, 2023-11-25)"
@@ -28,8 +28,8 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      inkscape:zoom="0.94084468"
-     inkscape:cx="300.79354"
-     inkscape:cy="278.47317"
+     inkscape:cx="343.30853"
+     inkscape:cy="289.10192"
      inkscape:window-width="1792"
      inkscape:window-height="985"
      inkscape:window-x="0"
@@ -722,12 +722,51 @@
        r="6.1224999"
        gradientUnits="userSpaceOnUse"
        gradientTransform="translate(21.759059,114.64737)" />
+    <marker
+       style="overflow:visible"
+       id="ConcaveTriangle-0"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Concave triangle arrow"
+       markerWidth="0.5"
+       markerHeight="0.5"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="M -2,-4 9,0 -2,4 c 2,-2.33 2,-5.66 0,-8 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path7-2" />
+    </marker>
+    <inkscape:path-effect
+       effect="bspline"
+       id="path-effect28-4"
+       is_visible="true"
+       lpeversion="1.3"
+       weight="33.333333"
+       steps="2"
+       helper_size="0"
+       apply_no_weight="true"
+       apply_with_weight="true"
+       only_selected="false"
+       uniform="false" />
   </defs>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-18.508783,-23.2062)">
+     transform="translate(20.906544,-23.206199)">
+    <path
+       style="fill:none;stroke:#aee0a2;stroke-width:3;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:18, 6;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#ConcaveTriangle-0)"
+       d="m 157.79169,147.58117 c -0.22066,5.16399 -0.44132,10.32788 -3.21387,16.50083 -2.77255,6.17294 -8.09667,13.35432 -16.26907,17.81199 -8.17239,4.45767 -19.19229,6.19114 -28.31408,4.1891 -9.12178,-2.00203 -16.345205,-7.7396 -23.568627,-13.47716"
+       id="path28-9"
+       inkscape:path-effect="#path-effect28-4"
+       inkscape:original-d="m 157.79169,147.58117 c -0.22066,5.16399 -0.44132,10.32788 -0.66199,15.49198 -5.32443,7.18179 -10.64855,14.36317 -15.97299,21.54497 -11.02035,1.73354 -22.04025,3.46701 -33.06039,5.20051 -7.22343,-5.73757 -14.446852,-11.47514 -21.670277,-17.2127"
+       sodipodi:nodetypes="ccccc"
+       transform="rotate(91.593155,90.633498,77.602158)" />
     <rect
        style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.245;stroke-opacity:1"
        id="rect1-1-3"
@@ -737,7 +776,7 @@
        y="104.5262"
        ry="0.0024222657" />
     <path
-       style="fill:none;stroke:#a2e0b9;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
+       style="fill:none;stroke:#aee0a2;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
        d="m 158.2441,133.5022 c -0.37147,9.85698 -0.74293,19.71377 -3.59088,28.23326 -2.84795,8.51948 -8.17207,15.70086 -16.34447,20.15853 -8.17239,4.45767 -19.19229,6.19114 -28.31408,4.1891 -9.12178,-2.00203 -16.345205,-7.7396 -23.568627,-13.47716"
        id="path28"
        inkscape:path-effect="#path-effect28"
@@ -752,7 +791,7 @@
        y="70.057014"
        ry="0.0024222657" />
     <path
-       style="fill:none;stroke:#a2e0b9;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
+       style="fill:none;stroke:#aee0a2;stroke-width:4;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ConcaveTriangle)"
        d="m 80.823567,39.182774 c 9.536953,-5.387917 19.073701,-10.775718 28.917993,-12.879768 9.8443,-2.10405 19.99508,-0.924199 26.70622,1.616166 6.71114,2.540364 9.98179,6.440929 12.73163,13.406206 2.74983,6.965278 4.97857,16.994634 7.20736,27.024188"
        id="path29"
        inkscape:path-effect="#path-effect29"
@@ -1002,6 +1041,14 @@
          id="tspan25"
          x="108.74973"
          y="174.83951">Mutation</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05556px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"
+       x="-12.908134"
+       y="109.54317"
+       id="text19-9"><tspan
+         sodipodi:role="line"
+         id="tspan1">Repeat</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05556px;line-height:1.25;font-family:Arial;-inkscape-font-specification:'Arial, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-variant-east-asian:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264583"

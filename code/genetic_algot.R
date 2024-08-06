@@ -243,6 +243,8 @@ library(idpalette)
 auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE, 
                         pal=c("orange", "#8612ff", apple),
                         legend_labs=c(), main="", legend_title=""){
+  # visualisation of area between curve and exact solution 
+  # (polygon shows min/max, heavy line is median progress)
   
   miny = min(inlst[[1]])
   maxy = max(inlst[[1]])
@@ -264,18 +266,23 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
     }
   }
   
-  plot(0, type="n", xlim=c(0,niters), ylim=log(c(miny, maxy)), 
+  plot(0, type="n", xlim=c(0,niters), ylim=c(miny, maxy), 
        xlab="Iteration", ylab="Area between current and exact Pareto front",
        main=main)
   
   for (ind in 1:length(inlst)){
     if (!lines_only){
-      polygon(c(1:niters, niters:1), log(c(plotlst[[ind]][,"mins"], rev(plotlst[[ind]][,"maxs"]))), 
+      polygon(c(1:niters, niters:1), c(plotlst[[ind]][,"mins"], rev(plotlst[[ind]][,"maxs"])), 
               col=alpha(pal[ind], 0.5), border=NA)
-      lines(1:niters, log(plotlst[[ind]][,"meds"]), col="black", lwd=2)
-    }
       
-    matplot(log(inlst[[ind]]), col=pal[ind], lty=1, lwd=0.8, add=TRUE, type="l")
+    }
+    matplot(inlst[[ind]], col=pal[ind], lty=1, lwd=0.8, add=TRUE, type="l")
+  }
+  
+  for (ind in 1:length(inlst)){
+    if (!lines_only){
+      lines(1:niters, plotlst[[ind]][,"meds"], col=pal[ind], lwd=3)
+    }
   }
   
   if (length(legend_labs) > 0){

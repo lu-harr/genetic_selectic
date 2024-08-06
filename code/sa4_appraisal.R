@@ -1,5 +1,6 @@
 # script for Victoria-wide appraisal, trimmed down from jev/code/mozzie_surveillance_potential.R
 
+# check this is the data I end up using in JEV 1?
 all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/phase_2/clean/pathogen/all_moz_surveillance.csv') %>%
   rename(host_type=host_species) %>% 
   dplyr::select(
@@ -90,9 +91,9 @@ state_potential_surveillance_compare <- function(state,
   par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
   plot(potential_state, col=pn_cols,  xaxt="n", yaxt="n", horizontal=TRUE,
        legend.args=list("Transmission suitability", side=3, line=1, cex=1.4),
-       xaxt="n", yaxt="n",
-       axis.args=list(at=c(minValue(potential_state)+0.05, maxValue(potential_state)-0.05),
-                      labels=c("Low","High")))
+       xaxt="n", yaxt="n")#,
+       #axis.args=list(at=c(minValue(potential_state)+0.05, maxValue(potential_state)-0.05),
+      #                labels=c("Low","High")))
   
   par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
   plot(sel, col=alpha("orange", 0.5), legend=FALSE,  xaxt="n", yaxt="n", horizontal=TRUE)
@@ -116,7 +117,7 @@ state_potential_surveillance_compare <- function(state,
   
   par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1),xpd=NA)
   plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
-  legend(0.2,1.05, fill=alpha("orange", 0.5), cex=1.6,
+  legend(0.78,1.05, fill=alpha("orange", 0.5), cex=1.6,
          "Areas of highest \ntransmission suitability", bty="n")
   dev.off()
   
@@ -190,7 +191,8 @@ surveil_df <- function(state,
                      "Northern Territory"="NT",
                      "Australian Capital Territory"="ACT")
   
-  out = data.frame(sa4_name=state_sa4s$SA4_NAME21, 
+  out = data.frame(sa4_name=state_sa4s$SA4_NAME21,
+                   sa4_area=state_sa4s$AREASQKM21,
                    par=sa4_par[,2], 
                    total_pop=sa4_pop[,2],
                    traps_at_risk=0,
@@ -221,6 +223,8 @@ surveil_df <- function(state,
   
   out = out_numeric %>%
     mutate(#par=format(round(par, digits=0), big.mark = ",", scientific = FALSE),
+      sa4_area=format(round(sa4_area, digits=0), big.mark = ","),
+      total_pop=format(round(total_pop/1000, digits=0)),
       par=format(round(par/1000, digits=0)),
       pc_par=fix_pc(pc_par),
       pc_traps_state=fix_pc(pc_traps_state),
@@ -229,9 +233,10 @@ surveil_df <- function(state,
       traps_at_risk=format(round(traps_at_risk, digits=0)))
   
   # adding total pop in here?
-  out = out[,c("sa4_name","total_pop","par","total_traps", "pc_par",
+  out = out[,c("sa4_name","sa4_area","total_pop","par","total_traps", "pc_par",
                "pc_traps_state", "traps_at_risk","pc_traps_region", "comments")]
   names(out) = c("SA4",
+                 "Area (kmsq)",
                  "Total pop.",
                  "PAR", 
                  "No' catches", 
@@ -245,19 +250,15 @@ surveil_df <- function(state,
               out=out))
 }
 
-
-
-
 # make up some results for vic .....
 
-
-vic_shp <- states %>%
-  dplyr::filter(STE_NAME21 == "Victoria") %>%
-  st_simplify(dTolerance = 1000)
-vic_surveil <- state_potential_surveillance_compare("Vic", vic_shp, sa4s,
-                                                    potential, 
-                                                    hpop, all_mozzies,
-                                                    hpop_breaks=c(25,100, 250, 500))
+# vic_shp <- states %>%
+#   dplyr::filter(STE_NAME21 == "Victoria") %>%
+#   st_simplify(dTolerance = 1000)
+# vic_surveil <- state_potential_surveillance_compare("Vic", vic_shp, sa4s,
+#                                                     potential, 
+#                                                     hpop, all_mozzies,
+#                                                     hpop_breaks=c(25,100, 250, 500))
 
 # play around with rank_cutoff here?
 vic_surveil_df = surveil_df("Victoria",
@@ -269,6 +270,9 @@ vic_surveil_df = surveil_df("Victoria",
                             9)
 
 library(xtable)
+
+add.to.row <- list(pos=list(-1),
+                   command=c("\\multicolumn{2}{c}{Group 1 and 2} & \\multicolumn{1}{c}{Group 3} \\\\ \\cmidrule(lr){1-2} \\cmidrule(lr){3-3}"))
 print(xtable::xtable(vic_surveil_df$out),
       include.rownames=FALSE)
 

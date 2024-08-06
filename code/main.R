@@ -5,6 +5,7 @@ setwd("~/Desktop/knowlesi/multi_site")
 library(sf)
 library(raster)
 library(dplyr)
+library(tidyr)
 library(terra)
 library(RColorBrewer)
 library(scales)
@@ -59,7 +60,6 @@ hpop_vic_buff <- hpop %>%
   crop(vic_shadow) %>%
   raster::mask(vic_shp)
 
-guelphia_extent <- c(141, 146, -37.9,-32.9)
 AGG_FACTOR <- 10
 
 potential_guelphia <- potential_continuous %>%
@@ -100,72 +100,42 @@ site_ids <- obj_stack %>%
   as.data.frame()
 site_ids$id <- which(!is.na(values(blurred_potential)))
 
-objective_list = list(
-  obj1 = function(site_ids, 
-                  dist_mat = matrix(NA), 
-                  raster_stack = stack(), 
-                  pix_weights = c()){
-    # sum objective values of pix in catch (first stack in raster)
-    sum(raster_stack[["catch_potential"]][site_ids])
-  },
-  obj2 = function(site_ids, 
-                  dist_mat = matrix(NA), 
-                  raster_stack = stack(), 
-                  pix_weights = c()){
-    # sum objective values of pix in catch (second stack in raster)
-    sum(raster_stack[["hpop"]][site_ids])
-  },
-  # this one is supposed to be network distance (Euclidean, MST via Prim)
-  obj3 = function(site_ids = c(),
-                  dist_mat = matrix(NA),
-                  raster_stack = stack(),
-                  pix_weights = c()){
-    # this one only needs site_ids and dist_mat!
-    if (length(site_ids) == 2){
-      return(dist_mat[site_ids[1], site_ids[2]])
-    }
-    site_ids = sort(unlist(site_ids)) # does this need to happen?
-    dist_mat = dist_mat[site_ids, site_ids]
-    tmp_mst = ape::mst(as.dist(dist_mat))
-    picks = cbind(expand.grid(rownames(tmp_mst), colnames(tmp_mst)), 
-                  as.vector(tmp_mst))
-    picks[, 1:2] = cbind(as.numeric(picks[, 1]), as.numeric(picks[, 2]))
-    picks = picks[picks[, 3] == 1,]
-    picks[, 1:2] = t(apply(picks[, 1:2], 1, sort))
-    picks = unique(picks)
-    sum(dist_mat[as.matrix(picks[, 1:2])])
-  }
-)
-
-# come back to non-raster objective list ..........
-non_raster_objective_list = list(
-  obj1 = function(site_ids, 
-                  dist_mat = matrix(NA), 
-                  vector_to_be_indexed = c()){
-    # sum objective values of pix in catch
-    # (could be potential risk or hpop ...)
-    sum(vector_to_be_indexed[site_ids], na.rm=TRUE)
-  },
-  # this one is supposed to be network distance (Euclidean, MST via Prim)
-  obj2 = function(site_ids = c(),
-                  dist_mat = matrix(NA),
-                  vector_to_be_indexed = c()){
-    # this one only needs site_ids and dist_mat!
-    if (length(site_ids) == 2){
-      return(dist_mat[site_ids[1], site_ids[2]])
-    }
-    site_ids = sort(unlist(site_ids)) # does this need to happen?
-    dist_mat = dist_mat[site_ids, site_ids]
-    tmp_mst = ape::mst(as.dist(dist_mat))
-    picks = cbind(expand.grid(rownames(tmp_mst), colnames(tmp_mst)), 
-                  as.vector(tmp_mst))
-    picks[, 1:2] = cbind(as.numeric(picks[, 1]), as.numeric(picks[, 2]))
-    picks = picks[picks[, 3] == 1,]
-    picks[, 1:2] = t(apply(picks[, 1:2], 1, sort))
-    picks = unique(picks)
-    sum(dist_mat[as.matrix(picks[, 1:2])])
-  }
-)
+# objective_list = list(
+#   obj1 = function(site_ids, 
+#                   dist_mat = matrix(NA), 
+#                   raster_stack = stack(), 
+#                   pix_weights = c()){
+#     # sum objective values of pix in catch (first stack in raster)
+#     sum(raster_stack[["catch_potential"]][site_ids])
+#   },
+#   obj2 = function(site_ids, 
+#                   dist_mat = matrix(NA), 
+#                   raster_stack = stack(), 
+#                   pix_weights = c()){
+#     # sum objective values of pix in catch (second stack in raster)
+#     sum(raster_stack[["hpop"]][site_ids])
+#   },
+#   # this one is supposed to be network distance (Euclidean, MST via Prim)
+#   obj3 = function(site_ids = c(),
+#                   dist_mat = matrix(NA),
+#                   raster_stack = stack(),
+#                   pix_weights = c()){
+#     # this one only needs site_ids and dist_mat!
+#     if (length(site_ids) == 2){
+#       return(dist_mat[site_ids[1], site_ids[2]])
+#     }
+#     site_ids = sort(unlist(site_ids)) # does this need to happen?
+#     dist_mat = dist_mat[site_ids, site_ids]
+#     tmp_mst = ape::mst(as.dist(dist_mat))
+#     picks = cbind(expand.grid(rownames(tmp_mst), colnames(tmp_mst)), 
+#                   as.vector(tmp_mst))
+#     picks[, 1:2] = cbind(as.numeric(picks[, 1]), as.numeric(picks[, 2]))
+#     picks = picks[picks[, 3] == 1,]
+#     picks[, 1:2] = t(apply(picks[, 1:2], 1, sort))
+#     picks = unique(picks)
+#     sum(dist_mat[as.matrix(picks[, 1:2])])
+#   }
+# )
 
 
 

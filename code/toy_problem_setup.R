@@ -75,7 +75,7 @@ pts_to_plot <- sample(nrow(enumerated), 200000)
 eg_designs <- c(1,11,21)
 toy_lonlats <- rasterToPoints(toy_objective)
 eg_cols <- c("#c23375", "orange", "#8612ff")
-eg_cex <- rev(seq(2,5,length.out=3))
+eg_cex <- rev(seq(1.5,4,length.out=3))
 
 get_catch_ras <- function(ras, ids){
   values(ras) <- NA
@@ -85,7 +85,7 @@ get_catch_ras <- function(ras, ids){
 
 # results figure: show exact solution
 {png("figures/toy_problem_enumerated.png",
-     height=1200, width=2000, pointsize=30)
+     height=1200, width=2000, pointsize=35)
   par(mfrow=c(1,2), mar=c(4.1,2.1,4.1,1.1), oma=c(0,2,0,2), xpd=NA)
   plot(enumerated[pts_to_plot, c("hpop","potent")],
        xlim=c(0, max(exact_toy_pareto$hpop)),
@@ -98,12 +98,12 @@ get_catch_ras <- function(ras, ids){
          col="black", bg=eg_cols, pch=21, cex=1.6)
   
   # plot(guelphia_potential, col=pinks(100), axes=FALSE, type="n")
-  par(mar=c(6.1,2.1,6.1,1.1))
+  par(mar=c(5.1,2.1,5.1,1.1))
   plot(rasterToPolygons(toy_objective$potent), border="black", col="white")
 
        #main="Examples of Pareto-optimal designs")
   #for (ind in 1:3){
-  mtext("Examples of Pareto-optimal designs", 3, 3.5, cex=1.2, font=2)
+  mtext("Examples of Pareto-optimal designs", side=3, line=2.5, cex=1.2, font=2)
   sites1 <- unlist(exact_toy_pareto[eg_designs[1],1:5])
   sites2 <- unlist(exact_toy_pareto[eg_designs[2],1:5])
   sites3 <- unlist(exact_toy_pareto[eg_designs[3],1:5])
@@ -113,13 +113,17 @@ get_catch_ras <- function(ras, ids){
   plot(tmp1, add=TRUE, col=alpha(eg_cols, 0.2)[1], legend=FALSE)
   plot(tmp2, add=TRUE, col=alpha(eg_cols, 0.2)[2], legend=FALSE)
   plot(tmp3, add=TRUE, col=alpha(eg_cols, 0.2)[3], legend=FALSE)
+  # fiddling with cex to get them to overlap nicely
   points(toy_lonlats[sites1, c("x","y")], col=eg_cols[1], pch=16, cex=eg_cex[1])
-  points(toy_lonlats[sites2, c("x","y")], col=eg_cols[2], pch=16, cex=eg_cex[2])
-  points(toy_lonlats[sites3, c("x","y")], col=eg_cols[3], pch=16, cex=eg_cex[3])
+  points(toy_lonlats[sites2, c("x","y")], col=eg_cols[2], pch=16, cex=eg_cex[c(1,2,1,2,1)])
+  points(toy_lonlats[sites3, c("x","y")], col=eg_cols[3], pch=16, cex=eg_cex[c(2,3,1,2,1)])
   mtext("Potential risk \nhighest in north", 3, adj=0, col=eg_cols[1])
   mtext("Human population \nhighest in north-east", 3, adj=1, col=eg_cols[3])
+  mtext("All catchments \noverlap", 1, adj=0.5, line=2)
   arrows(-37.43, 144.95, -37.35, 144.8, lwd=3, col=eg_cols[1])
   arrows(-36.7, 144.95, -36.75, 144.85, lwd=3, col=eg_cols[3])
+  arrows(-37.05, 144.02, -37.01, 144.45, lwd=4)
+  arrows(-37.05, 144.02, -36.85, 144.72, lwd=4)
     #lines(toy_lonlats[c(sites, sites[1]), c("x","y")], col=eg_cols[ind], lwd=2) 
     # an mst would be good here ...
     # don't quite care enough for now ...
@@ -127,8 +131,8 @@ get_catch_ras <- function(ras, ids){
   
   par(new=TRUE, oma=c(0,0,0,0), mar=c(0,0,0,0), mfrow=c(1,1))
   empty_plot_for_legend()
-  subfigure_label(par()$usr, 0.1,0.94, "(a)")
-  subfigure_label(par()$usr, 0.55,0.94, "(b)")
+  subfigure_label(par()$usr, 0.1,0.93, "(a)", cex.label = 1.2)
+  subfigure_label(par()$usr, 0.53,0.93, "(b)", cex.label = 1.2)
   
   dev.off()}
 
@@ -372,3 +376,103 @@ write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh2.csv",
   t2-t1}
 write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
 write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
+
+
+progress_neigh1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
+progress_neigh2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh2.csv")
+progress_neigh3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh3.csv")
+
+auc_agg_fig(list(progress_neigh1[,2:ncol(progress_neigh1)],
+                  progress_neigh2,
+                  progress_neigh3),
+             legend_labs=c("1st degree", "2nd degree", "3rd degree"),
+             legend_title="Neighbourhood size",
+             main="What do neighbours become?")
+                           
+                           
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  
+  # much bigger than queen's case: (for sampling neighbours)
+  neigh_mat <- focalWeight(id_ras, 0.2, "circle")
+  neigh_mat[!neigh_mat == 0] = 1
+  neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
+  neigh_stack <- mask(neigh_stack, rast(toy_objective$potent))
+  neigh_membership_mat <- values(neigh_stack, mat=TRUE)
+  neigh_membership_mat <- neigh_membership_mat[!is.na(values(toy_objective$potent)),]
+  
+  for (ind in 1:nruns){
+    tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
+                         nselect = 5, 
+                         poolsize = 5000,
+                         niters = niters,
+                         sandpit = toy_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = neigh_membership_mat, # second degree neighbours
+                         pool = starting_point, # matrix of nselect columns
+                         box_extent = c(0, max(exact_toy_pareto$hpop), 
+                                        1, max(exact_toy_pareto$potent)),
+                         top_level = 1,
+                         plot_out = FALSE)
+    
+    progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+  }
+  
+  t2 = Sys.time()
+  t2-t1}
+write.csv(progress_auc, "output/toy_auc_pool5000_iters100_runs10_neigh2.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10_neigh2.csv", row.names=FALSE)
+
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  
+  # much bigger than queen's case: (for sampling neighbours)
+  neigh_mat <- focalWeight(id_ras, 0.3, "circle")
+  neigh_mat[!neigh_mat == 0] = 1
+  neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
+  neigh_stack <- mask(neigh_stack, rast(toy_objective$potent))
+  neigh_membership_mat <- values(neigh_stack, mat=TRUE)
+  neigh_membership_mat <- neigh_membership_mat[!is.na(values(toy_objective$potent)),]
+  
+  for (ind in 1:nruns){
+    tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
+                         nselect = 5, 
+                         poolsize = 5000,
+                         niters = niters,
+                         sandpit = toy_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = neigh_membership_mat, # third degree neighbours
+                         pool = starting_point, # matrix of nselect columns
+                         box_extent = c(0, max(exact_toy_pareto$hpop), 
+                                        1, max(exact_toy_pareto$potent)),
+                         top_level = 1,
+                         plot_out = FALSE)
+    
+    progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+  }
+  
+  t2 = Sys.time()
+  t2-t1}
+write.csv(progress_auc, "output/toy_auc_pool5000_iters100_runs10_neigh3.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10_neigh3.csv", row.names=FALSE)
+
+                           
+

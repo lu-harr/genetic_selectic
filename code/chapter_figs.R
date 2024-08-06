@@ -3,11 +3,23 @@
      height=1000,
      width=2200,
      pointsize=40)
-  par(mfrow=c(1,2), mar=c(0.1,2.1,4.1,4.1))
-  plot(guelphia_potential, col=pinks(100), main="Potential risk", axes=FALSE, xlab="", ylab="")
+  par(mfrow=c(1,2), mar=c(0.1,1.1,4.1,6.1))
+  plot(guelphia_potential, col=pinks(100), main="Potential risk of \nJEV transmission", 
+       axes=FALSE, xlab="", ylab="", legend=FALSE, cex.main=1.4)
+  plot(guelphia_potential, col=pinks(100), legend.only=TRUE,
+       legend.args=list(text="Potential risk", side=4, line=-2, cex=1.2),
+       legend.width=1.2)
   # actually may not need to log this ...
-  plot(log10(guelphia_hpop), col=purps(100), main="Human population density",
-       axes=FALSE, xlab="", ylab="") # legend will need a title :)
+  plot(guelphia_hpop, col=purps(100), main="Human population density",
+       axes=FALSE, xlab="", ylab="", legend=FALSE, cex.main=1.4) # legend will need a title :)
+  plot(guelphia_hpop, col=purps(100), legend.only=TRUE,
+       legend.args=list(text="Human population density", side=4, line=-2, cex=1.2),
+       legend.width=1.2) # units?
+  
+  par(xpd=NA, new=TRUE, mfrow=c(1,1))
+  empty_plot_for_legend()
+  subfigure_label(par()$usr, 0, 1.12, "(a)", 1.2)
+  subfigure_label(par()$usr, 0.58, 1.12, "(b)", 1.2)
   dev.off()}
 
 ############################################################################
@@ -56,6 +68,42 @@ values(maskras) = maskmat
   plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
   legend(0.65,0.9, fill=alpha("orange", 0.5), "Pixels in \nneighbourhood", 
          cex=1.4, bty="n")
+  dev.off()}
+
+
+
+{png("figures/catchment_eg.png",
+     height=1800,
+     width=2200, pointsize=50)
+  par(bty="n", mar=c(4.1,0.1,4.1,4.1))
+  plot(pot_eg, col=pn_cols, xaxt="n", yaxt="n",
+       axis.args=list(at=c(minValue(pot_eg), maxValue(pot_eg)), 
+                      labels=c("Low","High"), cex.axis=1.4),
+       legend.args=list("JEV transmission suitability", side=2, line=2, cex=1.4),
+       main="Catchment around a point", cex.main=1.4,
+       legend.mar=12)
+  axis(1, at=c(147.45, 147.55), labels=c("",""), lwd=3)
+  mtext("0.1 degrees", 1, 1, cex=1.3)
+  plot(maskras, col=alpha("orange", 0.5), add=TRUE, legend=FALSE)
+  points(mid[1], mid[2], pch=4, lwd=5, cex=1.5)
+  
+  par(mfrow=c(1,1), new=TRUE, mar=c(0,0,0,0))
+  plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
+  legend(0.65,0.9, fill=alpha("orange", 0.5), "Pixels in \ncatchment", 
+         cex=1.4, bty="n")
   #text(0.65,0.1)
   
   dev.off()}
+
+
+
+
+
+
+
+
+
+
+
+
+
