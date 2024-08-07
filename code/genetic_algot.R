@@ -273,7 +273,7 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
   for (ind in 1:length(inlst)){
     if (!lines_only){
       polygon(c(1:niters, niters:1), c(plotlst[[ind]][,"mins"], rev(plotlst[[ind]][,"maxs"])), 
-              col=alpha(pal[ind], 0.5), border=NA)
+              col=alpha(pal[ind], 0.3), border=NA)
       
     }
     matplot(inlst[[ind]], col=pal[ind], lty=1, lwd=0.8, add=TRUE, type="l")
@@ -281,7 +281,7 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
   
   for (ind in 1:length(inlst)){
     if (!lines_only){
-      lines(1:niters, plotlst[[ind]][,"meds"], col=pal[ind], lwd=3)
+      lines(1:niters, plotlst[[ind]][,"meds"], col=pal[ind], lwd=4)
     }
   }
   

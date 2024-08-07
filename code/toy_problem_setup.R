@@ -285,12 +285,12 @@ matplot(progress_auc_10000[2:ncol(progress_auc_1000)], lty=1, col="black", type=
 matplot(progress_auc_5000[2:ncol(progress_auc_1000)], lty=1, col="blue", type="l", add=TRUE)
 matplot(progress_auc_1000[2:ncol(progress_auc_1000)], lty=1, col="red", type="l", add=TRUE)
 
-auc_agg_fig <- auc_agg_fig(list(progress_auc_1000[2:ncol(progress_auc_1000)],
-                                progress_auc_5000[2:ncol(progress_auc_1000)],
-                                progress_auc_10000[2:ncol(progress_auc_1000)]),
-                           legend_labs=c("1,000", "5,000", "10,000"),
-                           legend_title="Pool size",
-                           main="Increased pool size finds exact solution faster")
+auc_agg_fig(list(progress_auc_1000[2:ncol(progress_auc_1000)],
+                  progress_auc_5000[2:ncol(progress_auc_1000)],
+                  progress_auc_10000[2:ncol(progress_auc_1000)]),
+                 legend_labs=c("1,000", "5,000", "10,000"),
+                 legend_title="Pool size",
+                 main="Increased pool size finds exact solution faster")
 
 # would be nice if I could locate best run ... but let's just do a run
 pareto_progress_contour(tmp$pareto_progress,
@@ -417,7 +417,7 @@ auc_agg_fig(list(progress_neigh1[,2:ncol(progress_neigh1)],
   for (ind in 1:nruns){
     tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
                          nselect = 5, 
-                         poolsize = 5000,
+                         poolsize = 1000,
                          niters = niters,
                          sandpit = toy_objective$potent,
                          potential_vec = site_ids$potent,
@@ -437,8 +437,8 @@ auc_agg_fig(list(progress_neigh1[,2:ncol(progress_neigh1)],
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool5000_iters100_runs10_neigh2.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10_neigh2.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
 
 
 {set.seed(834903)
@@ -460,7 +460,7 @@ write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10_neigh2.csv",
   for (ind in 1:nruns){
     tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
                          nselect = 5, 
-                         poolsize = 5000,
+                         poolsize = 1000,
                          niters = niters,
                          sandpit = toy_objective$potent,
                          potential_vec = site_ids$potent,
@@ -480,8 +480,8 @@ write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10_neigh2.csv",
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool5000_iters100_runs10_neigh3.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10_neigh3.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
 
                            
 {set.seed(834903)
@@ -598,9 +598,77 @@ progress_pareto1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
 progress_pareto2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto2.csv")
 progress_pareto3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto3.csv")
 
+auc_agg_fig(list(progress_pareto1,
+                 progress_pareto2,
+                 progress_pareto3),
+            legend_labs=c("Rank 1", "Rank 1 & 2", "Rank 1, 2 & 3"),
+            legend_title="Goldberg ranking",
+            main="Making selection more lenient doesn't seem to change performance?")
+
+################################################################################
+# TURN THIS ALL INTO ONE FIGURE ... TWEAK COLOURS ...
+
+progress_auc_1000 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
+progress_auc_5000 <- read.csv("output/toy_auc_pool5000_iters100_runs10.csv")
+progress_auc_10000 <- read.csv("output/toy_auc_pool10000_iters100_runs10.csv")
+
+progress_neigh1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
+progress_neigh2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh2.csv")
+progress_neigh3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh3.csv")
+
+progress_uneducated <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
+progress_educated <- read.csv("output/toy_auc_pool1000_iters100_runs10_loaded_start.csv")
+
+progress_pareto1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
+progress_pareto2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto2.csv")
+progress_pareto3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto3.csv")
+
+{png("figures/toy_sensitivity.png",
+     width=2400,
+     height=2000,
+     pointsize = 40)
+
+par(mfrow=c(2,2), mar=c(2.1,2.1,2.1,2.1), oma=c(3,4,1,0))
+
+auc_agg_fig(list(progress_auc_1000,
+                progress_auc_5000,
+                progress_auc_10000),
+             legend_labs=c("1,000", "5,000", "10,000"),
+             legend_title="Pool size",
+              pal=iddu(4)[2:4])#,
+                 #main="Increased pool size finds exact solution faster")
+
+auc_agg_fig(list(progress_neigh1,
+                 progress_neigh2,
+                 progress_neigh3),
+            legend_labs=c("1st degree", "2nd degree", "3rd degree"),
+            legend_title="Neighbourhood size",
+            pal=iddu(4)[2:4])
+                  #main="What do neighbours become?")
+
 auc_agg_fig(list(progress_uneducated,
                  progress_educated),
             legend_labs=c("Random", "Educated guess"),
             legend_title="Starting pool",
-            main="Educated guess doesn't seem to help?")
+            pal=iddu(4)[2:4])
+            #main="Educated guess doesn't seem to help?")
+
+auc_agg_fig(list(progress_pareto1,
+                 progress_pareto2,
+                 progress_pareto3),
+            legend_labs=c("Rank 1", "Rank 1 & 2", "Rank 1, 2 & 3"),
+            legend_title="Goldberg ranking",
+            pal=iddu(4)[2:4])
+            #main="Making selection more lenient doesn't seem to change performance?")
+mtext("Area between estimated and exact Pareto front", 2, outer=TRUE, line=2, cex=1.2)
+mtext("Iteration", 1, outer=TRUE, line=1, cex=1.2)
+
+par(new=TRUE, mfrow=c(1,1), xpd=NA)
+empty_plot_for_legend()
+subfigure_label(par()$usr, -0.05, 1.06, "(a)")
+subfigure_label(par()$usr, -0.05, 0.48, "(b)")
+subfigure_label(par()$usr, 0.515, 1.06, "(c)")
+subfigure_label(par()$usr, 0.515, 0.48, "(d)")
+dev.off()}
+
 
