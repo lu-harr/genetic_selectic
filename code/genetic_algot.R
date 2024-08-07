@@ -209,20 +209,25 @@ pareto_progress_pc_pts <- function(pareto_progress,
 
 library(bayestestR)
 pareto_progress_auc <- function(pareto_progress,
-                                exact_soln,
+                                exact_soln=c(),
                                 minx=0, miny=0){
-  # using area_under_curve implemented in bayestestR
+  # using area_under_curve implemented in bayestestR:
   # trapezoid = sum((rowMeans(cbind(y[-length(y)], y[-1]))) * (x[-1] - x[-length(x)])), 
   # step = sum(y[-length(y)] * (x[-1] - x[-length(x)])), 
   # spline = stats::integrate(stats::splinefun(x, y, method = "natural"), lower = min(x), upper = max(x))$value)
   
   # order exact and add end points
-  exact_soln <- as.data.frame(exact_soln)[,grep("site", names(exact_soln), invert=TRUE)]
-  exact_soln <- exact_soln[order(exact_soln[,1]),]
-  exact_soln <- rbind(c(minx, max(exact_soln[,2])),
-                      exact_soln,
-                      c(max(exact_soln[,1]), miny))
-  exact_auc <- area_under_curve(exact_soln[,1], exact_soln[,2], method="step")
+  if (length(exact_soln) > 0){
+    exact_soln <- as.data.frame(exact_soln)[,grep("site", names(exact_soln), invert=TRUE)]
+    exact_soln <- exact_soln[order(exact_soln[,1]),]
+    exact_soln <- rbind(c(minx, max(exact_soln[,2])),
+                        exact_soln,
+                        c(max(exact_soln[,1]), miny))
+    exact_auc <- area_under_curve(exact_soln[,1], exact_soln[,2], method="step")
+  } else {
+    exact_auc <- 0
+  }
+  
   out <- c()
   
   for (ind in 1:length(pareto_progress)){
@@ -232,11 +237,18 @@ pareto_progress_auc <- function(pareto_progress,
     tmp <- rbind(c(minx, max(tmp[,2])),
                  tmp,
                  c(max(tmp[,1]), miny))
-    out <- c(out, exact_auc - area_under_curve(tmp[,1], tmp[,2], method="step"))
+    if (exact_auc != 0){
+      out <- c(out, exact_auc - area_under_curve(tmp[,1], tmp[,2], method="step"))
+    } else {
+      out <- c(out, area_under_curve(tmp[,1], tmp[,2], method="step"))
+    }
+    
   }
   
   out
 }
+# check this works when I don't give exact soln ....
+
 
 
 library(idpalette)

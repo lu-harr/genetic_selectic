@@ -30,6 +30,7 @@ id_ras[] <- 1:ncell(id_ras)
 
 # just want unique locations
 vic_mozzies <- subset(all_mozzies, data_source == "Vic") %>%
+  filter(as.Date(date) > as.Date("2022-07-01")) %>% # consider only 2022-2023 trapping season
   group_by(longitude, latitude) %>%
   summarise(ntimes = n()) %>%
   mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
@@ -37,6 +38,9 @@ vic_mozzies <- subset(all_mozzies, data_source == "Vic") %>%
   summarise()
 # now need to re-assign latlons ... 
 
+# hist(as.Date(vic_mozzies$date), 
+#      breaks=as.Date(c(paste0("2022-", 7:12, "-01"), paste0("2023-", 1:7, "-01"))), 
+#      freq=TRUE)
   
 raster::extract(id_ras, vic_mozzies[,c("longitude", "latitude")])
   

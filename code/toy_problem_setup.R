@@ -197,6 +197,7 @@ names(educated_guess) <- paste("site", 1:5, sep="")
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
     progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    # save actual pareto progress .... then I can keep the algo going and have a look at precise designs it finds
   }
   
   t2 = Sys.time()
@@ -245,6 +246,7 @@ write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10.csv", row.na
   nruns = 10
   progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  progress_auc_no_exact <- matrix(NA, nrow=niters, ncol=nruns)
   
   for (ind in 1:nruns){
     tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
@@ -265,6 +267,8 @@ write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10.csv", row.na
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
     progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc_no_exact[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    #tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
   
 t2 = Sys.time()
