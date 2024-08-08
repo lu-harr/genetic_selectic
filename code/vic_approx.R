@@ -2,15 +2,16 @@ vic_shp <- states %>%
   filter(STE_NAME21 == "Victoria") %>%
   st_simplify(dTolerance = 1000)
 
+# need 20km to do third-degree neighbours ...
 vic_shadow <- vic_shp %>%
-  st_buffer(dist = 5000) %>% # 80% certain we're in metres
-  st_simplify(dTolerance = 5000)
+  st_buffer(dist = 25000) %>% # 80% certain we're in metres
+  st_simplify(dTolerance = 1000)
 # ugly ! ah well !
 
 vic_objective <- stack(raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif'),
                        raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif')) %>%
                          aggregate(AGG_FACTOR) %>%
-                         crop(extent(vic_shp)) %>%
+                         crop(extent(vic_shadow)) %>%
                          mask(vic_shadow)
 names(vic_objective) <- c("potent", "hpop")
 
@@ -45,7 +46,7 @@ vic_mozzies <- subset(all_mozzies, data_source == "Vic") %>%
 #      breaks=as.Date(c(paste0("2022-", 7:12, "-01"), paste0("2023-", 1:7, "-01"))), 
 #      freq=TRUE)
   
-raster::extract(id_ras, vic_mozzies[,c("longitude", "latitude")])
+# raster::extract(id_ras, vic_mozzies[,c("longitude", "latitude")])
   
 
 
@@ -248,15 +249,14 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh2.csv", ro
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
   final_fronts1000neigh3 <- rep(list(NA), nruns)
   
-  neigh_mat <- focalWeight(id_ras, 0.3, "circle") # check this !!
+  neigh_mat <- focalWeight(id_ras, 0.3, "circle")
   neigh_mat[!neigh_mat == 0] = 1
   neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
   neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
-  neigh_stack <- mask(neigh_stack, rast(vic_objective$buffer_potent)) # check this
   neigh_membership_mat <- values(neigh_stack, mat=TRUE)
-  neigh_membership_mat <- neigh_membership_mat[!is.na(values(vic_objective$buffer_potent)),]
   
   for (ind in 1:nruns){
+    message(ind)
     tstart <- Sys.time()
     tmp <- genetic_algot(site_ids = vic_sites$id,
                          nselect = nselect, 
@@ -288,13 +288,13 @@ progress_neigh1 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress_neigh2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh2.csv")
 progress_neigh3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh3.csv")
 
+# very interesting ...
 auc_agg_fig(list(progress_neigh1,
-                 progress_neigh2,
-                 progress_neigh3),
+                 progress_neigh2),
             legend_labs=c("1st degree", "2nd degree", "3rd degree"),
             legend_title="Neighbourhood size",
             main="What do neighbours become?")
-
+times1000neigh2
 
 
   

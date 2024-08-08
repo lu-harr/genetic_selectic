@@ -261,7 +261,8 @@ pareto_progress_auc <- function(pareto_progress,
 library(idpalette)
 auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE, 
                         pal=c("orange", "#8612ff", apple),
-                        legend_labs=c(), main="", legend_title=""){
+                        legend_labs=c(), main="", legend_title="",
+                        ylab="Area between current and exact Pareto front"){
   # visualisation of area between curve and exact solution 
   # (polygon shows min/max, heavy line is median progress)
   
@@ -286,7 +287,7 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
   }
   message(paste("auc range:", miny, maxy))
   plot(0, type="n", xlim=c(0,niters), ylim=c(miny, maxy), 
-       xlab="Iteration", ylab="Area between current and exact Pareto front",
+       xlab="Iteration", ylab=ylab,
        main=main)
   
   for (ind in 1:length(inlst)){
@@ -305,7 +306,8 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
   }
   
   if (length(legend_labs) > 0){
-    legend("topright", legend_labs, fill=pal[1:length(inlst)], title=legend_title)
+    legend(ifelse(inlst[[1]][1, 1] > inlst[[1]][niters, 1],"topright", "bottomright"), 
+           legend_labs, fill=pal[1:length(inlst)], title=legend_title)
   }
   
 }
