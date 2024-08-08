@@ -14,7 +14,8 @@ genetic_algot <- function(site_ids,
                            sample_method="random",
                            box_extent = c(2, 28, 2, 9.66),
                            top_level = 1,
-                          plot_out = TRUE){
+                          plot_out = TRUE,
+                          shp=c()){
   # site_ids is the vector of all site IDs (from the raster, indices of catch_potential_vec and distmat)
   # catch_potential_vec is vector of *catchment* potential risk
   # neighbourhood_matrix is used to control addition of new designs to pool via "neighbours" method
@@ -62,11 +63,13 @@ genetic_algot <- function(site_ids,
   tmp_pit[tmp_pit == 0] = NA
   
   if (plot_out){
-  plot(tmp_pit, col=greens(100), xaxt="n", yaxt="n", cex.main=1.3, main="Geographic space")
-  mtext("Longitude", 1, 1.5, cex=1.3)
-  mtext("Latitude", 2, 1.5, cex=1.3)
-  mtext("Initial front", outer=TRUE, side=3, line=2, font=2, cex=1.5)
-  dev.off()
+    plot(sandpit, col="navy", xaxt="n", yaxt="n", cex.main=1.3, main="Geographic space", legend=FALSE)
+    plot(tmp_pit, add=TRUE, col=greens(100))
+    if (length(shp) > 0){plot(st_geometry(shp), add=TRUE)}
+    mtext("Longitude", 1, 1.5, cex=1.3)
+    mtext("Latitude", 2, 1.5, cex=1.3)
+    mtext("Initial front", outer=TRUE, side=3, line=2, font=2, cex=1.5)
+    dev.off()
   }
   
   starting_front <- pool
@@ -84,7 +87,9 @@ genetic_algot <- function(site_ids,
       # under construction ... but seems to work okay?
       additions <- t(sapply(0: (n_add-1), function(i){
         neighs <- as.vector(neighbourhood_matrix[unlist(pool[i %% nrow(pool) + 1, grep("site", names(pool))]),])
-        sample(neighs[!is.na(neighs)], size=nselect, replace=FALSE) # not too worried about repeats ... will tend towards designs with less sites which is kinda what I want
+        # remove NA cells from being sampled here .. hopefully this is it?
+        neighs <- neighs[neighs %in% site_ids]
+        sample(neighs, size=nselect, replace=FALSE) # not too worried about repeats ... will tend towards designs with less sites which is kinda what I want
       })) %>%
         as.data.frame()
       # check this is definitely doing what I think it is ...
@@ -129,11 +134,13 @@ genetic_algot <- function(site_ids,
     tmp_pit[tmp_pit == 0] = NA
     
     if (plot_out){
-    plot(tmp_pit, col=greens(100), xaxt="n", yaxt="n", main="Geographic space", cex.main=1.3)
-    mtext("Longitude", 1, 1.5, cex=1.3)
-    mtext("Latitude", 2, 1.5, cex=1.3)
-    mtext(paste("Step", iter), outer=TRUE, side=3, line=2, font=2, cex=1.5)
-    dev.off()
+      plot(sandpit, col="navy", xaxt="n", yaxt="n", cex.main=1.3, main="Geographic space", legend=FALSE)
+      plot(tmp_pit, add=TRUE, col=greens(100))
+      if (length(shp) > 0){plot(st_geometry(shp), add=TRUE)}
+      mtext("Longitude", 1, 1.5, cex=1.3)
+      mtext("Latitude", 2, 1.5, cex=1.3)
+      mtext(paste("Step", iter), outer=TRUE, side=3, line=2, font=2, cex=1.5)
+      dev.off()
     }
     
     sandcastle <- addLayer(sandcastle, tmp_pit)

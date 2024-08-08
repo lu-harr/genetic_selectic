@@ -98,7 +98,8 @@ for (i in 1:nrow(educated_guess)){
 # perhaps try starting from a risk-only point later?
 
 niters = 100
-{tstart1 <- Sys.time()
+{set.seed(834903)
+  tstart1 <- Sys.time()
 tmp <- genetic_algot(site_ids = vic_sites$id,
                      nselect = nselect, 
                      poolsize = 1000,
@@ -111,24 +112,188 @@ tmp <- genetic_algot(site_ids = vic_sites$id,
                      neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
                      pool = starting_point, # matrix of nselect columns
                      top_level = 1,
-                     plot_out = FALSE)
+                     shp = vic_shp,
+                     box_extent = c(5000,45000,35,90),
+                     plot_out = TRUE)
 tend1 <- Sys.time()} # 1.7 mins to do 100 iters
 
-{tstart2 <- Sys.time()
-  tmp <- genetic_algot(site_ids = vic_sites$id,
-                       nselect = nselect, 
-                       poolsize = 2000,
-                       niters = niters,
-                       sandpit = vic_objective$potent,
-                       potential_vec = site_ids$potent,
-                       pop_vec = site_ids$hpop,
-                       sample_method = "neighbours",
-                       catchment_matrix = catch_membership_mat,
-                       neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
-                       pool = starting_point, # matrix of nselect columns
-                       top_level = 1,
-                       plot_out = FALSE)
-  tend2 <- Sys.time()}
+# baseline run: poolsize 1000
+
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times1000 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts1000 <- rep(list(NA), nruns)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times1000[ind] <- tend - tstart
+    final_fronts1000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 15 mins
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10.csv", row.names=FALSE)
+
+
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times5000 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts5000 <- rep(list(NA), nruns)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 5000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times5000[ind] <- tend - tstart
+    final_fronts5000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 15*5 mins
+write.csv(progress_auc, "output/vic_auc_pool5000_iters100_runs10.csv", row.names=FALSE)
+
+
+auc_agg_fig(list(progress_auc)) # interesting
+
+################################################################################
+# varying neighbourhood size experiment ... 1,2,3 might be too small ... see if times differ and try 10 at some point
+
+# including second-degree neighbours
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times1000neigh2 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts1000neigh2 <- rep(list(NA), nruns)
+  
+  neigh_mat <- focalWeight(id_ras, 0.2, "circle")
+  neigh_mat[!neigh_mat == 0] = 1
+  neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
+  neigh_membership_mat <- values(neigh_stack, mat=TRUE)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = neigh_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times1000neigh2[ind] <- tend - tstart
+    final_fronts1000neigh2[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 15 mins
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
+
+# including third-degree neighbours
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times1000neigh3 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts1000neigh3 <- rep(list(NA), nruns)
+  
+  neigh_mat <- focalWeight(id_ras, 0.3, "circle") # check this !!
+  neigh_mat[!neigh_mat == 0] = 1
+  neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
+  neigh_stack <- mask(neigh_stack, rast(vic_objective$buffer_potent)) # check this
+  neigh_membership_mat <- values(neigh_stack, mat=TRUE)
+  neigh_membership_mat <- neigh_membership_mat[!is.na(values(vic_objective$buffer_potent)),]
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = neigh_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times1000neigh3[ind] <- tend - tstart
+    final_fronts1000neigh3[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 15 mins
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
+
+
+
+progress_neigh1 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
+progress_neigh2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh2.csv")
+progress_neigh3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh3.csv")
+
+auc_agg_fig(list(progress_neigh1,
+                 progress_neigh2,
+                 progress_neigh3),
+            legend_labs=c("1st degree", "2nd degree", "3rd degree"),
+            legend_title="Neighbourhood size",
+            main="What do neighbours become?")
 
 
 
