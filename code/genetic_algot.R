@@ -277,7 +277,7 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
                            meds=apply(inlst[[ind]], 1, median))
     }
   }
-  
+  message(paste("auc range:", miny, maxy))
   plot(0, type="n", xlim=c(0,niters), ylim=c(miny, maxy), 
        xlab="Iteration", ylab="Area between current and exact Pareto front",
        main=main)

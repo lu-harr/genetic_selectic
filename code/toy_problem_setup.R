@@ -175,10 +175,53 @@ names(educated_guess) <- paste("site", 1:5, sep="")
   t1 = Sys.time()
   niters = 100
   nruns = 10
+  times50000 <- matrix(NA, nrow=1, ncol=nruns)
   progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts50000 <- rep(list(NA), nruns)
   
   for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
+                         nselect = 5, 
+                         poolsize = 50000,
+                         niters = niters,
+                         sandpit = toy_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
+                         pool = starting_point, # matrix of nselect columns
+                         box_extent = c(0, max(exact_toy_pareto$hpop), 
+                                        1, max(exact_toy_pareto$potent)),
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    times50000[ind] <- tend - tstart
+    final_fronts50000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1}
+write.csv(progress_auc, "output/toy_auc_pool50000_iters100_runs10.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy_pts_pool50000_iters100_runs10.csv", row.names=FALSE)
+
+
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  times10000 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts10000 <- rep(list(NA), nruns)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
     tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
                          nselect = 5, 
                          poolsize = 10000,
@@ -194,10 +237,12 @@ names(educated_guess) <- paste("site", 1:5, sep="")
                                         1, max(exact_toy_pareto$potent)),
                          top_level = 1,
                          plot_out = FALSE)
+    tend <- Sys.time()
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
     progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
-    # save actual pareto progress .... then I can keep the algo going and have a look at precise designs it finds
+    times10000[ind] <- tend - tstart
+    final_fronts10000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
   
   t2 = Sys.time()
@@ -210,10 +255,14 @@ write.csv(progress_pc_pts, "output/toy_pts_pool10000_iters100_runs10.csv", row.n
   t1 = Sys.time()
   niters = 100
   nruns = 10
+  
+  times5000 <- matrix(NA, nrow=1, ncol=nruns)
   progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts5000 <- rep(list(NA), nruns)
   
   for (ind in 1:nruns){
+    tstart <- Sys.time()
     tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
                          nselect = 5, 
                          poolsize = 5000,
@@ -229,9 +278,12 @@ write.csv(progress_pc_pts, "output/toy_pts_pool10000_iters100_runs10.csv", row.n
                                         1, max(exact_toy_pareto$potent)),
                          top_level = 1,
                          plot_out = FALSE)
+    tend <- Sys.time()
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
     progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    times5000[ind] <- tend - tstart
+    final_fronts5000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
   
   t2 = Sys.time()
@@ -244,11 +296,14 @@ write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10.csv", row.na
   t1 = Sys.time()
   niters = 100
   nruns = 10
+  
+  times1000 <- matrix(NA, nrow=1, ncol=nruns)
   progress_pc_pts <- matrix(NA, nrow=niters, ncol=nruns)
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
-  progress_auc_no_exact <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts1000 <- rep(list(NA), nruns)
   
   for (ind in 1:nruns){
+    tstart <- Sys.time()
     tmp <- genetic_algot(site_ids = 1: nrow(site_ids),  # fix this - can be one function, but need to rewrite the same bit in the function
                          nselect = 5, 
                          poolsize = 1000,
@@ -264,11 +319,12 @@ write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10.csv", row.na
                                         1, max(exact_toy_pareto$potent)),
                          top_level = 1,
                          plot_out = FALSE)
+    tend <- Sys.time()
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
     progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc_no_exact[,ind] <- pareto_progress_auc(tmp$pareto_progress)
-    #tmp$pareto_progress[[length(tmp$pareto_progress)]]
+    times1000[ind] <- tend - tstart
+    final_fronts1000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
   
 t2 = Sys.time()
@@ -276,10 +332,14 @@ t2-t1} #3.5 mins for 10 runs
 write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10.csv", row.names=FALSE)
 write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10.csv", row.names=FALSE)
 
+# save(times1000, times5000, times10000, times50000,
+#      final_fronts1000, final_fronts5000, final_fronts10000, final_fronts50000,
+#      file="output/toy_diagnostics.rds")
 
 progress_auc_1000 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
 progress_auc_5000 <- read.csv("output/toy_auc_pool5000_iters100_runs10.csv")
 progress_auc_10000 <- read.csv("output/toy_auc_pool10000_iters100_runs10.csv")
+progress_auc_50000 <- read.csv("output/toy_auc_pool50000_iters100_runs10.csv")
 # can restart by giving it current pool ...
 # perhaps make it more explorative ?
 # ... that would be change neighbourhood size .... from which we're sampling
@@ -289,11 +349,13 @@ matplot(progress_auc_10000[2:ncol(progress_auc_1000)], lty=1, col="black", type=
 matplot(progress_auc_5000[2:ncol(progress_auc_1000)], lty=1, col="blue", type="l", add=TRUE)
 matplot(progress_auc_1000[2:ncol(progress_auc_1000)], lty=1, col="red", type="l", add=TRUE)
 
-auc_agg_fig(list(progress_auc_1000[2:ncol(progress_auc_1000)],
-                  progress_auc_5000[2:ncol(progress_auc_1000)],
-                  progress_auc_10000[2:ncol(progress_auc_1000)]),
-                 legend_labs=c("1,000", "5,000", "10,000"),
+auc_agg_fig(list(progress_auc_1000,
+                  progress_auc_5000,
+                  progress_auc_10000,
+                  progress_auc_50000),
+                 legend_labs=c("1,000", "5,000", "10,000", "50,000"),
                  legend_title="Pool size",
+                 pal=iddu(4),
                  main="Increased pool size finds exact solution faster")
 
 # would be nice if I could locate best run ... but let's just do a run
@@ -612,9 +674,26 @@ auc_agg_fig(list(progress_pareto1,
 ################################################################################
 # TURN THIS ALL INTO ONE FIGURE ... TWEAK COLOURS ...
 
+mean(times1000)
+sd(times1000)
+mean(times5000)
+sd(times5000)
+mean(times10000)
+sd(times10000)
+mean(times50000)
+sd(times50000)
+
+alltimes <- data.frame(poolsize=c(rep(1000, 10), rep(5000, 10), rep(10000, 10), rep(50000, 10)),
+                       time=c(times1000, times5000*60, times10000*60, times50000*60))
+timemod <- lm(time ~ poolsize, alltimes)
+summary(timemod)
+plot(alltimes)
+
+
 progress_auc_1000 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
 progress_auc_5000 <- read.csv("output/toy_auc_pool5000_iters100_runs10.csv")
 progress_auc_10000 <- read.csv("output/toy_auc_pool10000_iters100_runs10.csv")
+progress_auc_50000 <- read.csv("output/toy_auc_pool50000_iters100_runs10.csv")
 
 progress_neigh1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
 progress_neigh2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh2.csv")
@@ -636,11 +715,13 @@ par(mfrow=c(2,2), mar=c(2.1,2.1,2.1,2.1), oma=c(3,4,1,0))
 
 auc_agg_fig(list(progress_auc_1000,
                 progress_auc_5000,
-                progress_auc_10000),
-             legend_labs=c("1,000", "5,000", "10,000"),
+                progress_auc_10000,
+                progress_auc_50000),
+             legend_labs=c("1,000", "5,000", "10,000", "50,000"),
              legend_title="Pool size",
-              pal=iddu(4)[2:4])#,
+              pal=c(iddu(4)[2:4], brat))#,
                  #main="Increased pool size finds exact solution faster")
+abline(h=0, lty=2)
 
 auc_agg_fig(list(progress_neigh1,
                  progress_neigh2,
@@ -675,4 +756,36 @@ subfigure_label(par()$usr, 0.515, 1.06, "(c)")
 subfigure_label(par()$usr, 0.515, 0.48, "(d)")
 dev.off()}
 
+# looks like I got a bunch of those points !
+final_frontsdf <- rbindlist(final_fronts10000) %>%
+  as.data.frame()
+tmp <- final_frontsdf[,grep("site", names(final_frontsdf))]
+tmp <- as.data.frame(t(apply(tmp, 1, sort)))
+names(tmp) <- paste("site", 1:ncol(tmp), sep="")
+final_frontsdf[,grep("site", names(final_frontsdf))] <- tmp
+collected <- final_frontsdf %>%
+  dplyr::select(grep("site", names(final_frontsdf), value=TRUE)) %>%
+  # there appears to be some mismatch ... is it a problem with the ordering step ??
+  # might be a rounding problem in the objective columns? disappears when I unique over site columns ...
+  unique() %>% # only 100 now
+  inner_join(exact_toy_pareto, by = grep("site", names(final_frontsdf), value=TRUE))
 
+# contour plot but now it's final fronts only .. check this for 10,000 iters
+# work out a way to save everything? might just have to be an rds
+pal = viridis(length(final_fronts10000) + 2)[1:length(final_fronts10000)]
+pal=rep(viridis(1), length(final_fronts10000))
+#plot(0, xlim=c(0, max(exact_toy_pareto$hpop)), ylim=c(1, max(exact_toy_pareto$potent)), type="n")
+plot(0, xlim=c(100, max(exact_toy_pareto$hpop)), 
+     ylim=c(4.5, max(exact_toy_pareto$potent)), type="n",
+     main="14/21 points recovered in 25 minutes computing time",
+     xlab="Sum(Human pop)", ylab="Sum(Potential risk)")
+for (ind in 1:length(final_fronts10000)){
+  front = final_fronts10000[[ind]][,c("sum_pop", "sum_risk")]
+  front <- front[order(front$sum_pop),]
+  points(front, col=pal[ind])
+  lines(front, col=pal[ind])
+}
+points(exact_toy_pareto[,c("hpop", "potent")], col=iddu(4)[4], pch=16)
+lines(exact_toy_pareto[,c("hpop", "potent")], col=iddu(4)[4])
+points(collected[,c("hpop", "potent")], pch=16, col=brat)
+# niceee
