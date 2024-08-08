@@ -34,7 +34,7 @@ genetic_algot <- function(site_ids,
                       addition = rep(FALSE, nrow(pool)))
     pool <- cbind(obj, pool)
     pool <- psel(pool, high("sum_risk") * high("sum_pop"), top_level=top_level, show_level=FALSE)
-  }
+  } else {message("Hey! Are you sure you've included objective values in your input?")}
   
   # keep track of addition and removal from pool
   progress <- data.frame(new_additions_to_pool=rep(NA,niters),
@@ -45,11 +45,11 @@ genetic_algot <- function(site_ids,
   pareto_progress <- list()
   
   if (plot_out){
-  png("~/Desktop/knowlesi/multi_site/output/toy_movie/iter0.png", 
+  png("~/Desktop/knowlesi/multi_site/output/vic_movie/iter0.png", 
       width=2200, height=1400, pointsize=40)
   par(mfrow=c(1,2), mar=c(5.1,4.1,2,2), oma=c(0,0,4.1,1.1))
   plot(pool$sum_pop, pool$sum_risk, pch=16, col=apple,
-       xlim=box_extent[1:2], ylim=box_extent[3:4],
+       #xlim=box_extent[1:2], ylim=box_extent[3:4],
        ylab="Total potential risk captured", xlab="Total human population captured", 
        cex.lab=1.3, cex.main=1.3,
        main="Objective space")
@@ -104,12 +104,12 @@ genetic_algot <- function(site_ids,
     pool <- rbind(pool, as.matrix(additions))
     
     if (plot_out){
-    png(paste0("~/Desktop/knowlesi/multi_site/output/toy_movie/iter", iter, ".png"), 
+    png(paste0("~/Desktop/knowlesi/multi_site/output/vic_movie/iter", iter, ".png"), 
         width=2200, height=1400, pointsize=40)
     par(mfrow=c(1,2), mar=c(5.1,4.1,2,2), oma=c(0,0,4.1,1.1))
     plot(pool$sum_pop[pool$addition == TRUE], pool$sum_risk[pool$addition == TRUE],
          #main=paste("Step", iter), 
-         xlim=box_extent[1:2], ylim=box_extent[3:4],
+         #xlim=box_extent[1:2], ylim=box_extent[3:4],
          ylab="Total potential risk captured", xlab="Total human population captured",
          main="Objective space", cex.main=1.3, cex.lab=1.3)
     points(pool$sum_pop[pool$addition == FALSE], pool$sum_risk[pool$addition == FALSE],

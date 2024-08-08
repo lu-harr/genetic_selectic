@@ -13,9 +13,11 @@ vic_objective <- stack(raster('~/Desktop/jev/from_Freya_local/JEV/output/continu
                          crop(extent(vic_shp)) %>%
                          mask(vic_shadow)
 names(vic_objective) <- c("potent", "hpop")
-tmp <- vic_objective$potent
+
+tmp <- vic_objective
 vic_objective <- mask(vic_objective, vic_shp)
-vic_objective$potent_buffer <- tmp
+vic_objective$buffer_potent <- tmp$potent
+vic_objective$buffer_hpop <- tmp$hpop
 
 id_ras <- vic_objective$potent
 id_ras[] <- 1:ncell(id_ras)
@@ -30,7 +32,8 @@ id_ras[] <- 1:ncell(id_ras)
 
 # just want unique locations
 vic_mozzies <- subset(all_mozzies, data_source == "Vic") %>%
-  filter(as.Date(date) > as.Date("2022-07-01")) %>% # consider only 2022-2023 trapping season
+  filter(as.Date(date) > as.Date("2022-07-01")) %>% 
+  # consider only 2022-2023 trapping season
   group_by(longitude, latitude) %>%
   summarise(ntimes = n()) %>%
   mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
@@ -58,6 +61,82 @@ catchment_stack <- subset(catchment_stack, which(neigh_mat != 0))
 # now I want this as a list of vectors? Or a matrix?
 catch_membership_mat <- values(catchment_stack, mat=TRUE)
 
-site_ids <- data.frame(id=1:ncell(toy_objective),
-                       potent=values(toy_objective$potent),
-                       hpop=values(toy_objective$hpop))
+# making an edit here to use buffered values? As these end up in catchment calculations?
+site_ids <- as.data.frame(rasterToPoints(id_ras))
+site_ids$potent <- values(vic_objective$buffer_potent)
+site_ids$hpop <- values(vic_objective$buffer_hpop)
+site_ids$id <- 1:ncell(vic_objective)
+
+vic_sites <- site_ids[!is.na(values(vic_objective$potent)),]
+# 3297 victorian sites to choose from ... which I guess halves the problem
+
+
+################################################################################
+# let's deploy GA and see what happens
+nselect <- 100
+
+set.seed(834904)
+starting_point <- matrix(sample(vic_sites$id, 100000, replace=TRUE), ncol=nselect) %>%
+  as.data.frame()
+names(starting_point) <- paste("site", 1:nselect, sep="")
+
+educated_guess <- matrix(c(sample(vic_sites$id[order(vic_sites$potent, 
+                                                     decreasing = TRUE)][1:200], 50000, replace = TRUE),
+                           sample(vic_sites$id[order(vic_sites$hpop, 
+                                               decreasing = TRUE)][1:200], 50000, replace = TRUE)),
+                         ncol=nselect, byrow=TRUE) %>%
+  as.data.frame()
+names(educated_guess) <- paste("site", 1:nselect, sep="")
+
+# would be nice if I could plot the educated guess to assess coverage ...
+plot(vic_objective$potent)
+for (i in 1:nrow(educated_guess)){
+  tmp <- which(vic_sites$id %in% educated_guess[i,])
+  points(vic_sites[tmp, c("x","y")])
+}
+# that takes a sec but is what I expected ... 
+# perhaps try starting from a risk-only point later?
+
+niters = 100
+{tstart1 <- Sys.time()
+tmp <- genetic_algot(site_ids = vic_sites$id,
+                     nselect = nselect, 
+                     poolsize = 1000,
+                     niters = niters,
+                     sandpit = vic_objective$potent,
+                     potential_vec = site_ids$potent,
+                     pop_vec = site_ids$hpop,
+                     sample_method = "neighbours",
+                     catchment_matrix = catch_membership_mat,
+                     neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
+                     pool = starting_point, # matrix of nselect columns
+                     top_level = 1,
+                     plot_out = FALSE)
+tend1 <- Sys.time()} # 1.7 mins to do 100 iters
+
+{tstart2 <- Sys.time()
+  tmp <- genetic_algot(site_ids = vic_sites$id,
+                       nselect = nselect, 
+                       poolsize = 2000,
+                       niters = niters,
+                       sandpit = vic_objective$potent,
+                       potential_vec = site_ids$potent,
+                       pop_vec = site_ids$hpop,
+                       sample_method = "neighbours",
+                       catchment_matrix = catch_membership_mat,
+                       neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
+                       pool = starting_point, # matrix of nselect columns
+                       top_level = 1,
+                       plot_out = FALSE)
+  tend2 <- Sys.time()}
+
+
+
+  
+  
+
+
+
+
+
+
