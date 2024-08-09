@@ -118,6 +118,7 @@ tmp <- genetic_algot(site_ids = vic_sites$id,
                      plot_out = TRUE)
 tend1 <- Sys.time()} # 1.7 mins to do 100 iters
 
+################################################################################
 # baseline run: poolsize 1000
 
 {set.seed(834903)
@@ -192,6 +193,42 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10.csv", row.names
 write.csv(progress_auc, "output/vic_auc_pool5000_iters100_runs10.csv", row.names=FALSE)
 
 
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times10000 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts10000 <- rep(list(NA), nruns)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 10000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times10000[ind] <- tend - tstart
+    final_fronts10000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 15*5 mins
+write.csv(progress_auc, "output/vic_auc_pool10000_iters100_runs10.csv", row.names=FALSE)
+
+
 auc_agg_fig(list(progress_auc)) # interesting
 
 ################################################################################
@@ -256,7 +293,6 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh2.csv", ro
   neigh_membership_mat <- values(neigh_stack, mat=TRUE)
   
   for (ind in 1:nruns){
-    message(ind)
     tstart <- Sys.time()
     tmp <- genetic_algot(site_ids = vic_sites$id,
                          nselect = nselect, 
@@ -282,21 +318,154 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh2.csv", ro
   t2-t1} # expecting 15 mins
 write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
 
+################################################################################
+# educated guess
+# 11:20
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times_educated <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts_educated <- rep(list(NA), nruns)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = educated_guess, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times_educated[ind] <- tend - tstart
+    final_fronts_educated[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 15 mins
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_loaded_start.csv", row.names=FALSE)
 
+##################################################################################
+# Pareto optimality
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times_pareto2 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts_pareto2 <- rep(list(NA), nruns)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 2,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times_pareto2[ind] <- tend - tstart
+    final_fronts_pareto2[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 15 mins
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_pareto2.csv", row.names=FALSE)
+
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times_pareto3 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts_pareto3 <- rep(list(NA), nruns)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 3,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times_pareto3[ind] <- tend - tstart
+    final_fronts_pareto3[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 15 mins
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_pareto3.csv", row.names=FALSE)
+
+
+##################################################################################
+# LET'S REVIEW ...
 
 progress_neigh1 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress_neigh2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh2.csv")
 progress_neigh3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh3.csv")
 
+progress1000 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
+progress5000 <- read.csv("output/vic_auc_pool5000_iters100_runs10.csv")
+
 # very interesting ...
+auc_agg_fig(list(progress1000,
+                 progress5000),
+            legend_labs=c("1,000", "5,000"),
+            legend_title="Pool size",
+            ylab="Area under estimated Pareto front",
+            main="Increasing pool size is helpful")
+
 auc_agg_fig(list(progress_neigh1,
-                 progress_neigh2),
+                 progress_neigh2,
+                 progress_neigh3),
             legend_labs=c("1st degree", "2nd degree", "3rd degree"),
             legend_title="Neighbourhood size",
-            main="What do neighbours become?")
-times1000neigh2
+            ylab="Area under estimated Pareto front",
+            main="Increasing neighbourhood size does seem to be helpful here")
 
+mean(times1000)
+mean(times1000neigh2)
+mean(times1000neigh3) # does take a tiny bit longer
 
+mean(times5000)
+
+save(times1000, times5000,
+     times1000neigh2, times1000neigh3,
+     final_fronts1000, final_fronts5000,
+     final_fronts1000neigh2, final_fronts1000neigh3,
+     file="output/vic_diagnostics.rds")
   
   
 

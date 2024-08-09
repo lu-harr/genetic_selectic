@@ -262,7 +262,7 @@ library(idpalette)
 auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE, 
                         pal=c("orange", "#8612ff", apple),
                         legend_labs=c(), main="", legend_title="",
-                        ylab="Area between current and exact Pareto front"){
+                        ylab="Area between estimated and exact Pareto front"){
   # visualisation of area between curve and exact solution 
   # (polygon shows min/max, heavy line is median progress)
   
@@ -285,11 +285,13 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
                            meds=apply(inlst[[ind]], 1, median))
     }
   }
+  miny <- ifelse(inlst[[1]][1, 1] > inlst[[1]][niters, 1], 0, miny)
   message(paste("auc range:", miny, maxy))
   plot(0, type="n", xlim=c(0,niters), ylim=c(miny, maxy), 
        xlab="Iteration", ylab=ylab,
        main=main)
   
+  # polygons first
   for (ind in 1:length(inlst)){
     if (!lines_only){
       polygon(c(1:niters, niters:1), c(plotlst[[ind]][,"mins"], rev(plotlst[[ind]][,"maxs"])), 
@@ -299,14 +301,20 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
     matplot(inlst[[ind]], col=pal[ind], lty=1, lwd=0.8, add=TRUE, type="l")
   }
   
+  # pop all the lines over the polygons
   for (ind in 1:length(inlst)){
     if (!lines_only){
       lines(1:niters, plotlst[[ind]][,"meds"], col=pal[ind], lwd=4)
     }
   }
   
+  # give us a goal line if we know where it is ...
+  if(inlst[[1]][1, 1] > inlst[[1]][niters, 1]){
+    abline(h=0, col="grey", lty=2, lwd=2)
+  }
+  
   if (length(legend_labs) > 0){
-    legend(ifelse(inlst[[1]][1, 1] > inlst[[1]][niters, 1],"topright", "bottomright"), 
+    legend(ifelse(inlst[[1]][1, 1] > inlst[[1]][niters, 1], "topright", "bottomright"), 
            legend_labs, fill=pal[1:length(inlst)], title=legend_title)
   }
   
