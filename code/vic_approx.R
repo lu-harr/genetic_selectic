@@ -1,3 +1,6 @@
+# all of the analysis and figures for Victorian problem are in here
+# (calls to genetic_algot.R)
+
 vic_shp <- states %>%
   filter(STE_NAME21 == "Victoria") %>%
   st_simplify(dTolerance = 1000)
@@ -8,6 +11,7 @@ vic_shadow <- vic_shp %>%
   st_simplify(dTolerance = 1000)
 # ugly ! ah well !
 
+AGG_FACTOR <- 10
 vic_objective <- stack(raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif'),
                        raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif')) %>%
                          aggregate(AGG_FACTOR) %>%
@@ -41,14 +45,11 @@ vic_mozzies <- subset(all_mozzies, data_source == "Vic") %>%
   group_by(pix) %>%
   summarise()
 # now need to re-assign latlons ... 
+# 124 left
 
 # hist(as.Date(vic_mozzies$date), 
 #      breaks=as.Date(c(paste0("2022-", 7:12, "-01"), paste0("2023-", 1:7, "-01"))), 
 #      freq=TRUE)
-  
-# raster::extract(id_ras, vic_mozzies[,c("longitude", "latitude")])
-  
-
 
 neigh_mat <- focalWeight(id_ras, 0.12, "circle") # queens case
 # don't actually want *weights* per se .. but that might be useful later ...
@@ -71,6 +72,21 @@ site_ids$id <- 1:ncell(vic_objective)
 vic_sites <- site_ids[!is.na(values(vic_objective$potent)),]
 # 3297 victorian sites to choose from ... which I guess halves the problem
 
+
+plot(vic_objective$potent)
+#points(vic_mozzies$longitude, vic_mozzies$latitude, pch=16)
+points(site_ids[vic_mozzies$pix, c("x","y")], col="blue", pch=16)
+objective_func = function(x, catch_mem, vec){
+  sum(vec[unique(as.vector(catch_mem[unlist(x),]))], na.rm=TRUE)
+}
+
+# not sure if I believe how good this is under risk obj ... although there are more sites here
+existing_potent <- objective_func(vic_mozzies$pix, 
+                                  catch_membership_mat, 
+                                  vic_objective$buffer_potent)
+existing_hpop <- objective_func(vic_mozzies$pix,
+                                catch_membership_mat,
+                                vic_objective$buffer_hpop)
 
 ################################################################################
 # let's deploy GA and see what happens
@@ -488,6 +504,18 @@ progress_pareto1 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress_pareto2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto2.csv")
 progress_pareto3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto3.csv")
 
+save(times1000, times5000, times10000,
+     times1000neigh2, times1000neigh3,
+     times_educated,
+     times_pareto2, times_pareto3,
+     final_fronts1000, final_fronts5000, final_fronts10000,
+     final_fronts1000neigh2, final_fronts1000neigh3,
+     final_fronts_educated,
+     final_fronts_pareto2,final_fronts_pareto3,
+     file="output/vic_diagnostics.rds")
+
+load("output/vic_diagnostics.rds")
+
 # very interesting ...
 # might need to make the box_extents the same for all of these for context ...?
 
@@ -543,19 +571,23 @@ mean(times1000)
 mean(times1000neigh2)
 mean(times1000neigh3) # does take a tiny bit longer
 
-mean(times5000)
+plot(c(rep(1,10), rep(2, 10), rep(3,10)),
+     c(times1000, times_pareto2, times_pareto3),
+     xlab="Pareto tolerance",
+     ylab="Run time (mins)",
+     main="Pareto tolerance (ranks up to 3)")
 
-save(times1000, times5000, times10000,
-     times1000neigh2, times1000neigh3,
-     times_educated,
-     times_pareto2, times_pareto3,
-     final_fronts1000, final_fronts5000, final_fronts10000,
-     final_fronts1000neigh2, final_fronts1000neigh3,
-     final_fronts_educated,
-     final_fronts_pareto2,final_fronts_pareto3,
-     file="output/vic_diagnostics.rds")
-  
-  
+plot(c(rep(1,10), rep(2, 10), rep(3,10)),
+     c(times1000, times1000neigh2, times1000neigh3),
+     xlab="Neighbourhood size",
+     ylab="Run time (mins)",
+     main="Neighbourhood size (up to 3rd-degree)")
+
+plot(c(rep(1000,10), rep(5000, 10), rep(10000,10)),
+     c(times1000, times5000, times10000),
+     xlab="Pool size",
+     ylab="Run time (mins)",
+     main="Pareto tolerance (ranks up to 3)")
 
 
 final_frontsdf <- rbindlist(final_fronts_educated) %>%
@@ -565,30 +597,119 @@ tmp <- as.data.frame(t(apply(tmp, 1, sort)))
 names(tmp) <- paste("site", 1:ncol(tmp), sep="")
 final_frontsdf[,grep("site", names(final_frontsdf))] <- tmp
 collected <- final_frontsdf %>%
-  dplyr::select(grep("site", names(final_frontsdf), value=TRUE)) %>%
-  # there appears to be some mismatch ... is it a problem with the ordering step ??
-  # might be a rounding problem in the objective columns? disappears when I unique over site columns ...
-  unique() #%>% # only 100 now
-  #inner_join(exact_toy_pareto, by = grep("site", names(final_frontsdf), value=TRUE))
+  #dplyr::select(grep("site", names(final_frontsdf), value=TRUE)) %>%
+  unique() #%>%
 
 # contour plot but now it's final fronts only .. check this for 10,000 iters
 # work out a way to save everything? might just have to be an rds
-pal = viridis(length(final_fronts10000) + 2)[1:length(final_fronts10000)]
-pal=rep(viridis(1), length(final_fronts10000))
-#plot(0, xlim=c(0, max(exact_toy_pareto$hpop)), ylim=c(1, max(exact_toy_pareto$potent)), type="n")
-plot(0, xlim=c(100, max(exact_toy_pareto$hpop)), 
-     ylim=c(4.5, max(exact_toy_pareto$potent)), type="n",
-     main="Best guess so far?",
-     xlab="Sum(Human pop)", ylab="Sum(Potential risk)")
-for (ind in 1:length(final_fronts10000)){
-  front = final_fronts10000[[ind]][,c("sum_pop", "sum_risk")]
-  front <- front[order(front$sum_pop),]
-  points(front, col=pal[ind])
-  lines(front, col=pal[ind])
-}
-points(exact_toy_pareto[,c("hpop", "potent")], col=iddu(4)[4], pch=16)
-lines(exact_toy_pareto[,c("hpop", "potent")], col=iddu(4)[4])
-points(collected[,c("hpop", "potent")], pch=16, col=brat)
+
+final_frontsdf <- rbindlist(final_fronts_educated) %>%
+  as.data.frame()
+agg_pareto <- psel(final_frontsdf, high("sum_pop")*high("sum_risk")) %>%
+  arrange(sum_pop)
+
+# a little concerned the same design is in here a bunch of times?
+all_sites <- agg_pareto %>%
+  dplyr::select(grep("site", names(agg_pareto))) %>%
+  unique() %>%
+  unlist() %>%
+  ftable() %>%
+  as.data.frame()
+  
+agg_map <- vic_objective$potent
+values(agg_map)[!is.na(values(agg_map))] <- 0
+values(agg_map)[as.numeric(paste(all_sites$.))] <- all_sites$Freq
+values(agg_map)[values(agg_map) == 0] <- NA
+
+pot_map <- vic_objective$potent
+values(pot_map) <- NA
+values(pot_map)[unlist(agg_pareto[1,grep("site", names(agg_pareto))])] <- 1
+
+pot_catch <- vic_objective$potent
+values(pot_catch) <- NA
+values(pot_catch)[unique(as.vector(catch_membership_mat[unlist(agg_pareto[1,grep("site", names(agg_pareto))]),]))] <- 1
+
+pop_map <- vic_objective$potent
+values(pop_map) <- NA
+values(pop_map)[unlist(agg_pareto[nrow(agg_pareto), grep("site", names(agg_pareto))])] <- 1
+
+pop_catch <- vic_objective$potent
+values(pop_catch) <- NA
+values(pop_catch)[unique(as.vector(catch_membership_mat[unlist(agg_pareto[nrow(agg_pareto),grep("site", names(agg_pareto))]),]))] <- 1
+
+mid <- nrow(agg_pareto)/2
+mid_map <- vic_objective$potent
+values(mid_map) <- NA
+values(mid_map)[unlist(agg_pareto[mid,grep("site", names(agg_pareto))])] <- 1
+
+mid_catch <- vic_objective$potent
+values(mid_catch) <- NA
+values(mid_catch)[unique(as.vector(catch_membership_mat[unlist(agg_pareto[mid,grep("site", names(agg_pareto))]),]))] <- 1
+
+
+{png("figures/vic_mapped.png",
+    width=2500,
+    height=2000,
+    pointsize=35)
+par(mfrow=c(1,2), oma=c(16,0,2,0), mar=c(4,4,2,0))
+
+plot(final_frontsdf$sum_pop, final_frontsdf$sum_risk, 
+     xlab="Sum(Human Population Density)",
+     ylab="Sum(Potential Risk)",
+     cex.lab=1.2, cex.axis=1.2)
+lines(rep(max(agg_pareto$sum_pop), 2), c(0, agg_pareto$sum_risk[nrow(agg_pareto)]), col="grey", lty=2, lwd=2)
+lines(c(0, agg_pareto$sum_pop[1]), rep(max(agg_pareto$sum_risk), 2), col="grey", lty=2, lwd=2)
+points(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, pch=16)
+lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, lwd=2)
+text(30000, 70, paste("AUF:\n", format(round(pareto_progress_auc(list(agg_pareto)), digits=0), big.mark=",")),
+     col=alpha(brat, 0.6), cex=2.5, font=2)
+text(existing_hpop, 90, "Existing\n surveillance", col=iddu(2)[2], cex=1.2)
+arrows(existing_hpop, 93, existing_hpop, existing_potent-1, col=iddu(2)[2], lwd=2)
+points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
+       col=c(berry, "orange", purp), pch=16, cex=1.5)
+points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
+       col=c(berry, "orange", purp), cex=3, lwd=2)
+points(existing_hpop, existing_potent, col=iddu(2)[2], pch=16, cex=1.5) # make this a little easier to see?
+points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
+
+par(mar=c(4,2,2,6), bty="n")
+plot(agg_map, col=greens(100), axes=FALSE, bty="n", 
+     legend.args=list(text="Frequency selected", side=2, line=1, cex=1.2))
+plot(st_geometry(vic_shp), add=TRUE)
+
+par(mfrow=c(1,3), oma=c(0,2,50,0), mar=c(0,0,0,0), new=TRUE, mfg=c(1,1))
+plot(pot_catch, col=alpha(berry, 0.2), axes=FALSE, bty="n", legend=FALSE) # weird that there are overlapping catchments in here ...
+plot(pot_map, add=TRUE, col=berry, legend=FALSE)
+# add map of catchment?
+plot(st_geometry(vic_shp), add=TRUE)
+plot(mid_catch, col=alpha("orange", 0.2), axes=FALSE, bty="n", legend=FALSE)
+     #legend.args=list(text="Frequency selected", side=2, line=1))
+plot(mid_map, col="orange", add=TRUE, legend=FALSE)
+plot(st_geometry(vic_shp), add=TRUE, legend=FALSE)
+plot(pop_catch, col=alpha(purp, 0.2), axes=FALSE, bty="n", legend=FALSE)
+     #legend.args=list(text="Frequency selected", side=2, line=1))
+plot(pop_map, col=purp, add=TRUE, legend=FALSE) # or plot points as in the toy fig ...
+plot(st_geometry(vic_shp), add=TRUE)
+
+par(mfrow=c(1,1), oma=c(0,0,0,0), mar=c(2,2,2,2), new=TRUE, bty="o", xpd=NA)
+empty_plot_for_legend()
+subfigure_label(par()$usr, 0,1,"(a)", 1.2)
+subfigure_label(par()$usr, 0.55,1,"(b)", 1.2)
+subfigure_label(par()$usr, -0.02,0.28,"(c)", 1.2)
+subfigure_label(par()$usr, 0.33,0.28,"(d)", 1.2)
+subfigure_label(par()$usr, 0.68,0.28,"(e)", 1.2)
+dev.off()}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

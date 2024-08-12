@@ -1,15 +1,6 @@
 # script for Victoria-wide appraisal, trimmed down from jev/code/mozzie_surveillance_potential.R
 
-# check this is the data I end up using in JEV 1?
-all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/phase_2/clean/pathogen/all_moz_surveillance.csv') %>%
-  rename(host_type=host_species) %>% 
-  dplyr::select(
-    -c(site,
-       n_individual_spp_tests,
-    )
-  ) %>% 
-  drop_na(longitude:virus_detection)
-all_mozzies$data_source[all_mozzies$data_source == "VIC"] = "Vic"
+
 
 potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
 hpop <- raster("~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif")

@@ -9,6 +9,10 @@ library(tidyr)
 library(terra)
 library(RColorBrewer)
 library(scales)
+library(viridisLite)
+library(data.table)
+library(rPref)
+library(idpalette)
 #source("code/iterative_select_funcs.R")
 
 pinks <- colorRampPalette(colors = c("#ECCFDC", "#c23375"))
@@ -18,6 +22,9 @@ purps <- colorRampPalette(brewer.pal(9,"Purples"))
 greens = colorRampPalette(colors = c("#e0fbb7","#8ACE00","#6DCD59FF","#2f9a16"))
 apple = "#6DCD59FF"
 brat = "#8ACE00"
+berry = "#c23375"
+purp = "#8612ff"
+oranges = colorRampPalette(brewer.pal(9,"Oranges"))
 
 subfigure_label = function(plot_region, x_displacement, y_displacement, label,
                            cex.label=1){
@@ -31,11 +38,30 @@ empty_plot_for_legend = function(){
   plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", bty="n")
 }
 
+states <- st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp")
+# all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/national_mozzie_data/mosquito_detections_all_w_qld_sa.csv')
+
+# check this is the data I end up using in JEV 1?
+all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/phase_2/clean/pathogen/all_moz_surveillance.csv') %>%
+  rename(host_type=host_species) %>% 
+  dplyr::select(
+    -c(site,
+       n_individual_spp_tests,
+    )
+  ) %>% 
+  drop_na(longitude:virus_detection)
+all_mozzies$data_source[all_mozzies$data_source == "VIC"] = "Vic"
+
+
+
+
+
+
+
+
 potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
 
-all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/national_mozzie_data/mosquito_detections_all_w_qld_sa.csv')
 #potential_continuous <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
-states <- st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp")
 hpop <- raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif')
 
 vic_shp <- states %>%
