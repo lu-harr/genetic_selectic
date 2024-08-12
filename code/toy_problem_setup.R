@@ -721,7 +721,6 @@ auc_agg_fig(list(progress_auc_1000,
              legend_title="Pool size",
               pal=c(iddu(4)[2:4], brat))#,
                  #main="Increased pool size finds exact solution faster")
-abline(h=0, lty=2)
 
 auc_agg_fig(list(progress_neigh1,
                  progress_neigh2,
@@ -731,13 +730,6 @@ auc_agg_fig(list(progress_neigh1,
             pal=iddu(4)[2:4])
                   #main="What do neighbours become?")
 
-auc_agg_fig(list(progress_uneducated,
-                 progress_educated),
-            legend_labs=c("Random", "Educated guess"),
-            legend_title="Starting pool",
-            pal=iddu(4)[2:4])
-            #main="Educated guess doesn't seem to help?")
-
 auc_agg_fig(list(progress_pareto1,
                  progress_pareto2,
                  progress_pareto3),
@@ -745,14 +737,22 @@ auc_agg_fig(list(progress_pareto1,
             legend_title="Goldberg ranking",
             pal=iddu(4)[2:4])
             #main="Making selection more lenient doesn't seem to change performance?")
+
+auc_agg_fig(list(progress_uneducated,
+                 progress_educated),
+            legend_labs=c("Random", "Educated guess"),
+            legend_title="Starting pool",
+            pal=iddu(4)[2:4])
+#main="Educated guess doesn't seem to help?")
+
 mtext("Area between estimated and exact Pareto front", 2, outer=TRUE, line=2, cex=1.2)
 mtext("Iteration", 1, outer=TRUE, line=1, cex=1.2)
 
 par(new=TRUE, mfrow=c(1,1), xpd=NA)
 empty_plot_for_legend()
 subfigure_label(par()$usr, -0.05, 1.06, "(a)")
-subfigure_label(par()$usr, -0.05, 0.48, "(b)")
-subfigure_label(par()$usr, 0.515, 1.06, "(c)")
+subfigure_label(par()$usr, 0.515, 1.06, "(b)")
+subfigure_label(par()$usr, -0.05, 0.48, "(c)")
 subfigure_label(par()$usr, 0.515, 0.48, "(d)")
 dev.off()}
 

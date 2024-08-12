@@ -320,7 +320,6 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh3.csv", ro
 
 ################################################################################
 # educated guess
-# 11:20
 {set.seed(834903)
   t1 = Sys.time()
   niters = 100
@@ -356,8 +355,50 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh3.csv", ro
   t2-t1} # expecting 15 mins
 write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_loaded_start.csv", row.names=FALSE)
 
+# want to see the turn-around?
+# would be good if I could report AUF .... just deploy contour plot
+tmp <- genetic_algot(site_ids = vic_sites$id,
+                     nselect = nselect, 
+                     poolsize = 1000,
+                     niters = 15,
+                     sandpit = vic_objective$potent,
+                     potential_vec = site_ids$potent,
+                     pop_vec = site_ids$hpop,
+                     sample_method = "neighbours",
+                     catchment_matrix = catch_membership_mat,
+                     neighbourhood_matrix = catch_membership_mat,
+                     pool = educated_guess, # matrix of nselect columns
+                     top_level = 1,
+                     plot_out = TRUE)
+
+tmp3 = tmp$pareto_progress[[1]][,c("sum_pop", "sum_risk")]
+tmp3 <- rbind(c(0, max(tmp3$sum_risk)),
+              tmp3[order(tmp3$sum_pop),],
+              c(max(tmp3$sum_pop), 0))
+tmp4 = tmp$pareto_progress[[2]][,c("sum_pop", "sum_risk")]
+tmp4 <- rbind(c(0, max(tmp4$sum_risk)),
+              tmp4[order(tmp4$sum_pop),],
+              c(max(tmp4$sum_pop), 0))
+
+tmp2 = pareto_progress_contour(list(tmp3[,2:1], tmp4[,2:1]), plot_auc=TRUE)#, 
+                              # box_extent=c(15000, 45000, 30, 105))
+
+
+
+area_under_curve(tmp3$sum_risk[1:(nrow(tmp3)-1)],
+                 tmp3$sum_pop[1:(nrow(tmp3)-1)],
+                 method="step")
+area_under_curve(tmp$pareto_progress[[1]][,"sum_risk"],
+                 tmp$pareto_progress[[1]][,"sum_pop"],
+                 method="step")
+area_under_curve(tmp$pareto_progress[[2]][,"sum_risk"],
+                 tmp$pareto_progress[[2]][,"sum_pop"],
+                 method="step")
+# definitely do need to do that rbind ...
+
 ##################################################################################
 # Pareto optimality
+# 11:47
 {set.seed(834903)
   t1 = Sys.time()
   niters = 100
@@ -438,22 +479,65 @@ progress_neigh3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh3.csv"
 
 progress1000 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress5000 <- read.csv("output/vic_auc_pool5000_iters100_runs10.csv")
+progress10000 <- read.csv("output/vic_auc_pool10000_iters100_runs10.csv")
+
+progress_uneducated <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
+progress_educated <- read.csv("output/vic_auc_pool1000_iters100_runs10_loaded_start.csv")
+
+progress_pareto1 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
+progress_pareto2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto2.csv")
+progress_pareto3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto3.csv")
 
 # very interesting ...
+# might need to make the box_extents the same for all of these for context ...?
+
+{png("figures/vic_sensitivity.png",
+     width=2400,
+     height=2000,
+     pointsize = 40)
+  
+  par(mfrow=c(2,2), mar=c(2.1,2.1,2.1,2.1), oma=c(3,4,1,0))
+
 auc_agg_fig(list(progress1000,
-                 progress5000),
-            legend_labs=c("1,000", "5,000"),
+                 progress5000,
+                 progress10000),
+            legend_labs=c("1,000", "5,000", "10,000"),
             legend_title="Pool size",
-            ylab="Area under estimated Pareto front",
-            main="Increasing pool size is helpful")
+            pal=iddu(4)[2:4])
+
+# a bit concerned that this line goes down ....... investigate ....
+# could be because of concavitity but doubt it happens as much as appears?
 
 auc_agg_fig(list(progress_neigh1,
                  progress_neigh2,
                  progress_neigh3),
             legend_labs=c("1st degree", "2nd degree", "3rd degree"),
             legend_title="Neighbourhood size",
-            ylab="Area under estimated Pareto front",
-            main="Increasing neighbourhood size does seem to be helpful here")
+            pal=iddu(4)[2:4])
+
+auc_agg_fig(list(progress_pareto1,
+                 progress_pareto2,
+                 progress_pareto3),
+            legend_labs=c("Rank 1", "Rank 1 & 2", "Rank 1, 2 & 3"),
+            legend_title="Goldberg ranking",
+            pal=iddu(4)[2:4])
+
+auc_agg_fig(list(progress_uneducated,
+                 progress_educated),
+            legend_labs=c("Random", "Educated guess"),
+            legend_title="Starting pool",
+            pal=iddu(4)[2:4])
+
+mtext("Area under estimated Pareto front", 2, outer=TRUE, line=2, cex=1.2)
+mtext("Iteration", 1, outer=TRUE, line=1, cex=1.2)
+
+par(new=TRUE, mfrow=c(1,1), xpd=NA)
+empty_plot_for_legend()
+subfigure_label(par()$usr, -0.05, 1.06, "(a)")
+subfigure_label(par()$usr, 0.515, 1.06, "(b)")
+subfigure_label(par()$usr, -0.05, 0.48, "(c)")
+subfigure_label(par()$usr, 0.515, 0.48, "(d)")
+dev.off()}
 
 mean(times1000)
 mean(times1000neigh2)
@@ -461,16 +545,50 @@ mean(times1000neigh3) # does take a tiny bit longer
 
 mean(times5000)
 
-save(times1000, times5000,
+save(times1000, times5000, times10000,
      times1000neigh2, times1000neigh3,
-     final_fronts1000, final_fronts5000,
+     times_educated,
+     times_pareto2, times_pareto3,
+     final_fronts1000, final_fronts5000, final_fronts10000,
      final_fronts1000neigh2, final_fronts1000neigh3,
+     final_fronts_educated,
+     final_fronts_pareto2,final_fronts_pareto3,
      file="output/vic_diagnostics.rds")
   
   
 
 
+final_frontsdf <- rbindlist(final_fronts_educated) %>%
+  as.data.frame()
+tmp <- final_frontsdf[,grep("site", names(final_frontsdf))]
+tmp <- as.data.frame(t(apply(tmp, 1, sort)))
+names(tmp) <- paste("site", 1:ncol(tmp), sep="")
+final_frontsdf[,grep("site", names(final_frontsdf))] <- tmp
+collected <- final_frontsdf %>%
+  dplyr::select(grep("site", names(final_frontsdf), value=TRUE)) %>%
+  # there appears to be some mismatch ... is it a problem with the ordering step ??
+  # might be a rounding problem in the objective columns? disappears when I unique over site columns ...
+  unique() #%>% # only 100 now
+  #inner_join(exact_toy_pareto, by = grep("site", names(final_frontsdf), value=TRUE))
 
+# contour plot but now it's final fronts only .. check this for 10,000 iters
+# work out a way to save everything? might just have to be an rds
+pal = viridis(length(final_fronts10000) + 2)[1:length(final_fronts10000)]
+pal=rep(viridis(1), length(final_fronts10000))
+#plot(0, xlim=c(0, max(exact_toy_pareto$hpop)), ylim=c(1, max(exact_toy_pareto$potent)), type="n")
+plot(0, xlim=c(100, max(exact_toy_pareto$hpop)), 
+     ylim=c(4.5, max(exact_toy_pareto$potent)), type="n",
+     main="Best guess so far?",
+     xlab="Sum(Human pop)", ylab="Sum(Potential risk)")
+for (ind in 1:length(final_fronts10000)){
+  front = final_fronts10000[[ind]][,c("sum_pop", "sum_risk")]
+  front <- front[order(front$sum_pop),]
+  points(front, col=pal[ind])
+  lines(front, col=pal[ind])
+}
+points(exact_toy_pareto[,c("hpop", "potent")], col=iddu(4)[4], pch=16)
+lines(exact_toy_pareto[,c("hpop", "potent")], col=iddu(4)[4])
+points(collected[,c("hpop", "potent")], pch=16, col=brat)
 
 
 

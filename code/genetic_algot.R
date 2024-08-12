@@ -164,7 +164,16 @@ pareto_progress_contour <- function(pareto_progress,
                                     exact_soln=c(),
                                     box_extent=c(),
                                     xlab="Sum(Pop)",
-                                    ylab="Sum(Risk)"){
+                                    ylab="Sum(Risk)",
+                                    plot_auc = FALSE){
+  if (length(box_extent) == 0){
+    box_extent = c(0, max(pareto_progress[[length(pareto_progress)]][,"sum_pop"]),
+                   0, max(pareto_progress[[length(pareto_progress)]][,"sum_risk"]))
+  }
+  
+  if (plot_auc){
+    par(mfrow=c(1,2))
+  }
   
   plot(0, xlim=box_extent[1:2], ylim=box_extent[3:4], type="n", xlab=xlab, ylab=ylab,
        main="Pareto front over iteration?")
@@ -179,9 +188,15 @@ pareto_progress_contour <- function(pareto_progress,
   if (length(exact_soln) > 0){
     lines(exact_soln, col="orange")
     points(exact_soln, col="orange")
+    legend("bottomleft", "Exact solution", fill="orange")
   }
   
-  legend("bottomleft", "Exact solution", fill="orange")
+  if(plot_auc){
+    # calculate auc ..
+    tmp = pareto_progress_auc(pareto_progress)
+    plot(1:length(pareto_progress), tmp, col=pal, pch=16)
+    lines(1:length(pareto_progress), tmp)
+  }
   
   # can I shade in the points that are in the exact solution?
   
@@ -247,6 +262,7 @@ pareto_progress_auc <- function(pareto_progress,
     if (exact_auc != 0){
       out <- c(out, exact_auc - area_under_curve(tmp[,1], tmp[,2], method="step"))
     } else {
+      message(area_under_curve(tmp[,1], tmp[,2], method="step"))
       out <- c(out, area_under_curve(tmp[,1], tmp[,2], method="step"))
     }
     
