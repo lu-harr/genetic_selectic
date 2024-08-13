@@ -120,7 +120,7 @@ niters = 100
 tmp <- genetic_algot(site_ids = vic_sites$id,
                      nselect = nselect, 
                      poolsize = 1000,
-                     niters = niters,
+                     niters = 100,
                      sandpit = vic_objective$potent,
                      potential_vec = site_ids$potent,
                      pop_vec = site_ids$hpop,
@@ -133,6 +133,16 @@ tmp <- genetic_algot(site_ids = vic_sites$id,
                      box_extent = c(5000,45000,35,90),
                      plot_out = TRUE)
 tend1 <- Sys.time()} # 1.7 mins to do 100 iters
+
+png(paste0("~/Desktop/obj.png"), 
+    width=2200, height=1400, pointsize=40)
+par(mfrow=c(1,2), mar=c(5.1,4.1,2,2), oma=c(0,0,4.1,1.1))
+plot(tmp$pareto_progress[[1]][,c("sum_pop", "sum_risk")], xlim=c(5000,45000), ylim=c(35,90),
+     main="Objective space", ylab="Total Potential Risk Captured", xlab="Total Human Population Captured",
+     col=apple, cex=1.2, pch=16, cex.main=1.3, cex.lab=1.3)
+#points(tmp$pareto_progress[[length(tmp$pareto_progress)]][,c("sum_pop", "sum_risk")], col=apple, cex=1.2, pch=16)
+dev.off()
+
 
 ################################################################################
 # baseline run: poolsize 1000
@@ -700,8 +710,9 @@ subfigure_label(par()$usr, 0.33,0.28,"(d)", 1.2)
 subfigure_label(par()$usr, 0.68,0.28,"(e)", 1.2)
 dev.off()}
 
-
-
+par(mfrow=c(2,1))
+plot(vic_objective$potent, main="Potential risk of transmission", legend=FALSE)
+plot(vic_objective$hpop, main="Human population density", legend=FALSE)
 
 
 

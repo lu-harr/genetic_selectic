@@ -30,6 +30,10 @@ state_potential_surveillance_compare <- function(state,
     crop(state_shadow) %>%
     raster::mask(state_shadow)
   
+  hpop_buffered <- hpop_national %>%
+    crop(state_shadow) %>%
+    raster::mask(state_shadow)
+  
   potential_state <- potential_national %>%
     crop(state_shadow) %>%
     raster::mask(state_shp)
@@ -77,7 +81,7 @@ state_potential_surveillance_compare <- function(state,
   
   par(mfrow=c(1,2), bty="n", mar=c(2.1,1.1,4.1,1.1))
   
-  plot(potential_buffered, col=brewer.pal(9, "Greys"), legend=FALSE,
+  plot(potential_buffered, col=colorRampPalette(brewer.pal(9, "Greys"))(100), legend=FALSE,
        xaxt="n", yaxt="n", horizontal=TRUE)
   par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
   plot(potential_state, col=pn_cols,  xaxt="n", yaxt="n", horizontal=TRUE,
@@ -90,21 +94,29 @@ state_potential_surveillance_compare <- function(state,
   plot(sel, col=alpha("orange", 0.5), legend=FALSE,  xaxt="n", yaxt="n", horizontal=TRUE)
   par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
   plot(st_geometry(state_shp), add=TRUE, lwd=0.5)
-  points(past_mozzies[past_mozzies$data_source == state,
-                      c("longitude", "latitude")], 
-         pch=0, cex=0.8, col="purple")   
+  #points(past_mozzies[past_mozzies$data_source == state,
+  #                    c("longitude", "latitude")], 
+  #       pch=0, cex=0.8, col="purple")   
   # legend("topright", fill=alpha("orange", 0.5), cex=1.8,
   #        "Areas of highest\n transmission suitability", bty="n")
   
-  plot(sqrt(hpop_state), col=extreme_purps, xaxt="n", yaxt="n", horizontal=TRUE,
+  plot(sqrt(hpop_buffered), col=colorRampPalette(brewer.pal(9, "Greys"))(100), legend=FALSE,
+       xaxt="n", yaxt="n", horizontal=TRUE)
+  par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
+  plot(sqrt(hpop_state), col=purps,  xaxt="n", yaxt="n", horizontal=TRUE,
        legend.args=list("Distance-weighted human population density", side=3, 
                         line=1, cex=1.4),
-       axis.args=list(at=sqrt(hpop_breaks), labels=hpop_breaks))
+       axis.args=list(at=sqrt(hpop_breaks), labels=hpop_breaks),
+       xaxt="n", yaxt="n")#,
+  #axis.args=list(at=c(minValue(potential_state)+0.05, maxValue(potential_state)-0.05),
+  #                labels=c("Low","High")))
+  
   plot(sel, col=alpha("orange", 0.5), legend=FALSE, add=TRUE)
-  plot(st_geometry(state_sa4s), add=TRUE, lwd=0.5)
-  points(past_mozzies[past_mozzies$data_source == state,
-                      c("longitude", "latitude")], 
-         pch=0, cex=0.8, col="purple")
+  plot(st_geometry(state_shp), add=TRUE, lwd=0.5)
+  #plot(st_geometry(state_sa4s), add=TRUE, lwd=0.5)
+  #points(past_mozzies[past_mozzies$data_source == state,
+  #                    c("longitude", "latitude")], 
+  #       pch=0, cex=0.8, col="purple")
   
   par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1),xpd=NA)
   plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
@@ -243,13 +255,20 @@ surveil_df <- function(state,
 
 # make up some results for vic .....
 
-# vic_shp <- states %>%
-#   dplyr::filter(STE_NAME21 == "Victoria") %>%
-#   st_simplify(dTolerance = 1000)
-# vic_surveil <- state_potential_surveillance_compare("Vic", vic_shp, sa4s,
-#                                                     potential, 
-#                                                     hpop, all_mozzies,
-#                                                     hpop_breaks=c(25,100, 250, 500))
+vic_shp <- states %>%
+  dplyr::filter(STE_NAME21 == "Victoria") %>%
+  st_simplify(dTolerance = 1000)
+
+potential <- potential %>%
+  aggregate(10)
+
+hpop <- hpop %>%
+  aggregate(10)
+
+vic_surveil <- state_potential_surveillance_compare("Vic", vic_shp, sa4s,
+                                                    potential, out_path = "~/Desktop/",
+                                                    hpop, all_mozzies,
+                                                    hpop_breaks=c(25,100, 250, 500))
 
 # play around with rank_cutoff here?
 vic_surveil_df = surveil_df("Victoria",

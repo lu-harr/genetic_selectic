@@ -50,7 +50,7 @@ genetic_algot <- function(site_ids,
       width=2200, height=1400, pointsize=40)
   par(mfrow=c(1,2), mar=c(5.1,4.1,2,2), oma=c(0,0,4.1,1.1))
   plot(pool$sum_pop, pool$sum_risk, pch=16, col=apple,
-       #xlim=box_extent[1:2], ylim=box_extent[3:4],
+       xlim=box_extent[1:2], ylim=box_extent[3:4],
        ylab="Total potential risk captured", xlab="Total human population captured", 
        cex.lab=1.3, cex.main=1.3,
        main="Objective space")
@@ -63,8 +63,9 @@ genetic_algot <- function(site_ids,
   tmp_pit[tmp_pit == 0] = NA
   
   if (plot_out){
-    plot(sandpit, col="navy", xaxt="n", yaxt="n", cex.main=1.3, main="Geographic space", legend=FALSE)
-    plot(tmp_pit, add=TRUE, col=greens(100))
+    plot(sandpit, col="white", xaxt="n", yaxt="n", cex.main=1.3, 
+         main="Geographic space", legend=FALSE)
+    plot(tmp_pit, add=TRUE, col=greens(100)[10:100])
     if (length(shp) > 0){plot(st_geometry(shp), add=TRUE)}
     mtext("Longitude", 1, 1.5, cex=1.3)
     mtext("Latitude", 2, 1.5, cex=1.3)
@@ -114,7 +115,7 @@ genetic_algot <- function(site_ids,
     par(mfrow=c(1,2), mar=c(5.1,4.1,2,2), oma=c(0,0,4.1,1.1))
     plot(pool$sum_pop[pool$addition == TRUE], pool$sum_risk[pool$addition == TRUE],
          #main=paste("Step", iter), 
-         #xlim=box_extent[1:2], ylim=box_extent[3:4],
+         xlim=box_extent[1:2], ylim=box_extent[3:4],
          ylab="Total potential risk captured", xlab="Total human population captured",
          main="Objective space", cex.main=1.3, cex.lab=1.3)
     points(pool$sum_pop[pool$addition == FALSE], pool$sum_risk[pool$addition == FALSE],
@@ -134,8 +135,9 @@ genetic_algot <- function(site_ids,
     tmp_pit[tmp_pit == 0] = NA
     
     if (plot_out){
-      plot(sandpit, col="navy", xaxt="n", yaxt="n", cex.main=1.3, main="Geographic space", legend=FALSE)
-      plot(tmp_pit, add=TRUE, col=greens(100))
+      plot(sandpit, col="white", xaxt="n", yaxt="n", cex.main=1.3,
+           main="Geographic space", legend=FALSE)
+      plot(tmp_pit, add=TRUE, col=greens(100)[10:100])
       if (length(shp) > 0){plot(st_geometry(shp), add=TRUE)}
       mtext("Longitude", 1, 1.5, cex=1.3)
       mtext("Latitude", 2, 1.5, cex=1.3)
