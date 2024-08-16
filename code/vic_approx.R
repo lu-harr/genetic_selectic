@@ -657,11 +657,21 @@ values(mid_catch) <- NA
 values(mid_catch)[unique(as.vector(catch_membership_mat[unlist(agg_pareto[mid,grep("site", names(agg_pareto))]),]))] <- 1
 
 
+# existing surveillance
+actual_map <- vic_objective$potent
+values(actual_map) <- NA
+values(actual_map)[vic_mozzies$pix] <- 1
+
+actual_catch <- vic_objective$potent
+values(actual_catch) <- NA
+values(actual_catch)[unique(as.vector(catch_membership_mat[vic_mozzies$pix,]))] <- 1
+
+
 {png("figures/vic_mapped.png",
     width=2500,
     height=2000,
     pointsize=35)
-par(mfrow=c(1,2), oma=c(16,0,2,0), mar=c(4,4,2,0))
+par(mfrow=c(1,1), oma=c(18,0,2,24), mar=c(4,4,2,0))
 
 plot(final_frontsdf$sum_pop, final_frontsdf$sum_risk, 
      xlab="Sum(Human Population Density)",
@@ -682,12 +692,25 @@ points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")],
 points(existing_hpop, existing_potent, col=iddu(2)[2], pch=16, cex=1.5) # make this a little easier to see?
 points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
 
-par(mar=c(4,2,2,6), bty="n")
+
+# make it a 3*3 !
+par(mfrow=c(3,3), oma=c(0,2,0,0), mar=c(0,0,0,0), mfg=c(1,3), bty="n", new=TRUE)
+#par(mar=c(4,2,2,6), bty="n")
 plot(agg_map, col=greens(100), axes=FALSE, bty="n", 
-     legend.args=list(text="Frequency selected", side=2, line=1, cex=1.2))
+     legend=FALSE)
+plot(agg_map, col=greens(100), legend.only=TRUE, 
+     horizontal=TRUE,
+     #smallplot= c(-0.05, -0.05 + 0.015, 0.35, 0.7),
+     legend.args=list(text="Frequency selected", side=1, cex=1.1, line=2.5)) # could put this in the top right ..
 plot(st_geometry(vic_shp), add=TRUE)
 
-par(mfrow=c(1,3), oma=c(0,2,50,0), mar=c(0,0,0,0), new=TRUE, mfg=c(1,1))
+par(mfrow=c(3,3), oma=c(0,2,0,0), mar=c(0,0,0,0), mfg=c(2,3), bty="n", new=TRUE)
+# at least one of these look like they're over the border?
+plot(actual_catch, col=alpha(iddu(4)[2], 0.2), axes=FALSE, bty="n", legend=FALSE)
+plot(actual_map, col=iddu(4)[2], bty="n", legend=FALSE, add=TRUE)
+plot(st_geometry(vic_shp), add=TRUE)
+
+par(mfrow=c(3,3), oma=c(0,2,0,0), mar=c(0,0,0,0), new=TRUE, mfg=c(3,1))
 plot(pot_catch, col=alpha(berry, 0.2), axes=FALSE, bty="n", legend=FALSE) # weird that there are overlapping catchments in here ...
 plot(pot_map, add=TRUE, col=berry, legend=FALSE)
 # add map of catchment?
@@ -704,10 +727,11 @@ plot(st_geometry(vic_shp), add=TRUE)
 par(mfrow=c(1,1), oma=c(0,0,0,0), mar=c(2,2,2,2), new=TRUE, bty="o", xpd=NA)
 empty_plot_for_legend()
 subfigure_label(par()$usr, 0,1,"(a)", 1.2)
-subfigure_label(par()$usr, 0.55,1,"(b)", 1.2)
-subfigure_label(par()$usr, -0.02,0.28,"(c)", 1.2)
-subfigure_label(par()$usr, 0.33,0.28,"(d)", 1.2)
-subfigure_label(par()$usr, 0.68,0.28,"(e)", 1.2)
+subfigure_label(par()$usr, 0.68,1,"(b)", 1.2)
+subfigure_label(par()$usr, 0.68,0.63,"(c)", 1.2)
+subfigure_label(par()$usr, -0.02,0.28,"(d)", 1.2)
+subfigure_label(par()$usr, 0.33,0.28,"(e)", 1.2)
+subfigure_label(par()$usr, 0.68,0.28,"(f)", 1.2)
 dev.off()}
 
 par(mfrow=c(2,1))

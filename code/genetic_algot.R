@@ -277,15 +277,23 @@ pareto_progress_auc <- function(pareto_progress,
 
 
 library(idpalette)
-auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE, 
+auc_agg_fig <- function(inlst, 
+                        niters=100, 
+                        lines_only=FALSE, 
                         pal=c("orange", "#8612ff", apple),
-                        legend_labs=c(), main="", legend_title="",
-                        ylab="Area between estimated and exact Pareto front"){
+                        legend_labs=c(), 
+                        main="", 
+                        legend_title="",
+                        ylim = c(),
+                        ylab="Area between estimated and exact Pareto front",
+                        upper = TRUE){
   # visualisation of area between curve and exact solution 
   # (polygon shows min/max, heavy line is median progress)
   
+  
   miny = min(inlst[[1]])
   maxy = max(inlst[[1]])
+  
   plotlst <- list()
   
   for (ind in 1:length(inlst)){
@@ -299,13 +307,21 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
     
     if (!lines_only){
       plotlst[[ind]] <- data.frame(mins=apply(inlst[[ind]], 1, min), 
-                           maxs=apply(inlst[[ind]], 1, max), 
-                           meds=apply(inlst[[ind]], 1, median))
+                                   maxs=apply(inlst[[ind]], 1, max), 
+                                   meds=apply(inlst[[ind]], 1, median))
     }
-  }
+  }   
+    
   miny <- ifelse(inlst[[1]][1, 1] > inlst[[1]][niters, 1], 0, miny)
-  message(paste("auc range:", miny, maxy))
-  plot(0, type="n", xlim=c(0,niters), ylim=c(miny, maxy), 
+  
+  if (length(ylim) != 0){
+    miny = ylim[1]
+    maxy = ylim[2]
+  }
+  
+  
+  message(paste("auc range:", ylim, collapse=" "))
+  plot(0, type="n", xlim=c(0,niters), ylim=ylim, 
        xlab="Iteration", ylab=ylab,
        main=main)
   
@@ -329,6 +345,11 @@ auc_agg_fig <- function(inlst, niters=100, lines_only=FALSE,
   # give us a goal line if we know where it is ...
   if(inlst[[1]][1, 1] > inlst[[1]][niters, 1]){
     abline(h=0, col="grey", lty=2, lwd=2)
+  }
+  
+  if (upper == TRUE){
+    message(maxy)
+    abline(h=maxy, col="grey", lty=2, lwd=2)
   }
   
   if (length(legend_labs) > 0){

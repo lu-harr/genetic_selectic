@@ -114,9 +114,9 @@ get_catch_ras <- function(ras, ids){
   plot(tmp2, add=TRUE, col=alpha(eg_cols, 0.2)[2], legend=FALSE)
   plot(tmp3, add=TRUE, col=alpha(eg_cols, 0.2)[3], legend=FALSE)
   # fiddling with cex to get them to overlap nicely
-  points(toy_lonlats[sites1, c("x","y")], col=eg_cols[1], pch=16, cex=eg_cex[1])
-  points(toy_lonlats[sites2, c("x","y")], col=eg_cols[2], pch=16, cex=eg_cex[c(1,2,1,2,1)])
-  points(toy_lonlats[sites3, c("x","y")], col=eg_cols[3], pch=16, cex=eg_cex[c(2,3,1,2,1)])
+  points(toy_lonlats[sites1, c("x","y")], col=eg_cols[1], pch=15, cex=eg_cex[1])
+  points(toy_lonlats[sites2, c("x","y")], col=eg_cols[2], pch=15, cex=eg_cex[c(1,2,1,2,1)])
+  points(toy_lonlats[sites3, c("x","y")], col=eg_cols[3], pch=15, cex=eg_cex[c(2,3,1,2,1)])
   mtext("Potential risk \nhighest in north", 3, adj=0, col=eg_cols[1])
   mtext("Human population \nhighest in north-east", 3, adj=1, col=eg_cols[3])
   mtext("All catchments \noverlap", 1, adj=0.5, line=2)
@@ -200,7 +200,7 @@ names(educated_guess) <- paste("site", 1:5, sep="")
     tend <- Sys.time()
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
     times50000[ind] <- tend - tstart
     final_fronts50000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
@@ -240,7 +240,7 @@ write.csv(progress_pc_pts, "output/toy_pts_pool50000_iters100_runs10.csv", row.n
     tend <- Sys.time()
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
     times10000[ind] <- tend - tstart
     final_fronts10000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
@@ -281,7 +281,7 @@ write.csv(progress_pc_pts, "output/toy_pts_pool10000_iters100_runs10.csv", row.n
     tend <- Sys.time()
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
     times5000[ind] <- tend - tstart
     final_fronts5000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
@@ -322,7 +322,7 @@ write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10.csv", row.na
     tend <- Sys.time()
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
     times1000[ind] <- tend - tstart
     final_fronts1000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
@@ -401,7 +401,7 @@ pareto_progress_contour(tmp$pareto_progress,
                          plot_out = FALSE)
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
   }
   
   t2 = Sys.time()
@@ -443,7 +443,7 @@ write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh2.csv",
                          plot_out = FALSE)
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
   }
   
   t2 = Sys.time()
@@ -498,7 +498,7 @@ auc_agg_fig(list(progress_neigh1[,2:ncol(progress_neigh1)],
                          plot_out = FALSE)
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
   }
   
   t2 = Sys.time()
@@ -541,7 +541,7 @@ write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh2.csv",
                          plot_out = FALSE)
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
   }
   
   t2 = Sys.time()
@@ -575,7 +575,7 @@ write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh3.csv",
                          plot_out = FALSE)
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
   }
   
   t2 = Sys.time()
@@ -619,7 +619,7 @@ auc_agg_fig(list(progress_uneducated,
                          plot_out = FALSE)
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
   }
   
   t2 = Sys.time()
@@ -652,7 +652,7 @@ write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_pareto2.csv"
                          plot_out = FALSE)
     
     progress_pc_pts[,ind] <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, exact_toy_pareto)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
   }
   
   t2 = Sys.time()
@@ -706,6 +706,15 @@ progress_pareto1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
 progress_pareto2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto2.csv")
 progress_pareto3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto3.csv")
 
+# Oh no! Now I need to un-subtract exact AUC from all the progress_paretooooooss!
+
+exact_soln <- as.data.frame(exact_toy_pareto)[,grep("site", names(exact_toy_pareto), invert=TRUE)]
+exact_soln <- exact_soln[order(exact_soln[,1]),]
+exact_soln <- rbind(c(0, max(exact_soln[,2])),
+                    exact_soln,
+                    c(max(exact_soln[,1]), 0))
+exact_auc <- area_under_curve(exact_soln[,1], exact_soln[,2], method="step")
+
 {png("figures/toy_sensitivity.png",
      width=2400,
      height=2000,
@@ -719,6 +728,7 @@ auc_agg_fig(list(progress_auc_1000,
                 progress_auc_50000),
              legend_labs=c("1,000", "5,000", "10,000", "50,000"),
              legend_title="Pool size",
+              ylim = c(890, exact_auc),
               pal=c(iddu(4)[2:4], brat))#,
                  #main="Increased pool size finds exact solution faster")
 
@@ -727,6 +737,7 @@ auc_agg_fig(list(progress_neigh1,
                  progress_neigh3),
             legend_labs=c("1st degree", "2nd degree", "3rd degree"),
             legend_title="Neighbourhood size",
+            ylim = c(890, exact_auc),
             pal=iddu(4)[2:4])
                   #main="What do neighbours become?")
 
@@ -735,6 +746,7 @@ auc_agg_fig(list(progress_pareto1,
                  progress_pareto3),
             legend_labs=c("Rank 1", "Rank 1 & 2", "Rank 1, 2 & 3"),
             legend_title="Goldberg ranking",
+            ylim = c(890, exact_auc),
             pal=iddu(4)[2:4])
             #main="Making selection more lenient doesn't seem to change performance?")
 
@@ -742,10 +754,11 @@ auc_agg_fig(list(progress_uneducated,
                  progress_educated),
             legend_labs=c("Random", "Educated guess"),
             legend_title="Starting pool",
+            ylim = c(890, exact_auc),
             pal=iddu(4)[2:4])
 #main="Educated guess doesn't seem to help?")
 
-mtext("Area between estimated and exact Pareto front", 2, outer=TRUE, line=2, cex=1.2)
+mtext("Area under estimated Pareto front", 2, outer=TRUE, line=2, cex=1.2)
 mtext("Iteration", 1, outer=TRUE, line=1, cex=1.2)
 
 par(new=TRUE, mfrow=c(1,1), xpd=NA)
