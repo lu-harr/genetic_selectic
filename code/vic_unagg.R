@@ -92,6 +92,35 @@ for (i in 1:nrow(educated_guess)){
 }
 # this now takes considerably longer (probably the which())
 
+niters = 100
+{set.seed(834903)
+  tstart1 <- Sys.time()
+  tmp <- genetic_algot(site_ids = vic_sites$id,
+                       nselect = nselect, 
+                       poolsize = 1000,
+                       niters = 100,
+                       sandpit = vic_objective$potent,
+                       potential_vec = site_ids$potent,
+                       pop_vec = site_ids$hpop,
+                       sample_method = "neighbours",
+                       catchment_matrix = catch_membership_mat,
+                       neighbourhood_matrix = catch_membership_mat, # keep it small for toy problem
+                       pool = starting_point, # matrix of nselect columns
+                       top_level = 1,
+                       shp = vic_shp,
+                       box_extent = c(5000,45000,35,90),
+                       plot_out = TRUE)
+  tend1 <- Sys.time()} #  mins to do 100 iters
+tend1 - tstart1
+# 29 minutes
+# so this takes 17 times longer to do ..
+# so 10,000 iters would take 42.5 hours
+# which is worth doing but not feasible to do on my lappy
+
+
+
+
+
 
 
 
