@@ -68,7 +68,7 @@ exact_toy_pareto <- exact_toy_pareto[order(exact_toy_pareto$hpop)]
 
 plot(exact_toy_pareto[,c("hpop","potent")])
 
-pts_to_plot <- sample(nrow(enumerated), 200000)
+pts_to_plot <- sample(nrow(enumerated), 20000)
 eg_designs <- c(1,11,21)
 toy_lonlats <- rasterToPoints(toy_objective)
 eg_cols <- c("#c23375", "orange", "#8612ff")
@@ -133,17 +133,72 @@ get_catch_ras <- function(ras, ids){
   
   dev.off()}
 
-{png("figures/toy_problem_enumerated_pop_logged.png")
-  par(mfrow=c(1,2))
-  plot(log10(enumerated$hpop[pts_to_plot]),
-       enumerated$potent[pts_to_plot],
-       xlim=c(-0.5, log10(max(exact_toy_pareto$hpop))),
-       ylim=c(1, max(exact_toy_pareto$potent)),
-       xlab="log10(Human Population Density)",
-       ylab="Potential Risk")
-  points(log10(exact_toy_pareto$hpop),
-         exact_toy_pareto$potent, col=brat, pch=16)
-  dev.off()}
+
+
+# need some lighter pinks
+{png("figures/toy_problem_obj_enumerated.png",
+     height=2200,
+     width=2400,
+     pointsize=40)
+#par(mfrow=c(1,2), mar=c(4.1,2.1,4.1,1.1), oma=c(0,2,0,2), xpd=NA)
+#par(mfrow=c(1,2), mar=c(0.1,1.1,4.1,6.1))
+par(mfrow=c(2,2), mar=c(2.1,2.1,4.2,6.1), oma=c(3,3,0,0), xpd=NA)
+plot(guelphia_potential, col=pinks(100), main="Potential risk of JEV transmission", 
+     axes=FALSE, xlab="", ylab="", legend=FALSE, cex.main=1.4)
+plot(guelphia_potential, col=pinks(100), legend.only=TRUE,
+     legend.args=list(text="Potential risk", side=4, line=-2, cex=1.1),
+     legend.width=1.2)
+# actually may not need to log this ...
+plot(guelphia_hpop, col=purps(100), main="Human population density",
+     axes=FALSE, xlab="", ylab="", legend=FALSE, cex.main=1.4) # legend will need a title :)
+plot(guelphia_hpop, col=purps(100), legend.only=TRUE,
+     legend.args=list(text="Human population density", side=4, line=-2, cex=1.1),
+     legend.width=1.2) # units?
+
+par(mar=c(2,2,2,2), xpd=NA)
+plot(enumerated[pts_to_plot, c("hpop","potent")],
+     xlim=c(0, max(exact_toy_pareto$hpop)),
+     ylim=c(1, max(exact_toy_pareto$potent)),
+     xlab="Sum(Human Population Density)",
+     ylab="Sum(Potential Risk)",
+     cex.lab=1.1)
+points(exact_toy_pareto[,c("hpop","potent")], col="black", pch=21, cex=1.3, bg=brat)
+points(exact_toy_pareto[eg_designs, c("hpop", "potent")],
+       col="black", bg=eg_cols, pch=21, cex=1.6)
+mtext("Exact Pareto front", side=3, line=1.2, cex=1.2, font=2)
+par(mar=c(1.3,1.3,3.5,5.3), xpd=NA)
+plot(rasterToPolygons(toy_objective$potent), border="black", col="white")
+
+sites1 <- unlist(exact_toy_pareto[eg_designs[1],1:5])
+sites2 <- unlist(exact_toy_pareto[eg_designs[2],1:5])
+sites3 <- unlist(exact_toy_pareto[eg_designs[3],1:5])
+tmp1 <- get_catch_ras(toy_objective$potent, sites1)
+tmp2 <- get_catch_ras(toy_objective$potent, sites2)
+tmp3 <- get_catch_ras(toy_objective$potent, sites3)
+plot(tmp1, add=TRUE, col=alpha(eg_cols, 0.2)[1], legend=FALSE)
+plot(tmp2, add=TRUE, col=alpha(eg_cols, 0.2)[2], legend=FALSE)
+plot(tmp3, add=TRUE, col=alpha(eg_cols, 0.2)[3], legend=FALSE)
+# fiddling with cex to get them to overlap nicely
+points(toy_lonlats[sites1, c("x","y")], col=eg_cols[1], pch=15, cex=eg_cex[1])
+points(toy_lonlats[sites2, c("x","y")], col=eg_cols[2], pch=15, cex=eg_cex[c(1,2,1,2,1)])
+points(toy_lonlats[sites3, c("x","y")], col=eg_cols[3], pch=15, cex=eg_cex[c(2,3,1,2,1)])
+mtext("Potential risk \nhighest in north", 3, adj=0, col=eg_cols[1])
+mtext("Human population \nhighest in north-east", 3, adj=1, col=eg_cols[3])
+mtext("All catchments \noverlap", 1, adj=0.5, line=2)
+
+arrows(-37.43, 144.95, -37.35, 144.8, lwd=3, col=eg_cols[1])
+arrows(-36.7, 144.95, -36.75, 144.85, lwd=3, col=eg_cols[3])
+arrows(-37.05, 144.02, -37.01, 144.45, lwd=4)
+arrows(-37.05, 144.02, -36.85, 144.72, lwd=4)
+mtext("Examples of Pareto-optimal designs", side=3, line=2.7, cex=1.2, font=2)
+par(new=TRUE, oma=c(0,0,0,0), mar=c(0,0,0,0), mfrow=c(1,1))
+empty_plot_for_legend()
+subfigure_label(par()$usr, 0.05,0.96, "(a)", cex.label = 1.2)
+subfigure_label(par()$usr, 0.53,0.96, "(b)", cex.label = 1.2)
+subfigure_label(par()$usr, 0.05,0.525, "(c)", cex.label = 1.2)
+subfigure_label(par()$usr, 0.53,0.525, "(d)", cex.label = 1.2)
+
+dev.off()}
 
 
 ###############################################################################

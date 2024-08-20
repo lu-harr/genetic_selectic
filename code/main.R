@@ -13,9 +13,9 @@ library(viridisLite)
 library(data.table)
 library(rPref)
 library(idpalette)
-#source("code/iterative_select_funcs.R")
 
-pinks <- colorRampPalette(colors = c("#ECCFDC", "#c23375"))
+#source("code/iterative_select_funcs.R")
+pinks <- colorRampPalette(colors = c("#f7f7f7", "#c23375"))
 purps <- colorRampPalette(brewer.pal(9,"Purples"))
 #extreme_purps = colorRampPalette(purps[c(seq(1,30,5),30:100)])(100)
 
