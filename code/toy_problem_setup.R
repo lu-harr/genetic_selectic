@@ -1,9 +1,6 @@
 # toy problem set up ....
 getwd()
 
-library(data.table)
-library(rPref)
-
 AGG_FACTOR = 10
 
 guelphia_potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif') %>%

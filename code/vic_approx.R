@@ -1,5 +1,7 @@
 # all of the analysis and figures for Victorian problem are in here
 # (calls to genetic_algot.R)
+source("code/main.R")
+source("code/genetic_algot.R")
 
 vic_shp <- states %>%
   filter(STE_NAME21 == "Victoria") %>%
@@ -255,6 +257,42 @@ write.csv(progress_auc, "output/vic_auc_pool5000_iters100_runs10.csv", row.names
 write.csv(progress_auc, "output/vic_auc_pool10000_iters100_runs10.csv", row.names=FALSE)
 
 
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times50000 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts50000 <- rep(list(NA), nruns)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 50000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times50000[ind] <- tend - tstart
+    final_fronts50000[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 85*10 mins
+write.csv(progress_auc, "output/vic_auc_pool50000_iters100_runs10.csv", row.names=FALSE)
+
+
 auc_agg_fig(list(progress_auc)) # interesting
 
 ################################################################################
@@ -506,6 +544,7 @@ progress_neigh3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh3.csv"
 progress1000 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress5000 <- read.csv("output/vic_auc_pool5000_iters100_runs10.csv")
 progress10000 <- read.csv("output/vic_auc_pool10000_iters100_runs10.csv")
+progress50000 <- read.csv("output/vic_auc_pool50000_iters100_runs10.csv")
 
 progress_uneducated <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress_educated <- read.csv("output/vic_auc_pool1000_iters100_runs10_loaded_start.csv")
@@ -514,7 +553,7 @@ progress_pareto1 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress_pareto2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto2.csv")
 progress_pareto3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto3.csv")
 
-save(times1000, times5000, times10000,
+save(times1000, times5000, times10000, times50000,
      times1000neigh2, times1000neigh3,
      times_educated,
      times_pareto2, times_pareto3,
@@ -529,6 +568,8 @@ load("output/vic_diagnostics.rds")
 # very interesting ...
 # might need to make the box_extents the same for all of these for context ...?
 
+neigh_lim <- # etc
+
 {png("figures/vic_sensitivity.png",
      width=2400,
      height=2000,
@@ -536,35 +577,40 @@ load("output/vic_diagnostics.rds")
   
   par(mfrow=c(2,2), mar=c(2.1,2.1,2.1,2.1), oma=c(3,4,1,0))
 
-auc_agg_fig(list(progress1000,
-                 progress5000,
-                 progress10000),
-            legend_labs=c("1,000", "5,000", "10,000"),
-            legend_title="Pool size",
-            pal=iddu(4)[2:4])
+pool_lim <- auc_agg_fig(list(progress1000,
+                             progress5000,
+                             progress10000,
+                             progress50000),
+                        legend_labs=c("1,000", "5,000", "10,000", "50,000"),
+                        legend_title="Pool size",
+                        pal=c(iddu(4)[2:4], brat),
+                        ylim=c(1987140,4408493))
 
 # a bit concerned that this line goes down ....... investigate ....
 # could be because of concavitity but doubt it happens as much as appears?
 
-auc_agg_fig(list(progress_neigh1,
-                 progress_neigh2,
-                 progress_neigh3),
-            legend_labs=c("1st degree", "2nd degree", "3rd degree"),
-            legend_title="Neighbourhood size",
-            pal=iddu(4)[2:4])
+neigh_lim <- auc_agg_fig(list(progress_neigh1,
+                               progress_neigh2,
+                               progress_neigh3),
+                          legend_labs=c("1st degree", "2nd degree", "3rd degree"),
+                          legend_title="Neighbourhood size",
+                          pal=iddu(4)[2:4],
+                         ylim=c(1987140,4408493))
 
-auc_agg_fig(list(progress_pareto1,
-                 progress_pareto2,
-                 progress_pareto3),
-            legend_labs=c("Rank 1", "Rank 1 & 2", "Rank 1, 2 & 3"),
-            legend_title="Goldberg ranking",
-            pal=iddu(4)[2:4])
+pareto_lim <- auc_agg_fig(list(progress_pareto1,
+                               progress_pareto2,
+                               progress_pareto3),
+                          legend_labs=c("Rank 1", "Rank 1 & 2", "Rank 1, 2 & 3"),
+                          legend_title="Goldberg ranking",
+                          pal=iddu(4)[2:4],
+                          ylim=c(1987140,4408493))
 
-auc_agg_fig(list(progress_uneducated,
-                 progress_educated),
-            legend_labs=c("Random", "Educated guess"),
-            legend_title="Starting pool",
-            pal=iddu(4)[2:4])
+loaded_lim <- auc_agg_fig(list(progress_uneducated,
+                               progress_educated),
+                          legend_labs=c("Random", "Educated guess"),
+                          legend_title="Starting pool",
+                          pal=iddu(4)[2:4],
+                          ylim=c(1987140,4408493))
 
 mtext("Area under estimated Pareto front", 2, outer=TRUE, line=2, cex=1.2)
 mtext("Iteration", 1, outer=TRUE, line=1, cex=1.2)
@@ -576,6 +622,11 @@ subfigure_label(par()$usr, 0.515, 1.06, "(b)")
 subfigure_label(par()$usr, -0.05, 0.48, "(c)")
 subfigure_label(par()$usr, 0.515, 0.48, "(d)")
 dev.off()}
+
+auc_agg_fig(list(progress50000, progress_educated))
+
+min(pool_lim, pareto_lim, neigh_lim, loaded_lim) # 1987140
+max(pool_lim, pareto_lim, neigh_lim, loaded_lim)
 
 mean(times1000)
 mean(times1000neigh2)
@@ -593,12 +644,17 @@ plot(c(rep(1,10), rep(2, 10), rep(3,10)),
      ylab="Run time (mins)",
      main="Neighbourhood size (up to 3rd-degree)")
 
-plot(c(rep(1000,10), rep(5000, 10), rep(10000,10)),
-     c(times1000, times5000, times10000),
+pooldf <- data.frame(size=c(rep(1000,10), rep(5000, 10), rep(10000,10)),
+                time=c(times1000, times5000, times10000))
+plot(pooldf,
      xlab="Pool size",
      ylab="Run time (mins)",
-     main="Pareto tolerance (ranks up to 3)")
-
+     main="Pool size")
+mod <- lm(time ~ size, pooldf)
+mod$coefficients[[1]] + mod$coefficients[[2]]*1000
+abline(mod$coefficients[[1]], mod$coefficients[[2]])
+mod$coefficients[[1]] + mod$coefficients[[2]]*50000 # 84 minutes per run
+# 14 hours
 
 final_frontsdf <- rbindlist(final_fronts_educated) %>%
   as.data.frame()

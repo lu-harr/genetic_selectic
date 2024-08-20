@@ -38,7 +38,7 @@ neigh_mat[!neigh_mat == 0] = 1
 # this gives me a layered SpatRaster
 catchment_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c) # so much quicker than my diy version
 # need to remove zero layers ...
-catchment_stack <- subset(catchment_stack, which(neigh_mat != 0))
+# catchment_stack <- subset(catchment_stack, which(neigh_mat != 0)) # this was causing weirdness ...
 # and remove non-victorian pixels that were part of the buffer ...
 # now I want this as a list of vectors? Or a matrix?
 catch_membership_mat <- values(catchment_stack, mat=TRUE)
@@ -85,11 +85,11 @@ educated_guess <- matrix(c(sample(vic_sites$id[order(vic_sites$potent,
   as.data.frame()
 names(educated_guess) <- paste("site", 1:nselect, sep="")
 
-plot(vic_objective$potent)
-for (i in 1:nrow(educated_guess)){
-  tmp <- which(vic_sites$id %in% educated_guess[i,])
-  points(vic_sites[tmp, c("x","y")])
-}
+# plot(vic_objective$potent)
+# for (i in 1:nrow(educated_guess)){
+#   tmp <- which(vic_sites$id %in% educated_guess[i,])
+#   points(vic_sites[tmp, c("x","y")])
+# }
 # this now takes considerably longer (probably the which())
 
 niters = 100
@@ -118,9 +118,20 @@ tend1 - tstart1
 # which is worth doing but not feasible to do on my lappy
 
 
+# existing surveillance
 
+actual_map <- vic_objective$potent
+values(actual_map) <- NA
+values(actual_map)[vic_mozzies$pix] <- 1
 
+actual_catch <- vic_objective$potent
+values(actual_catch) <- NA
+values(actual_catch)[unique(as.vector(catch_membership_mat[vic_mozzies$pix,]))] <- 1
 
+#plot(actual_map) # can't actually see anything - had to have a quick little zoom in
+plot(vic_objective$potent)#, xlim=c(142,143), ylim=c(-34.5,-34))
+plot(actual_catch, add=TRUE, col=alpha(brat, 0.8))#, xlim=c(142,143), ylim=c(-34.5,-34))
+points(site_ids[vic_mozzies$pix, c("x","y")])
 
 
 

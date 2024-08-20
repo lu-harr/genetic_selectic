@@ -319,9 +319,8 @@ auc_agg_fig <- function(inlst,
     maxy = ylim[2]
   }
   
-  
   message(paste("auc range:", ylim, collapse=" "))
-  plot(0, type="n", xlim=c(0,niters), ylim=ylim, 
+  plot(0, type="n", xlim=c(0,niters), ylim=c(miny, maxy), 
        xlab="Iteration", ylab=ylab,
        main=main)
   
@@ -356,7 +355,7 @@ auc_agg_fig <- function(inlst,
     legend(ifelse(inlst[[1]][1, 1] > inlst[[1]][niters, 1], "topright", "bottomright"), 
            legend_labs, fill=pal[1:length(inlst)], title=legend_title)
   }
-  
+  return(c(miny, maxy))
 }
 
 
