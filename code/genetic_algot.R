@@ -343,12 +343,12 @@ auc_agg_fig <- function(inlst,
   
   # give us a goal line if we know where it is ...
   if(inlst[[1]][1, 1] > inlst[[1]][niters, 1]){
-    abline(h=0, col="grey", lty=2, lwd=2)
+    abline(h=0, col="grey40", lty=2, lwd=2)
   }
   
   if (upper == TRUE){
     message(maxy)
-    abline(h=maxy, col="grey", lty=2, lwd=2)
+    abline(h=maxy, col="grey40", lty=2, lwd=2)
   }
   
   if (length(legend_labs) > 0){

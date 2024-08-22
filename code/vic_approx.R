@@ -108,11 +108,28 @@ educated_guess <- matrix(c(sample(vic_sites$id[order(vic_sites$potent,
 names(educated_guess) <- paste("site", 1:nselect, sep="")
 
 # would be nice if I could plot the educated guess to assess coverage ...
-plot(vic_objective$potent)
-for (i in 1:nrow(educated_guess)){
-  tmp <- which(vic_sites$id %in% educated_guess[i,])
-  points(vic_sites[tmp, c("x","y")])
-}
+greedy_sites <- educated_guess %>%
+  unlist() %>%
+  ftable() %>%
+  as.data.frame()
+
+greedy_map <- vic_objective$potent
+values(greedy_map)[!is.na(values(greedy_map))] <- 0
+values(greedy_map)[as.numeric(paste(greedy_sites$.))] <- greedy_sites$Freq
+greedy_map <- trim(greedy_map)
+values(greedy_map)[values(greedy_map) == 0] <- NA
+
+{png("figures/vic_greedy_start.png",
+    height=1200,
+    width=1700,
+    pointsize=40)
+  par(mar=c(2,2,4.1,4.1), bty="n", xpd=NA)
+plot(greedy_map, col=greens(100), axes=FALSE, bty="n",
+     legend.args=list(text="Frequency", 2, line=1),
+     main="Greedy starting pool")
+par(xpd=NA)
+plot(st_geometry(vic_shp), add=TRUE)
+dev.off()}
 # that takes a sec but is what I expected ... 
 # perhaps try starting from a risk-only point later?
 
@@ -382,6 +399,48 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh2.csv", ro
   t2-t1} # expecting 15 mins
 write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
 
+# including tenth-degree neighbours
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times1000neigh10 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts1000neigh10 <- rep(list(NA), nruns)
+  
+  neigh_mat <- focalWeight(id_ras, 0.85, "circle")
+  neigh_mat[!neigh_mat == 0] = 1
+  neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
+  neigh_membership_mat <- values(neigh_stack, mat=TRUE)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = neigh_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times1000neigh10[ind] <- tend - tstart
+    final_fronts1000neigh10[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 15 mins
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh10.csv", row.names=FALSE)
+
 ################################################################################
 # educated guess
 {set.seed(834903)
@@ -553,22 +612,20 @@ progress_pareto1 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress_pareto2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto2.csv")
 progress_pareto3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto3.csv")
 
-save(times1000, times5000, times10000, times50000,
-     times1000neigh2, times1000neigh3,
-     times_educated,
-     times_pareto2, times_pareto3,
-     final_fronts1000, final_fronts5000, final_fronts10000,
-     final_fronts1000neigh2, final_fronts1000neigh3,
-     final_fronts_educated,
-     final_fronts_pareto2,final_fronts_pareto3,
-     file="output/vic_diagnostics.rds")
+# save(times1000, times5000, times10000, times50000,
+#      times1000neigh2, times1000neigh3,
+#      times_educated,
+#      times_pareto2, times_pareto3,
+#      final_fronts1000, final_fronts5000, final_fronts10000,
+#      final_fronts1000neigh2, final_fronts1000neigh3,
+#      final_fronts_educated,
+#      final_fronts_pareto2,final_fronts_pareto3,
+#      file="output/vic_diagnostics.rds")
 
 load("output/vic_diagnostics.rds")
 
 # very interesting ...
 # might need to make the box_extents the same for all of these for context ...?
-
-neigh_lim <- # etc
 
 {png("figures/vic_sensitivity.png",
      width=2400,
@@ -592,7 +649,7 @@ pool_lim <- auc_agg_fig(list(progress1000,
 neigh_lim <- auc_agg_fig(list(progress_neigh1,
                                progress_neigh2,
                                progress_neigh3),
-                          legend_labs=c("1st degree", "2nd degree", "3rd degree"),
+                          legend_labs=c("1-neighbours", "2-neighbours", "3-neighborus"),
                           legend_title="Neighbourhood size",
                           pal=iddu(4)[2:4],
                          ylim=c(1987140,4408493))
@@ -600,14 +657,14 @@ neigh_lim <- auc_agg_fig(list(progress_neigh1,
 pareto_lim <- auc_agg_fig(list(progress_pareto1,
                                progress_pareto2,
                                progress_pareto3),
-                          legend_labs=c("Rank 1", "Rank 1 & 2", "Rank 1, 2 & 3"),
-                          legend_title="Goldberg ranking",
+                          legend_labs=c("Rank 1", "Rank 2", "Rank 3"),
+                          legend_title="Goldberg ranking cutoff",
                           pal=iddu(4)[2:4],
                           ylim=c(1987140,4408493))
 
 loaded_lim <- auc_agg_fig(list(progress_uneducated,
                                progress_educated),
-                          legend_labs=c("Random", "Educated guess"),
+                          legend_labs=c("Random", "Greedy"),
                           legend_title="Starting pool",
                           pal=iddu(4)[2:4],
                           ylim=c(1987140,4408493))
@@ -642,7 +699,12 @@ plot(c(rep(1,10), rep(2, 10), rep(3,10)),
      c(times1000, times1000neigh2, times1000neigh3),
      xlab="Neighbourhood size",
      ylab="Run time (mins)",
-     main="Neighbourhood size (up to 3rd-degree)")
+     main="Neighbourhood size")
+pooldf <- data.frame(neighs=c(rep(1,10), rep(2, 10), rep(3,10)),
+                     time=c(times1000, times1000neigh2, times1000neigh3))
+mod <- lm(time ~ neighs, pooldf)
+abline(mod$coefficients[[1]], mod$coefficients[[2]])
+(mod$coefficients[[1]] + mod$coefficients[[2]]*10)*10 # 24 minnies
 
 pooldf <- data.frame(size=c(rep(1000,10), rep(5000, 10), rep(10000,10)),
                 time=c(times1000, times5000, times10000))
@@ -656,15 +718,15 @@ abline(mod$coefficients[[1]], mod$coefficients[[2]])
 mod$coefficients[[1]] + mod$coefficients[[2]]*50000 # 84 minutes per run
 # 14 hours
 
-final_frontsdf <- rbindlist(final_fronts_educated) %>%
-  as.data.frame()
-tmp <- final_frontsdf[,grep("site", names(final_frontsdf))]
-tmp <- as.data.frame(t(apply(tmp, 1, sort)))
-names(tmp) <- paste("site", 1:ncol(tmp), sep="")
-final_frontsdf[,grep("site", names(final_frontsdf))] <- tmp
-collected <- final_frontsdf %>%
-  #dplyr::select(grep("site", names(final_frontsdf), value=TRUE)) %>%
-  unique() #%>%
+# final_frontsdf <- rbindlist(final_fronts_educated) %>%
+#   as.data.frame()
+# tmp <- final_frontsdf[,grep("site", names(final_frontsdf))]
+# tmp <- as.data.frame(t(apply(tmp, 1, sort)))
+# names(tmp) <- paste("site", 1:ncol(tmp), sep="")
+# final_frontsdf[,grep("site", names(final_frontsdf))] <- tmp
+# collected <- final_frontsdf %>%
+#   #dplyr::select(grep("site", names(final_frontsdf), value=TRUE)) %>%
+#   unique() #%>%
 
 # contour plot but now it's final fronts only .. check this for 10,000 iters
 # work out a way to save everything? might just have to be an rds
@@ -686,6 +748,24 @@ agg_map <- vic_objective$potent
 values(agg_map)[!is.na(values(agg_map))] <- 0
 values(agg_map)[as.numeric(paste(all_sites$.))] <- all_sites$Freq
 values(agg_map)[values(agg_map) == 0] <- NA
+
+final_frontsdf2 <- rbindlist(final_fronts10000) %>%
+  as.data.frame()
+agg_pareto2 <- psel(final_frontsdf2, high("sum_pop")*high("sum_risk")) %>%
+  arrange(sum_pop)
+
+# a little concerned the same design is in here a bunch of times?
+all_sites2 <- agg_pareto2 %>%
+  dplyr::select(grep("site", names(agg_pareto2))) %>%
+  unique() %>%
+  unlist() %>%
+  ftable() %>%
+  as.data.frame()
+
+agg_map2 <- vic_objective$potent
+values(agg_map2)[!is.na(values(agg_map2))] <- 0
+values(agg_map2)[as.numeric(paste(all_sites2$.))] <- all_sites2$Freq
+values(agg_map2)[values(agg_map2) == 0] <- NA
 
 pot_map <- vic_objective$potent
 values(pot_map) <- NA
@@ -722,6 +802,9 @@ actual_catch <- vic_objective$potent
 values(actual_catch) <- NA
 values(actual_catch)[unique(as.vector(catch_membership_mat[vic_mozzies$pix,]))] <- 1
 
+plot(agg_pareto$sum_pop, agg_pareto$sum_risk, col=alpha("blue", 0.2), pch=16) 
+# need to investigate the tail here - plot in geographic space
+existing_potent
 
 {png("figures/vic_mapped.png",
     width=2500,
@@ -733,12 +816,20 @@ plot(final_frontsdf$sum_pop, final_frontsdf$sum_risk,
      xlab="Sum(Human Population Density)",
      ylab="Sum(Potential Risk)",
      cex.lab=1.2, cex.axis=1.2)
+#points(final_frontsdf2$sum_pop, final_frontsdf2$sum_risk, col="blue")
+#points(agg_pareto2$sum_pop, agg_pareto2$sum_risk, col="blue", pch=16)
+#lines(agg_pareto2$sum_pop, agg_pareto2$sum_risk, col="blue", lwd=2)
+#lines(rep(max(agg_pareto2$sum_pop), 2), c(0, agg_pareto2$sum_risk[nrow(agg_pareto2)]), col="blue", lty=2, lwd=2)
+#lines(c(0, agg_pareto2$sum_pop[1]), rep(max(agg_pareto2$sum_risk), 2), col="blue", lty=2, lwd=2)
+
 lines(rep(max(agg_pareto$sum_pop), 2), c(0, agg_pareto$sum_risk[nrow(agg_pareto)]), col="grey", lty=2, lwd=2)
 lines(c(0, agg_pareto$sum_pop[1]), rep(max(agg_pareto$sum_risk), 2), col="grey", lty=2, lwd=2)
 points(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, pch=16)
 lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, lwd=2)
 text(30000, 70, paste("AUF:\n", format(round(pareto_progress_auc(list(agg_pareto)), digits=0), big.mark=",")),
      col=alpha(brat, 0.6), cex=2.5, font=2)
+#text(30000, 50, paste("best uninformed AUF:\n", format(round(pareto_progress_auc(list(agg_pareto2)), digits=0), big.mark=",")),
+#     col=alpha("blue", 0.6), cex=2.5, font=2)
 text(existing_hpop, 90, "Existing\n surveillance", col=iddu(2)[2], cex=1.2)
 arrows(existing_hpop, 93, existing_hpop, existing_potent-1, col=iddu(2)[2], lwd=2)
 points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 

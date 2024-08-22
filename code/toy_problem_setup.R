@@ -787,7 +787,7 @@ auc_agg_fig(list(progress_auc_1000,
 auc_agg_fig(list(progress_neigh1,
                  progress_neigh2,
                  progress_neigh3),
-            legend_labs=c("1st degree", "2nd degree", "3rd degree"),
+            legend_labs=c("1-neighbours", "2-neighbours", "3-neighbours"),
             legend_title="Neighbourhood size",
             ylim = c(890, exact_auc),
             pal=iddu(4)[2:4])
@@ -796,15 +796,15 @@ auc_agg_fig(list(progress_neigh1,
 auc_agg_fig(list(progress_pareto1,
                  progress_pareto2,
                  progress_pareto3),
-            legend_labs=c("Rank 1", "Rank 1 & 2", "Rank 1, 2 & 3"),
-            legend_title="Goldberg ranking",
+            legend_labs=c("Rank 1", "Rank 2", "Rank 3"),
+            legend_title="Goldberg ranking cutoff",
             ylim = c(890, exact_auc),
             pal=iddu(4)[2:4])
             #main="Making selection more lenient doesn't seem to change performance?")
 
 auc_agg_fig(list(progress_uneducated,
                  progress_educated),
-            legend_labs=c("Random", "Educated guess"),
+            legend_labs=c("Random", "Greedy"),
             legend_title="Starting pool",
             ylim = c(890, exact_auc),
             pal=iddu(4)[2:4])
