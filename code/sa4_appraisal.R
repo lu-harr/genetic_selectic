@@ -7,6 +7,7 @@ hpop <- raster("~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_
 
 states = st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp")
 sa4s <- st_read("~/Desktop/jev/data/admin/SA4_2021_AUST_SHP_GDA2020/SA4_2021_AUST_GDA2020.shp")
+sa4s$SA4_NAME21[sa4s$STE_NAME21 == "Victoria"]
 
 state_potential_surveillance_compare <- function(state,
                                                  state_shp,
@@ -18,7 +19,8 @@ state_potential_surveillance_compare <- function(state,
                                                  buffer_distance_m=10000,  # for state buffer; should increase if blur radius is increased
                                                  blur_radius_degrees=0.05,  # for site buffer
                                                  quant_prob=0.90,
-                                                 out_path="figures/"){
+                                                 out_path="figures/",
+                                                 label_deets=c()){
   # here is a big function that should handle everything for us ...
   # I only need it to work for Vic for the chapter but might as well leave the ability
   # to use it elsewhere ...
@@ -94,9 +96,9 @@ state_potential_surveillance_compare <- function(state,
   plot(sel, col=alpha("orange", 0.5), legend=FALSE,  xaxt="n", yaxt="n", horizontal=TRUE)
   par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
   plot(st_geometry(state_shp), add=TRUE, lwd=0.5)
-  #points(past_mozzies[past_mozzies$data_source == state,
-  #                    c("longitude", "latitude")], 
-  #       pch=0, cex=0.8, col="purple")   
+  points(past_mozzies[past_mozzies$data_source == state,
+                      c("longitude", "latitude")], 
+         pch=0, cex=0.8, col="purple")   
   # legend("topright", fill=alpha("orange", 0.5), cex=1.8,
   #        "Areas of highest\n transmission suitability", bty="n")
   
@@ -112,22 +114,56 @@ state_potential_surveillance_compare <- function(state,
   #                labels=c("Low","High")))
   
   plot(sel, col=alpha("orange", 0.5), legend=FALSE, add=TRUE)
-  plot(st_geometry(state_shp), add=TRUE, lwd=0.5)
-  #plot(st_geometry(state_sa4s), add=TRUE, lwd=0.5)
-  #points(past_mozzies[past_mozzies$data_source == state,
-  #                    c("longitude", "latitude")], 
-  #       pch=0, cex=0.8, col="purple")
+  #plot(st_geometry(state_shp), add=TRUE, lwd=0.5)
+  plot(st_geometry(state_sa4s), add=TRUE, lwd=0.5)
+  points(past_mozzies[past_mozzies$data_source == state,
+                      c("longitude", "latitude")], 
+         pch=0, cex=0.8, col="purple")
+  
+  if (length(label_deets) > 0){
+    par(xpd=NA)
+    text(label_deets$lablon, label_deets$lablat, labels=label_deets$name, 
+         offset=0.5, pos=label_deets$pos)
+    for (i in 1:nrow(label_deets)){
+      lines(label_deets[i, c("lablon", "centlon")], label_deets[i, c("lablat", "centlat")])
+    }
+  }
   
   par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1),xpd=NA)
   plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
   legend(0.78,1.05, fill=alpha("orange", 0.5), cex=1.6,
          "Areas of highest \ntransmission suitability", bty="n")
+  subfigure_label(par()$usr, 0, 0.9, "(a)", 1.5)
+  subfigure_label(par()$usr, 0.5, 0.9, "(b)", 1.5)
   dev.off()
   
   return(list(potent=potential_state,
               hpop=hpop_state,
               at_risk=sel))
 }
+
+lab_deets <- do.call(rbind, st_geometry(st_centroid(vic_sa4s))) %>%
+  as.data.frame() %>%
+  setNames(c("centlon", "centlat")) %>%
+  drop_na() %>%
+  mutate(name = vic_sa4s$SA4_NAME21[1:17] %>%
+           gsub(pattern="Melbourne - ", replacement="") %>%
+           gsub(pattern=" - ", replacement="-") %>%
+           gsub(pattern=" and ", replacement="\nand "),
+         lablon = c(142.5, 144.2, 143.2, 148.5, 149.1, 144.9, 148.7, 147, 147, 
+                    145, 148.5, 148, 144.2, 146.3, 143, 146, 141),
+         lablat = c(-38.7, -35, -39, -36, -36.5, -39.2, -38.5, -39.1, -35.5, 
+                    -34.5, -38.2, -38.8, -38.7, -39.4, -34, -35, -39),
+         pos = c(1,3,1,3,3,1,4,4,3,3,4,4,1,4,3,3,1))
+
+vic_surveil <- state_potential_surveillance_compare("Vic", vic_shp, sa4s,
+                                                    potential, out_path = "figures/",
+                                                    hpop, all_mozzies,
+                                                    hpop_breaks=c(25,100, 250, 500),
+                                                    label_deets=lab_deets)
+
+
+
 
 
 comments_col = function(surveil_df, rank_cutoff=12){
@@ -259,16 +295,10 @@ vic_shp <- states %>%
   dplyr::filter(STE_NAME21 == "Victoria") %>%
   st_simplify(dTolerance = 1000)
 
-potential <- potential %>%
-  aggregate(10)
+vic_sa4s <- sa4s[sa4s$STE_NAME21 == "Victoria",] %>%
+  st_simplify(dTolerance = 1000)
 
-hpop <- hpop %>%
-  aggregate(10)
 
-vic_surveil <- state_potential_surveillance_compare("Vic", vic_shp, sa4s,
-                                                    potential, out_path = "~/Desktop/",
-                                                    hpop, all_mozzies,
-                                                    hpop_breaks=c(25,100, 250, 500))
 
 # play around with rank_cutoff here?
 vic_surveil_df = surveil_df("Victoria",
