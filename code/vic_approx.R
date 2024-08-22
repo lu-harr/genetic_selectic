@@ -399,6 +399,50 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh2.csv", ro
   t2-t1} # expecting 15 mins
 write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
 
+
+# including fifth-degree neighbours
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times1000neigh5 <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts1000neigh5 <- rep(list(NA), nruns)
+  
+  neigh_mat <- focalWeight(id_ras, 0.45, "circle")
+  neigh_mat[!neigh_mat == 0] = 1
+  neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
+  neigh_membership_mat <- values(neigh_stack, mat=TRUE)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = neigh_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times1000neigh5[ind] <- tend - tstart
+    final_fronts1000neigh5[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 25 mins ... ended up being 53 mins so I don't think we're linear any more
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh5.csv", row.names=FALSE)
+
+
 # including tenth-degree neighbours
 {set.seed(834903)
   t1 = Sys.time()
@@ -438,7 +482,7 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh3.csv", ro
   }
   
   t2 = Sys.time()
-  t2-t1} # expecting 15 mins
+  t2-t1} # expecting 25 mins ... ended up being 53 mins so I don't think we're linear any more
 write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh10.csv", row.names=FALSE)
 
 ################################################################################
@@ -594,11 +638,97 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_pareto3.csv", r
 
 
 ##################################################################################
+# BEST SETTINGS ?
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times_apple <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts_apple <- rep(list(NA), nruns)
+  
+  neigh_mat <- focalWeight(id_ras, 0.3, "circle")
+  neigh_mat[!neigh_mat == 0] = 1
+  neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
+  neigh_membership_mat <- values(neigh_stack, mat=TRUE)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 50000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times_apple[ind] <- tend - tstart
+    final_fronts_apple[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 85*10 mins
+write.csv(progress_auc, "output/vic_auc_pool50000_iters100_runs10_neigh3.csv", row.names=FALSE)
+
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  nruns = 10
+  
+  times_pear <- matrix(NA, nrow=1, ncol=nruns)
+  progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
+  final_fronts_pear <- rep(list(NA), nruns)
+  
+  neigh_mat <- focalWeight(id_ras, 0.3, "circle")
+  neigh_mat[!neigh_mat == 0] = 1
+  neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
+  neigh_membership_mat <- values(neigh_stack, mat=TRUE)
+  
+  for (ind in 1:nruns){
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 50000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = starting_point, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+    
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    times_pear[ind] <- tend - tstart
+    final_fronts_pear[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
+  }
+  
+  t2 = Sys.time()
+  t2-t1} # expecting 85*10 mins
+write.csv(progress_auc, "output/vic_auc_pool50000_iters100_runs10_neigh3_greedy_start.csv", row.names=FALSE)
+
+##################################################################################
 # LET'S REVIEW ...
 
 progress_neigh1 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress_neigh2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh2.csv")
 progress_neigh3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh3.csv")
+progress_neigh5 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh5.csv")
+progress_neigh10 <- read.csv("output/vic_auc_pool1000_iters100_runs10_neigh10.csv")
 
 progress1000 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress5000 <- read.csv("output/vic_auc_pool5000_iters100_runs10.csv")
@@ -613,7 +743,7 @@ progress_pareto2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto2.cs
 progress_pareto3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto3.csv")
 
 # save(times1000, times5000, times10000, times50000,
-#      times1000neigh2, times1000neigh3,
+#      times1000neigh2, times1000neigh3, times1000neigh5, times1000neigh10, 
 #      times_educated,
 #      times_pareto2, times_pareto3,
 #      final_fronts1000, final_fronts5000, final_fronts10000,
@@ -647,12 +777,16 @@ pool_lim <- auc_agg_fig(list(progress1000,
 # could be because of concavitity but doubt it happens as much as appears?
 
 neigh_lim <- auc_agg_fig(list(progress_neigh1,
-                               progress_neigh2,
-                               progress_neigh3),
-                          legend_labs=c("1-neighbours", "2-neighbours", "3-neighborus"),
+                               #progress_neigh2,
+                               progress_neigh3,
+                              progress_neigh5,
+                              progress_neigh10),
+                          legend_labs=c("1-neighbours", #"2-neighbours", 
+                                        "3-neighbours","5-neighbours", "10-neighbours"),
                           legend_title="Neighbourhood size",
-                          pal=iddu(4)[2:4],
+                          pal=c(iddu(4)[2:4], brat, "orange"),
                          ylim=c(1987140,4408493))
+# how interesting !
 
 pareto_lim <- auc_agg_fig(list(progress_pareto1,
                                progress_pareto2,
@@ -695,16 +829,19 @@ plot(c(rep(1,10), rep(2, 10), rep(3,10)),
      ylab="Run time (mins)",
      main="Pareto tolerance (ranks up to 3)")
 
-plot(c(rep(1,10), rep(2, 10), rep(3,10)),
-     c(times1000, times1000neigh2, times1000neigh3),
+plot(c(rep(1,10), rep(2, 10), rep(3,10), rep(10,10)),
+     c(times1000, times1000neigh2, times1000neigh3, times1000neigh10),
      xlab="Neighbourhood size",
      ylab="Run time (mins)",
      main="Neighbourhood size")
 pooldf <- data.frame(neighs=c(rep(1,10), rep(2, 10), rep(3,10)),
                      time=c(times1000, times1000neigh2, times1000neigh3))
-mod <- lm(time ~ neighs, pooldf)
-abline(mod$coefficients[[1]], mod$coefficients[[2]])
-(mod$coefficients[[1]] + mod$coefficients[[2]]*10)*10 # 24 minnies
+mod <- lm(time ~ neighs + I(neighs**2), pooldf)
+lines(seq(1, 10, length.out=100), 
+      mod$coefficients[[1]] + seq(1, 10, length.out=100)*mod$coefficients[[2]] + seq(1, 10, length.out=100)**2*mod$coefficients[[3]])
+(mod$coefficients[[1]] + 5*mod$coefficients[[2]] + 5**2*mod$coefficients[[3]])*10
+# eh this isn't quite right but I would rather it overshot
+
 
 pooldf <- data.frame(size=c(rep(1000,10), rep(5000, 10), rep(10000,10)),
                 time=c(times1000, times5000, times10000))
