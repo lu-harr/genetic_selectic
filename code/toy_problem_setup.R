@@ -726,20 +726,20 @@ auc_agg_fig(list(progress_pareto1,
 ################################################################################
 # TURN THIS ALL INTO ONE FIGURE ... TWEAK COLOURS ...
 
-mean(times1000)
-sd(times1000)
-mean(times5000)
-sd(times5000)
-mean(times10000)
-sd(times10000)
-mean(times50000)
-sd(times50000)
-
-alltimes <- data.frame(poolsize=c(rep(1000, 10), rep(5000, 10), rep(10000, 10), rep(50000, 10)),
-                       time=c(times1000, times5000*60, times10000*60, times50000*60))
-timemod <- lm(time ~ poolsize, alltimes)
-summary(timemod)
-plot(alltimes)
+# mean(times1000)
+# sd(times1000)
+# mean(times5000)
+# sd(times5000)
+# mean(times10000)
+# sd(times10000)
+# mean(times50000)
+# sd(times50000)
+# 
+# alltimes <- data.frame(poolsize=c(rep(1000, 10), rep(5000, 10), rep(10000, 10), rep(50000, 10)),
+#                        time=c(times1000, times5000*60, times10000*60, times50000*60))
+# timemod <- lm(time ~ poolsize, alltimes)
+# summary(timemod)
+# plot(alltimes)
 
 
 progress_auc_1000 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
