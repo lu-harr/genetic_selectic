@@ -1,7 +1,5 @@
 # script for Victoria-wide appraisal, trimmed down from jev/code/mozzie_surveillance_potential.R
 
-
-
 potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
 hpop <- raster("~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif")
 
@@ -9,6 +7,113 @@ states = st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AU
 sa4s <- st_read("~/Desktop/jev/data/admin/SA4_2021_AUST_SHP_GDA2020/SA4_2021_AUST_GDA2020.shp")
 sa4s$SA4_NAME21[sa4s$STE_NAME21 == "Victoria"]
 
+vic_shp <- states %>%
+  dplyr::filter(STE_NAME21 == "Victoria") %>%
+  st_simplify(dTolerance = 1000)
+
+vic_sa4s <- sa4s[sa4s$STE_NAME21 == "Victoria",] %>%
+  st_simplify(dTolerance = 1000)
+
+wa_shp <- states %>%
+  dplyr::filter(STE_NAME21 == "Western Australia") %>%
+  st_simplify(dTolerance = 1000)
+
+wa_sa4s <- sa4s[sa4s$STE_NAME21 == "Western Australia",] %>%
+  st_simplify(dTolerance = 1000)
+
+lab_deets_vic <- do.call(rbind, st_geometry(st_centroid(vic_sa4s))) %>%
+  as.data.frame() %>%
+  setNames(c("centlon", "centlat")) %>%
+  drop_na() %>%
+  mutate(name = vic_sa4s$SA4_NAME21[1:17] %>%
+           gsub(pattern="Melbourne - North West", replacement="North West\n(Melbourne)") %>%
+           gsub(pattern="Melbourne - ", replacement="") %>%
+           gsub(pattern=" - ", replacement="-") %>%
+           gsub(pattern=" and ", replacement="\nand "),
+         lablon = c(142.5, 144.2, 143.2, 148.5, 149.1, 144.9, 148.7, 147, 147, 
+                    145, 148.5, 148, 144.2, 146.3, 143, 146, 141),
+         lablat = c(-38.7, -35, -39, -36, -36.5, -39.2, -38.5, -39.1, -35.5, 
+                    -34.5, -38.2, -38.8, -38.7, -39.4, -34, -35, -39),
+         pos = c(1,3,1,3,3,1,4,4,3,3,4,4,1,4,3,3,1))
+
+lab_deets_wa <- do.call(rbind, st_geometry(st_centroid(wa_sa4s))) %>%
+  as.data.frame() %>%
+  setNames(c("centlon", "centlat")) %>%
+  drop_na() %>%
+  mutate(name = wa_sa4s$SA4_NAME21[1:10] %>%
+           gsub(pattern="Perth - ", replacement="") %>%
+           gsub(pattern="Western Australia - ", replacement=""),
+         lablon = c(rep(113,7),126,115, 114),
+         lablat = c(-35, -34.5, -32.5, -32,-31.5,-33.5,-33,-34,-18,-19),
+         pos = c(2,2,2,2,2,2,2,4,2,2))
+
+
+# this is the mozzie data I use in JEV 1
+vic_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/phase_2/clean/pathogen/all_moz_surveillance.csv') %>%
+  rename(host_type=host_species) %>% 
+  dplyr::select(
+    -c(site,
+       n_individual_spp_tests,
+    )
+  ) %>% 
+  drop_na(longitude:virus_detection) %>%
+  mutate(data_source = case_when(data_source == "VIC" ~ "Vic",
+                                 TRUE ~ data_source)) %>%
+  subset(data_source == "Vic") %>%
+  filter(as.Date(date) > as.Date("2022-07-01"))
+
+wa_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/phase_2/clean/pathogen/all_moz_surveillance.csv') %>%
+  rename(host_type=host_species) %>% 
+  dplyr::select(
+    -c(site,
+       n_individual_spp_tests,
+    )
+  ) %>% 
+  drop_na(longitude:virus_detection) %>%
+  subset(data_source == "WA") %>%
+  filter(as.Date(date) > as.Date("2022-07-01"))
+
+# number of unique locations
+nrow(unique(vic_mozzies[,c("longitude","latitude")]))
+nrow(unique(wa_mozzies[,c("longitude","latitude")]))
+
+# date range, number of trapping events
+range(vic_mozzies$date)
+range(wa_mozzies$date)
+nrow(vic_mozzies)
+nrow(wa_mozzies)
+
+# number of unique pixels (fine case)
+id_ras <- potential
+values(id_ras) <- 1:ncell(potential)
+vic_mozzies %>%
+  mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
+  group_by(pix) %>%
+  summarise() %>%
+  nrow()
+wa_mozzies %>%
+  mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
+  group_by(pix) %>%
+  summarise() %>%
+  nrow()
+
+# number of unique pixels (coarse case)
+id_ras <- potential %>%
+  aggregate(AGG_FACTOR)
+values(id_ras) <- 1:ncell(id_ras)
+vic_mozzies %>%
+  mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
+  group_by(pix) %>%
+  summarise() %>%
+  nrow()
+wa_mozzies %>%
+  mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
+  group_by(pix) %>%
+  summarise() %>%
+  nrow()
+
+# function straight out of the report: 
+# give me a map of objectives with existing surveillance overlaid
 state_potential_surveillance_compare <- function(state,
                                                  state_shp,
                                                  sa4s,
@@ -20,7 +125,9 @@ state_potential_surveillance_compare <- function(state,
                                                  blur_radius_degrees=0.05,  # for site buffer
                                                  quant_prob=0.90,
                                                  out_path="figures/",
-                                                 label_deets=c()){
+                                                 label_deets=c(),
+                                                 mar=c(2.1,1.1,4.1,1.1),
+                                                 oma=rep(0,4)){
   # here is a big function that should handle everything for us ...
   # I only need it to work for Vic for the chapter but might as well leave the ability
   # to use it elsewhere ...
@@ -66,55 +173,51 @@ state_potential_surveillance_compare <- function(state,
   thin_juris = c("NT", "Qld", "WA") # the negative space was annoying me ...
   
   state_sa4s <- sa4s[sa4s$STE_NAME21 == names(short_juris)[which(short_juris == state)],]
-  state_sa4s <- state_sa4s[!st_is_empty(state_sa4s),] %>%
-    st_simplify(dTolerance = 1000)
+  # state_sa4s <- state_sa4s[!st_is_empty(state_sa4s),] %>%
+  #   st_simplify(dTolerance = 1000)
   
-  if (state %in% thin_juris){
-    png(paste0(out_path, "surveillance_potential_", state, ".png"),
-        height=2700, width=3800, res=300)
-  } else {
-    png(paste0(out_path, "surveillance_potential_", state, ".png"),
-        height=2300, width=4200, res=300)
-  }
+  # if (state %in% thin_juris){
+  #   png(paste0(out_path, "surveillance_potential_", state, ".png"),
+  #       height=2700, width=3800, res=300)
+  # } else {
+  #   png(paste0(out_path, "surveillance_potential_", state, ".png"),
+  #       height=2300, width=4200, res=300)
+  # }
   
   pn_cols <- colorRampPalette(colors = c("#f7f7f7", "#c23375"))(1000)
   purps = colorRampPalette(brewer.pal(9,"Purples"))(100)
   extreme_purps = colorRampPalette(purps[c(seq(1,30,5),30:100)])(1000)
   
-  par(mfrow=c(1,2), bty="n", mar=c(2.1,1.1,4.1,1.1))
+  # par(mfrow=c(1,2), bty="n", mar=c(2.1,1.1,4.1,1.1))
   
   plot(potential_buffered, col=colorRampPalette(brewer.pal(9, "Greys"))(100), legend=FALSE,
        xaxt="n", yaxt="n", horizontal=TRUE)
-  par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
+  par(new=TRUE, mar=mar)
   plot(potential_state, col=pn_cols,  xaxt="n", yaxt="n", horizontal=TRUE,
-       legend.args=list("Transmission suitability", side=3, line=1, cex=1.4),
-       xaxt="n", yaxt="n")#,
-       #axis.args=list(at=c(minValue(potential_state)+0.05, maxValue(potential_state)-0.05),
-      #                labels=c("Low","High")))
+       legend.args=list("Transmission suitability", side=1, line=3, cex=1.4),
+       cex.axis=1.2,
+       legend.width=1.5,
+       xaxt="n", yaxt="n")
   
-  par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
+  par(new=TRUE, mar=mar)
   plot(sel, col=alpha("orange", 0.5), legend=FALSE,  xaxt="n", yaxt="n", horizontal=TRUE)
-  par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
+  par(new=TRUE, mar=mar)
   plot(st_geometry(state_shp), add=TRUE, lwd=0.5)
   points(past_mozzies[past_mozzies$data_source == state,
                       c("longitude", "latitude")], 
-         pch=0, cex=0.8, col="purple")   
-  # legend("topright", fill=alpha("orange", 0.5), cex=1.8,
-  #        "Areas of highest\n transmission suitability", bty="n")
+         pch=0, cex=0.8, col="purple")
   
   plot(sqrt(hpop_buffered), col=colorRampPalette(brewer.pal(9, "Greys"))(100), legend=FALSE,
        xaxt="n", yaxt="n", horizontal=TRUE)
-  par(new=TRUE, bty="n", mar=c(2.1,1.1,4.1,1.1))
+  par(new=TRUE, mar=mar)
   plot(sqrt(hpop_state), col=purps,  xaxt="n", yaxt="n", horizontal=TRUE,
-       legend.args=list("Distance-weighted human population density", side=3, 
-                        line=1, cex=1.4),
-       axis.args=list(at=sqrt(hpop_breaks), labels=hpop_breaks),
-       xaxt="n", yaxt="n")#,
-  #axis.args=list(at=c(minValue(potential_state)+0.05, maxValue(potential_state)-0.05),
-  #                labels=c("Low","High")))
+       legend.args=list("Distance-weighted human population density", side=1, 
+                        line=3, cex=1.4),
+       axis.args=list(at=sqrt(hpop_breaks), labels=hpop_breaks, cex=1.2),
+       legend.width=1.5,
+       xaxt="n", yaxt="n")
   
   plot(sel, col=alpha("orange", 0.5), legend=FALSE, add=TRUE)
-  #plot(st_geometry(state_shp), add=TRUE, lwd=0.5)
   plot(st_geometry(state_sa4s), add=TRUE, lwd=0.5)
   points(past_mozzies[past_mozzies$data_source == state,
                       c("longitude", "latitude")], 
@@ -123,48 +226,74 @@ state_potential_surveillance_compare <- function(state,
   if (length(label_deets) > 0){
     par(xpd=NA)
     text(label_deets$lablon, label_deets$lablat, labels=label_deets$name, 
-         offset=0.5, pos=label_deets$pos)
+         offset=0.5, pos=label_deets$pos,
+         cex=1.1)
     for (i in 1:nrow(label_deets)){
-      lines(label_deets[i, c("lablon", "centlon")], label_deets[i, c("lablat", "centlat")])
+      lines(label_deets[i, c("lablon", "centlon")], 
+            label_deets[i, c("lablat", "centlat")], lwd=0.7)
     }
   }
   
-  par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1),xpd=NA)
-  plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
-  legend(0.78,1.05, fill=alpha("orange", 0.5), cex=1.6,
-         "Areas of highest \ntransmission suitability", bty="n")
-  subfigure_label(par()$usr, 0, 0.9, "(a)", 1.5)
-  subfigure_label(par()$usr, 0.5, 0.9, "(b)", 1.5)
-  dev.off()
+  # par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1),xpd=NA)
+  # plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
+  # legend(0.78,1.05, fill=alpha("orange", 0.5), cex=1.6,
+  #        "Areas of highest \ntransmission suitability", bty="n")
+  # subfigure_label(par()$usr, 0, 0.9, "(a)", 1.5)
+  # subfigure_label(par()$usr, 0.5, 0.9, "(b)", 1.5)
+  # dev.off()
   
   return(list(potent=potential_state,
               hpop=hpop_state,
               at_risk=sel))
 }
 
-lab_deets <- do.call(rbind, st_geometry(st_centroid(vic_sa4s))) %>%
-  as.data.frame() %>%
-  setNames(c("centlon", "centlat")) %>%
-  drop_na() %>%
-  mutate(name = vic_sa4s$SA4_NAME21[1:17] %>%
-           gsub(pattern="Melbourne - ", replacement="") %>%
-           gsub(pattern=" - ", replacement="-") %>%
-           gsub(pattern=" and ", replacement="\nand "),
-         lablon = c(142.5, 144.2, 143.2, 148.5, 149.1, 144.9, 148.7, 147, 147, 
-                    145, 148.5, 148, 144.2, 146.3, 143, 146, 141),
-         lablat = c(-38.7, -35, -39, -36, -36.5, -39.2, -38.5, -39.1, -35.5, 
-                    -34.5, -38.2, -38.8, -38.7, -39.4, -34, -35, -39),
-         pos = c(1,3,1,3,3,1,4,4,3,3,4,4,1,4,3,3,1))
+{png("figures/surveillance_potential_vic_wa.png",
+           height=4800, width=4000, res=300)
+# mar may need to be passed into function ...
+  mar=c(2.1,1.1,1.1,1.1)
+  oma=c(14,2,0,0)
+par(mfrow=c(2,2), mar=mar, oma=c(16,2,0,0), bty="n")
 
-vic_surveil <- state_potential_surveillance_compare("Vic", vic_shp, sa4s,
+vic_surveil <- state_potential_surveillance_compare("Vic", vic_shp, vic_sa4s,
                                                     potential, out_path = "figures/",
-                                                    hpop, all_mozzies,
+                                                    hpop, vic_mozzies,
                                                     hpop_breaks=c(25,100, 250, 500),
-                                                    label_deets=lab_deets)
+                                                    label_deets=lab_deets_vic,
+                                                    blur_radius_degrees = 0.12,
+                                                    mar=mar,
+                                                    oma=oma) # to line up with coarse scale
+
+mar=c(4.1,1.1,0.1,1.1)
+oma=c(4,2,0,0)
+par(mfrow=c(2,2), mar=mar, oma=oma, new=TRUE,
+    mfg=c(2,1), bty="n")
+
+wa_surveil <- state_potential_surveillance_compare("WA", wa_shp, wa_sa4s,
+                                                   potential, hpop,
+                                                   out_path = "figures/",
+                                                   wa_mozzies,
+                                                   hpop_breaks=c(1,25,100,300),
+                                                   blur_radius_degrees = 0.12,
+                                                   label_deets=lab_deets_wa,
+                                                   mar=mar)
+
+# Just finishing off ...
+par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1), xpd=NA)
+plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
+legend(0.78,1.05, fill=alpha("orange", 0.5), cex=1.5,
+       "Areas of highest \ntransmission suitability", bty="n")
+subfigure_label(par()$usr, 0, 0.95, "(a)", 1.5)
+subfigure_label(par()$usr, 0.5, 0.95, "(b)", 1.5)
+subfigure_label(par()$usr, 0, 0.5, "(c)", 1.5)
+subfigure_label(par()$usr, 0.5, 0.5, "(d)", 1.5)
+
+dev.off()}
 
 
 
 
+
+# it's probably time to pop the plotting out so that I can do these two in one figure
 
 comments_col = function(surveil_df, rank_cutoff=12){
   # applies commenting rules to surveil_df (called by surveil_df function)
@@ -289,31 +418,34 @@ surveil_df <- function(state,
               out=out))
 }
 
-# make up some results for vic .....
-
-vic_shp <- states %>%
-  dplyr::filter(STE_NAME21 == "Victoria") %>%
-  st_simplify(dTolerance = 1000)
-
-vic_sa4s <- sa4s[sa4s$STE_NAME21 == "Victoria",] %>%
-  st_simplify(dTolerance = 1000)
-
 
 
 # play around with rank_cutoff here?
 vic_surveil_df = surveil_df("Victoria",
                             vic_surveil,
-                            sa4s,
+                            vic_sa4s,
                             vic_shp,
                             hpop,
-                            all_mozzies,
+                            vic_mozzies,
                             9)
+
+wa_surveil_df = surveil_df("Western Australia",
+                           wa_surveil,
+                           wa_sa4s,
+                           wa_shp,
+                           hpop,
+                           wa_mozzies,
+                           6)
+
 
 library(xtable)
 
 add.to.row <- list(pos=list(-1),
                    command=c("\\multicolumn{2}{c}{Group 1 and 2} & \\multicolumn{1}{c}{Group 3} \\\\ \\cmidrule(lr){1-2} \\cmidrule(lr){3-3}"))
 print(xtable::xtable(vic_surveil_df$out),
+      include.rownames=FALSE)
+
+print(xtable::xtable(wa_surveil_df$out),
       include.rownames=FALSE)
 
 

@@ -13,7 +13,6 @@ vic_shadow <- vic_shp %>%
   st_simplify(dTolerance = 1000)
 # ugly ! ah well !
 
-AGG_FACTOR <- 10
 vic_objective <- stack(raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif'),
                        raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif')) %>%
                          aggregate(AGG_FACTOR) %>%
@@ -175,6 +174,12 @@ dev.off()
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
   final_fronts1000 <- rep(list(NA), nruns)
   
+  neigh_mat <- focalWeight(id_ras, 0.12, "circle") # queens case
+  neigh_mat[!neigh_mat == 0] = 1
+  catchment_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  catchment_stack <- subset(catchment_stack, which(neigh_mat != 0))
+  catch_membership_mat <- values(catchment_stack, mat=TRUE)
+  
   for (ind in 1:nruns){
     tstart <- Sys.time()
     tmp <- genetic_algot(site_ids = vic_sites$id,
@@ -210,6 +215,12 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10.csv", row.names
   times5000 <- matrix(NA, nrow=1, ncol=nruns)
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
   final_fronts5000 <- rep(list(NA), nruns)
+  
+  neigh_mat <- focalWeight(id_ras, 0.12, "circle") # queens case
+  neigh_mat[!neigh_mat == 0] = 1
+  catchment_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  catchment_stack <- subset(catchment_stack, which(neigh_mat != 0))
+  catch_membership_mat <- values(catchment_stack, mat=TRUE)
   
   for (ind in 1:nruns){
     tstart <- Sys.time()
@@ -247,6 +258,12 @@ write.csv(progress_auc, "output/vic_auc_pool5000_iters100_runs10.csv", row.names
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
   final_fronts10000 <- rep(list(NA), nruns)
   
+  neigh_mat <- focalWeight(id_ras, 0.12, "circle") # queens case
+  neigh_mat[!neigh_mat == 0] = 1
+  catchment_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  catchment_stack <- subset(catchment_stack, which(neigh_mat != 0))
+  catch_membership_mat <- values(catchment_stack, mat=TRUE)
+  
   for (ind in 1:nruns){
     tstart <- Sys.time()
     tmp <- genetic_algot(site_ids = vic_sites$id,
@@ -282,6 +299,12 @@ write.csv(progress_auc, "output/vic_auc_pool10000_iters100_runs10.csv", row.name
   times50000 <- matrix(NA, nrow=1, ncol=nruns)
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
   final_fronts50000 <- rep(list(NA), nruns)
+  
+  neigh_mat <- focalWeight(id_ras, 0.12, "circle") # queens case
+  neigh_mat[!neigh_mat == 0] = 1
+  catchment_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  catchment_stack <- subset(catchment_stack, which(neigh_mat != 0))
+  catch_membership_mat <- values(catchment_stack, mat=TRUE)
   
   for (ind in 1:nruns){
     tstart <- Sys.time()
@@ -665,7 +688,7 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_pareto3.csv", r
                          pop_vec = site_ids$hpop,
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
-                         neighbourhood_matrix = catch_membership_mat,
+                         neighbourhood_matrix = neigh_membership_mat,
                          pool = starting_point, # matrix of nselect columns
                          top_level = 1,
                          plot_out = FALSE)
@@ -706,7 +729,7 @@ write.csv(progress_auc, "output/vic_auc_pool50000_iters100_runs10_neigh3.csv", r
                          pop_vec = site_ids$hpop,
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
-                         neighbourhood_matrix = catch_membership_mat,
+                         neighbourhood_matrix = neigh_membership_mat,
                          pool = starting_point, # matrix of nselect columns
                          top_level = 1,
                          plot_out = FALSE)
@@ -742,15 +765,27 @@ progress_pareto1 <- read.csv("output/vic_auc_pool1000_iters100_runs10.csv")
 progress_pareto2 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto2.csv")
 progress_pareto3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto3.csv")
 
-# save(times1000, times5000, times10000, times50000,
-#      times1000neigh2, times1000neigh3, times1000neigh5, times1000neigh10, 
-#      times_educated,
-#      times_pareto2, times_pareto3,
-#      final_fronts1000, final_fronts5000, final_fronts10000,
-#      final_fronts1000neigh2, final_fronts1000neigh3,
-#      final_fronts_educated,
-#      final_fronts_pareto2,final_fronts_pareto3,
-#      file="output/vic_diagnostics.rds")
+progress_apple <- read.csv("output/vic_auc_pool50000_iters100_runs10_neigh3.csv")
+
+# auc_agg_fig(list(progress_apple,
+#                  #progress_educated,
+#                  progress50000,
+#                  progress1000),
+#             pal=c(iddu(4)[2:4], brat),
+#             legend_labs=c("neigh 3, pool size 50000", "greedy start", "pool size 50000", "base"))
+
+save(times1000, times5000, times10000, times50000,
+     times1000neigh2, times1000neigh3, times1000neigh5, times1000neigh10,
+     times_educated,
+     times_pareto2, times_pareto3,
+     final_fronts1000, final_fronts5000, final_fronts10000,
+     final_fronts1000neigh2, final_fronts1000neigh3,
+     final_fronts_educated,
+     final_fronts_pareto2,final_fronts_pareto3,
+     final_fronts_apple,
+     file="output/vic_diagnostics.rds")
+
+
 
 load("output/vic_diagnostics.rds")
 
@@ -814,7 +849,7 @@ subfigure_label(par()$usr, -0.05, 0.48, "(c)")
 subfigure_label(par()$usr, 0.515, 0.48, "(d)")
 dev.off()}
 
-auc_agg_fig(list(progress50000, progress_educated))
+auc_agg_fig(list(progress50000, progress_educated, progress_apple))
 
 min(pool_lim, pareto_lim, neigh_lim, loaded_lim) # 1987140
 max(pool_lim, pareto_lim, neigh_lim, loaded_lim)
@@ -929,7 +964,6 @@ mid_catch <- vic_objective$potent
 values(mid_catch) <- NA
 values(mid_catch)[unique(as.vector(catch_membership_mat[unlist(agg_pareto[mid,grep("site", names(agg_pareto))]),]))] <- 1
 
-
 # existing surveillance
 actual_map <- vic_objective$potent
 values(actual_map) <- NA
@@ -963,8 +997,8 @@ lines(rep(max(agg_pareto$sum_pop), 2), c(0, agg_pareto$sum_risk[nrow(agg_pareto)
 lines(c(0, agg_pareto$sum_pop[1]), rep(max(agg_pareto$sum_risk), 2), col="grey", lty=2, lwd=2)
 points(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, pch=16)
 lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, lwd=2)
-text(30000, 70, paste("AUF:\n", format(round(pareto_progress_auc(list(agg_pareto)), digits=0), big.mark=",")),
-     col=alpha(brat, 0.6), cex=2.5, font=2)
+#text(30000, 70, paste("AUF:\n", format(round(pareto_progress_auc(list(agg_pareto)), digits=0), big.mark=",")),
+#     col=alpha(brat, 0.6), cex=2.5, font=2)
 #text(30000, 50, paste("best uninformed AUF:\n", format(round(pareto_progress_auc(list(agg_pareto2)), digits=0), big.mark=",")),
 #     col=alpha("blue", 0.6), cex=2.5, font=2)
 text(existing_hpop, 90, "Existing\n surveillance", col=iddu(2)[2], cex=1.2)
@@ -975,7 +1009,6 @@ points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")],
        col=c(berry, "orange", purp), cex=3, lwd=2)
 points(existing_hpop, existing_potent, col=iddu(2)[2], pch=16, cex=1.5) # make this a little easier to see?
 points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
-
 
 # make it a 3*3 !
 par(mfrow=c(3,3), oma=c(0,2,0,0), mar=c(0,0,0,0), mfg=c(1,3), bty="n", new=TRUE)

@@ -104,7 +104,7 @@ allx = unique(allxy[,1])
 ally = unique(allxy[,2])
 mid = c(allx[length(allx)/2], ally[length(ally)/2])
 
-wtmat = focalWeight(pot_eg, 0.05,
+wtmat = focalWeight(pot_eg, 0.12,
                     type="circle")
 wtmat[wtmat != 0] = 1
 
@@ -115,9 +115,11 @@ maskmat[maskmat == 0] = NA
 maskras = pot_eg
 values(maskras) = maskmat
 
+
 coarse_catch <- guelphia_potential
 values(coarse_catch) <- NA
 values(coarse_catch)[c(34:36, 44:46, 54:56)] <- 1
+tmp <- rasterToPoints(guelphia_potential)
 
 
 {png("figures/catchment_eg.png",
@@ -133,7 +135,7 @@ values(coarse_catch)[c(34:36, 44:46, 54:56)] <- 1
   
   plot(guelphia_potential, col=pn_cols, xaxt="n", yaxt="n", legend=FALSE)
   plot(coarse_catch, col=alpha("orange", 0.3), add=TRUE, legend=FALSE)
-  points(allxy[45, 1], allxy[45,2], col="orange", pch=15, cex=4)
+  points(tmp[45,"x"], tmp[45,"y"], col="orange", pch=15, cex=4) # eesh
   axis(1, at=c(-37.12, -37.02), labels=c("",""), lwd=3)
   mtext("0.1 degrees", 1, 1, cex=1.3)
   
@@ -150,13 +152,6 @@ values(coarse_catch)[c(34:36, 44:46, 54:56)] <- 1
        legend.shrink=0.3,
        horizontal=TRUE)
   dev.off()}
-
-
-
-plot(guelphia_potential, col=pn_cols, legend.only=TRUE,
-     axis.args=list(at=c(minValue(pot_eg), maxValue(pot_eg)), 
-                    labels=c("Low","High"), cex.axis=1.4),
-     legend.args=list("JEV transmission suitability", side=2, line=2, cex=1.4))
 
 
 

@@ -14,6 +14,8 @@ library(data.table)
 library(rPref)
 library(idpalette)
 
+AGG_FACTOR <- 10
+
 #source("code/iterative_select_funcs.R")
 pinks <- colorRampPalette(colors = c("#f7f7f7", "#c23375"))
 purps <- colorRampPalette(brewer.pal(9,"Purples"))
@@ -42,22 +44,15 @@ states <- st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_A
 # all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/national_mozzie_data/mosquito_detections_all_w_qld_sa.csv')
 
 # check this is the data I end up using in JEV 1?
-all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/phase_2/clean/pathogen/all_moz_surveillance.csv') %>%
-  rename(host_type=host_species) %>% 
-  dplyr::select(
-    -c(site,
-       n_individual_spp_tests,
-    )
-  ) %>% 
-  drop_na(longitude:virus_detection)
-all_mozzies$data_source[all_mozzies$data_source == "VIC"] = "Vic"
-
-
-
-
-
-
-
+# all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/phase_2/clean/pathogen/all_moz_surveillance.csv') %>%
+#   rename(host_type=host_species) %>%
+#   dplyr::select(
+#     -c(site,
+#        n_individual_spp_tests,
+#     )
+#   ) %>%
+#   drop_na(longitude:virus_detection)
+# all_mozzies$data_source[all_mozzies$data_source == "VIC"] = "Vic"
 
 # potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
 # 
