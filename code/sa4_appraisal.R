@@ -299,6 +299,8 @@ ycent=-25
 axis(1, at=c(xpos, xpos + 100/(111.320*cos(ycent/180))), pos=ypos, labels=c("",""))
 text(xpos + 100/(111.320*cos(ycent/180))/2, ypos-1, "100 km", cex=1.5)
 
+
+par(mfrow=c(2,2), mar=mar, oma=oma, mfg=c(2,2), new=TRUE)
 plot(sqrt(wa_surveil$hpop_buffered), 
      col=colorRampPalette(brewer.pal(9, "Greys"))(100),
      legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
@@ -337,6 +339,8 @@ plot(sqrt(wa_surveil$hpop), legend.only=TRUE,
      cex.axis=1.2, legend.width=1.5, horizontal=TRUE,
      col=purps(100))
 
+
+
 # Finishing touches ...
 par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1), xpd=NA)
 plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
@@ -349,7 +353,42 @@ subfigure_label(par()$usr, 0.5, 0.5, "(d)", 1.5)
 
 dev.off()}
 
+# which are hitting ?
+# plot(sqrt(wa_surveil$hpop_buffered), xlim=c(113,120), ylim=c(-35,-30),
+#      col=colorRampPalette(brewer.pal(9, "Greys"))(100),
+#      legend=FALSE, horizontal=TRUE, legend.mar=0)
+# hpop_breaks=c(1,25,100,300)
+# plot(sqrt(wa_surveil$hpop), col=purps(100), add=TRUE,
+#      legend=FALSE)
+# plot(wa_surveil$at_risk, col=alpha("orange", 0.5), add=TRUE,
+#      legend=FALSE, horizontal=TRUE, legend.mar=0)
+# plot(st_geometry(wa_sa4s), add=TRUE, lwd=0.5)
+# tmp <- raster::extract(wa_surveil$at_risk, wa_mozzies[,c("longitude","latitude")])
+# points(wa_mozzies[!is.na(tmp),c("longitude","latitude")], pch=4, cex=0.8, col="purple")
+# points(wa_mozzies[is.na(tmp),c("longitude","latitude")], pch=4, cex=0.8, col="red")
 
+# I don't reckon there's enough room for an inset figure here
+{png("figures/surveillance_potential_swwa.png",
+    height=1950,
+    width=2200,
+    pointsize=45)
+par(mar=c(5.1,4.1,4.1,10.1))
+plot(wa_surveil$potent, xlim=c(114,120), ylim=c(-35.1,-30), col=pn_cols,
+     bty="n", xlab="Longitude", ylab="Latitude", legend.mar=0, legend=FALSE,
+     main="Transmission suitability: south-west WA", cex.lab=1.2, cex.main=1.2)
+     #legend.args=list(text ="Transmission suitability", side=4))
+plot(wa_surveil$at_risk, col=alpha("orange", 0.5), add=TRUE, legend=FALSE)
+par(xpd=FALSE)
+plot(st_geometry(wa_sa4s), lwd=2, add=TRUE)
+points(wa_mozzies[,c("longitude","latitude")], pch=0, col="purple", lwd=3)
+par(mar=c(5.1,4.1,4.1,2.1), new=TRUE)
+plot(wa_surveil$potent, xlim=c(114,120), ylim=c(-35.1,-30), col=pn_cols,
+     legend.only=TRUE, legend.args=list(text ="Transmission suitability", side=4, line=-3, cex=1.2))
+par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1), xpd=NA, bty="n")
+plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
+legend(0.8, 0.2, "Areas of highest\ntransmission\nsuitability", 
+       fill=alpha("orange", 0.5), bty="n", cex=1.1)
+dev.off()}
 
 # it's probably time to pop the plotting out so that I can do these two in one figure
 
