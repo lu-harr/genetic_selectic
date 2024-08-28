@@ -119,15 +119,10 @@ state_potential_surveillance_compare <- function(state,
                                                  sa4s,
                                                  potential_national,
                                                  hpop_national,
-                                                 past_mozzies,
-                                                 hpop_breaks,
                                                  buffer_distance_m=10000,  # for state buffer; should increase if blur radius is increased
                                                  blur_radius_degrees=0.05,  # for site buffer
                                                  quant_prob=0.90,
-                                                 out_path="figures/",
-                                                 label_deets=c(),
-                                                 mar=c(2.1,1.1,4.1,1.1),
-                                                 oma=rep(0,4)){
+                                                 out_path="figures/"){
   # here is a big function that should handle everything for us ...
   # I only need it to work for Vic for the chapter but might as well leave the ability
   # to use it elsewhere ...
@@ -184,55 +179,7 @@ state_potential_surveillance_compare <- function(state,
   #       height=2300, width=4200, res=300)
   # }
   
-  pn_cols <- colorRampPalette(colors = c("#f7f7f7", "#c23375"))(1000)
-  purps = colorRampPalette(brewer.pal(9,"Purples"))(100)
-  extreme_purps = colorRampPalette(purps[c(seq(1,30,5),30:100)])(1000)
-  
   # par(mfrow=c(1,2), bty="n", mar=c(2.1,1.1,4.1,1.1))
-  
-  plot(potential_buffered, col=colorRampPalette(brewer.pal(9, "Greys"))(100), legend=FALSE,
-       xaxt="n", yaxt="n", horizontal=TRUE)
-  par(new=TRUE, mar=mar)
-  plot(potential_state, col=pn_cols,  xaxt="n", yaxt="n", horizontal=TRUE,
-       legend.args=list("Transmission suitability", side=1, line=3, cex=1.4),
-       cex.axis=1.2,
-       legend.width=1.5,
-       xaxt="n", yaxt="n")
-  
-  par(new=TRUE, mar=mar)
-  plot(sel, col=alpha("orange", 0.5), legend=FALSE,  xaxt="n", yaxt="n", horizontal=TRUE)
-  par(new=TRUE, mar=mar)
-  plot(st_geometry(state_shp), add=TRUE, lwd=0.5)
-  points(past_mozzies[past_mozzies$data_source == state,
-                      c("longitude", "latitude")], 
-         pch=0, cex=0.8, col="purple")
-  
-  plot(sqrt(hpop_buffered), col=colorRampPalette(brewer.pal(9, "Greys"))(100), legend=FALSE,
-       xaxt="n", yaxt="n", horizontal=TRUE)
-  par(new=TRUE, mar=mar)
-  plot(sqrt(hpop_state), col=purps,  xaxt="n", yaxt="n", horizontal=TRUE,
-       legend.args=list("Distance-weighted human population density", side=1, 
-                        line=3, cex=1.4),
-       axis.args=list(at=sqrt(hpop_breaks), labels=hpop_breaks, cex=1.2),
-       legend.width=1.5,
-       xaxt="n", yaxt="n")
-  
-  plot(sel, col=alpha("orange", 0.5), legend=FALSE, add=TRUE)
-  plot(st_geometry(state_sa4s), add=TRUE, lwd=0.5)
-  points(past_mozzies[past_mozzies$data_source == state,
-                      c("longitude", "latitude")], 
-         pch=0, cex=0.8, col="purple")
-  
-  if (length(label_deets) > 0){
-    par(xpd=NA)
-    text(label_deets$lablon, label_deets$lablat, labels=label_deets$name, 
-         offset=0.5, pos=label_deets$pos,
-         cex=1.1)
-    for (i in 1:nrow(label_deets)){
-      lines(label_deets[i, c("lablon", "centlon")], 
-            label_deets[i, c("lablat", "centlat")], lwd=0.7)
-    }
-  }
   
   # par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1),xpd=NA)
   # plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
@@ -243,41 +190,154 @@ state_potential_surveillance_compare <- function(state,
   # dev.off()
   
   return(list(potent=potential_state,
+              potential_buffered=potential_buffered,
+              hpop_buffered=hpop_buffered,
               hpop=hpop_state,
               at_risk=sel))
 }
 
+vic_surveil <- state_potential_surveillance_compare("Vic", 
+                                                    vic_shp, 
+                                                    vic_sa4s,
+                                                    potential,
+                                                    hpop,
+                                                    blur_radius_degrees = 0.12) # to line up with coarse scale
+
+wa_surveil <- state_potential_surveillance_compare("WA", 
+                                                   wa_shp, 
+                                                   wa_sa4s,
+                                                   potential, 
+                                                   hpop,
+                                                   blur_radius_degrees = 0.12)
+
+pn_cols <- colorRampPalette(colors = c("#f7f7f7", "#c23375"))(1000)
+purps = colorRampPalette(brewer.pal(9,"Purples"))(100)
+extreme_purps = colorRampPalette(purps[c(seq(1,30,5),30:100)])(1000)
+
+# have popped the plotting outside the function because I was getting fed! up!
 {png("figures/surveillance_potential_vic_wa.png",
            height=4800, width=4000, res=300)
-# mar may need to be passed into function ...
   mar=c(2.1,1.1,1.1,1.1)
-  oma=c(14,2,0,0)
-par(mfrow=c(2,2), mar=mar, oma=c(16,2,0,0), bty="n")
+  oma=c(16,2,0,0)
+par(mfrow=c(2,2), mar=mar, oma=oma, bty="n")
 
-vic_surveil <- state_potential_surveillance_compare("Vic", vic_shp, vic_sa4s,
-                                                    potential, out_path = "figures/",
-                                                    hpop, vic_mozzies,
-                                                    hpop_breaks=c(25,100, 250, 500),
-                                                    label_deets=lab_deets_vic,
-                                                    blur_radius_degrees = 0.12,
-                                                    mar=mar,
-                                                    oma=oma) # to line up with coarse scale
+plot(vic_surveil$potential_buffered, 
+     col=colorRampPalette(brewer.pal(9, "Greys"))(100), 
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(1,1))
+plot(vic_surveil$potent, col=pn_cols,
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(1,1))
+plot(vic_surveil$at_risk, col=alpha("orange", 0.5),
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(1,1))
+plot(st_geometry(vic_shp), add=TRUE, lwd=0.5)
+points(vic_mozzies[,c("longitude","latitude")], pch=0, cex=0.8, col="purple")
+plot(vic_surveil$potent, legend.only=TRUE,
+     legend.args=list("Transmission suitability", side=1, line=3, cex=1.4),
+     cex.axis=1.2, legend.width=1.5, horizontal=TRUE,
+     col=pn_cols)
 
+par(xpd=NA)
+xpos=149.75
+ypos=-40.5
+ycent=-36.5
+axis(1, at=c(xpos, xpos + 100/(111.320*cos(ycent/180))), pos=ypos, labels=c("",""))
+text(xpos + 100/(111.320*cos(ycent/180))/2, ypos-0.5, "100 km", cex=1.5)
+
+plot(sqrt(vic_surveil$hpop_buffered), 
+     col=colorRampPalette(brewer.pal(9, "Greys"))(100),
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(1,2))
+hpop_breaks=c(25,100, 250, 500)
+plot(sqrt(vic_surveil$hpop), col=purps(100),  
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+plot(sqrt(vic_surveil$hpop), legend.only=TRUE,
+     legend.args=list("Distance-weighted human population density", side=1, line=3, cex=1.4),
+     axis.args=list(at=sqrt(hpop_breaks), labels=hpop_breaks, cex=1.2),
+     cex.axis=1.2, legend.width=1.5, horizontal=TRUE,
+     col=purps(100))
+par(new=TRUE, mar=mar, oma=oma, mfg=c(1,2))
+plot(vic_surveil$at_risk, col=alpha("orange", 0.5),
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(1,2))
+plot(st_geometry(vic_sa4s), add=TRUE, lwd=0.5)
+points(vic_mozzies[,c("longitude","latitude")], pch=0, cex=0.8, col="purple")
+
+par(xpd=NA)
+text(lab_deets_vic$lablon, lab_deets_vic$lablat, labels=lab_deets_vic$name, 
+     offset=0.5, pos=lab_deets_vic$pos,
+     cex=1.1)
+for (i in 1:nrow(lab_deets_vic)){
+  lines(lab_deets_vic[i, c("lablon", "centlon")], 
+        lab_deets_vic[i, c("lablat", "centlat")], lwd=0.7)
+}
+
+
+# reset margins for WA (she's a little longer than wider)
 mar=c(4.1,1.1,0.1,1.1)
+oma=c(6,2,0,0)
+par(mfrow=c(2,2), mar=mar, oma=oma, new=TRUE, mfg=c(2,1), bty="n", xpd=NA)
+
+plot(wa_surveil$potential_buffered, 
+     col=colorRampPalette(brewer.pal(9, "Greys"))(100), 
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(2,1))
+plot(wa_surveil$potent, col=pn_cols,
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(2,1))
+plot(wa_surveil$at_risk, col=alpha("orange", 0.5),
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(2,1), xpd=NA)
+plot(st_geometry(wa_shp), add=TRUE, lwd=0.5)
+points(wa_mozzies[,c("longitude","latitude")], pch=0, cex=0.8, col="purple")
+
+par(xpd=NA)
+xpos=131
+ypos=-36.7
+ycent=-25
+axis(1, at=c(xpos, xpos + 100/(111.320*cos(ycent/180))), pos=ypos, labels=c("",""))
+text(xpos + 100/(111.320*cos(ycent/180))/2, ypos-1, "100 km", cex=1.5)
+
+plot(sqrt(wa_surveil$hpop_buffered), 
+     col=colorRampPalette(brewer.pal(9, "Greys"))(100),
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(2,2))
+hpop_breaks=c(1,25,100,300)
+plot(sqrt(wa_surveil$hpop), col=purps(100),  
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(2,2))
+plot(wa_surveil$at_risk, col=alpha("orange", 0.5),
+     legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
+par(new=TRUE, mar=mar, oma=oma, mfg=c(2,2), xpd=NA)
+plot(st_geometry(wa_sa4s), add=TRUE, lwd=0.5)
+points(wa_mozzies[,c("longitude","latitude")], pch=0, cex=0.8, col="purple")
+
+par(xpd=NA)
+text(lab_deets_wa$lablon, lab_deets_wa$lablat, labels=lab_deets_wa$name, 
+     offset=0.5, pos=lab_deets_wa$pos,
+     cex=1.1)
+for (i in 1:nrow(lab_deets_wa)){
+  lines(lab_deets_wa[i, c("lablon", "centlon")], 
+        lab_deets_wa[i, c("lablat", "centlat")], lwd=0.7)
+}
+
+# can I fenangle the WA legends a little lower?
+mar=c(2.1,1.1,0.1,1.1)
 oma=c(4,2,0,0)
-par(mfrow=c(2,2), mar=mar, oma=oma, new=TRUE,
-    mfg=c(2,1), bty="n")
+par(mfrow=c(2,2), mar=mar, oma=oma, new=TRUE, mfg=c(2,1))
+plot(wa_surveil$potent, legend.only=TRUE,
+     legend.args=list("Transmission suitability", side=1, line=3, cex=1.4),
+     cex.axis=1.2, legend.width=1.5, horizontal=TRUE,
+     col=pn_cols)
+par(mfrow=c(2,2), mar=mar, oma=oma, new=TRUE, mfg=c(2,2))
+plot(sqrt(wa_surveil$hpop), legend.only=TRUE,
+     legend.args=list("Distance-weighted human population density", side=1, line=3, cex=1.4),
+     axis.args=list(at=sqrt(hpop_breaks), labels=hpop_breaks, cex=1.2),
+     cex.axis=1.2, legend.width=1.5, horizontal=TRUE,
+     col=purps(100))
 
-wa_surveil <- state_potential_surveillance_compare("WA", wa_shp, wa_sa4s,
-                                                   potential, hpop,
-                                                   out_path = "figures/",
-                                                   wa_mozzies,
-                                                   hpop_breaks=c(1,25,100,300),
-                                                   blur_radius_degrees = 0.12,
-                                                   label_deets=lab_deets_wa,
-                                                   mar=mar)
-
-# Just finishing off ...
+# Finishing touches ...
 par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1), xpd=NA)
 plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
 legend(0.78,1.05, fill=alpha("orange", 0.5), cex=1.5,
@@ -288,8 +348,6 @@ subfigure_label(par()$usr, 0, 0.5, "(c)", 1.5)
 subfigure_label(par()$usr, 0.5, 0.5, "(d)", 1.5)
 
 dev.off()}
-
-
 
 
 
@@ -429,6 +487,7 @@ vic_surveil_df = surveil_df("Victoria",
                             vic_mozzies,
                             9)
 
+wa_sa4s$SA4_NAME21 <- gsub("Western Australia - ", "", wa_sa4s$SA4_NAME21)
 wa_surveil_df = surveil_df("Western Australia",
                            wa_surveil,
                            wa_sa4s,
