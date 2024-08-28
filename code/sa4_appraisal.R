@@ -21,6 +21,9 @@ wa_shp <- states %>%
 wa_sa4s <- sa4s[sa4s$STE_NAME21 == "Western Australia",] %>%
   st_simplify(dTolerance = 1000)
 
+state_shp <- states[1:8,] %>%
+  st_simplify(dTolerance = 10000)
+
 lab_deets_vic <- do.call(rbind, st_geometry(st_centroid(vic_sa4s))) %>%
   as.data.frame() %>%
   setNames(c("centlon", "centlat")) %>%
@@ -245,6 +248,12 @@ ycent=-36.5
 axis(1, at=c(xpos, xpos + 100/(111.320*cos(ycent/180))), pos=ypos, labels=c("",""))
 text(xpos + 100/(111.320*cos(ycent/180))/2, ypos-0.5, "100 km", cex=1.5)
 
+par(fig=c(0.3,0.45,0.8,1), new=TRUE)
+plot(st_geometry(state_shp))
+plot(st_geometry(state_shp[state_shp$STE_NAME21 == "Victoria",]), col="#c23375", add=TRUE)
+
+par(fig=c(0,1,0,1), new=TRUE)
+par(new=TRUE, mfrow=c(2,2), mar=mar, oma=oma, mfg=c(1,2))
 plot(sqrt(vic_surveil$hpop_buffered), 
      col=colorRampPalette(brewer.pal(9, "Greys"))(100),
      legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
@@ -299,6 +308,12 @@ ycent=-25
 axis(1, at=c(xpos, xpos + 100/(111.320*cos(ycent/180))), pos=ypos, labels=c("",""))
 text(xpos + 100/(111.320*cos(ycent/180))/2, ypos-1, "100 km", cex=1.5)
 
+par(fig=c(0,0.15,0.3,5), new=TRUE)
+plot(st_geometry(state_shp))
+plot(st_geometry(state_shp[state_shp$STE_NAME21 == "Western Australia",]), col="#c23375", add=TRUE)
+
+par(fig=c(0,1,0,1), new=TRUE)
+par(new=TRUE, mfrow=c(2,2), mar=mar, oma=oma, mfg=c(2,1))
 
 par(mfrow=c(2,2), mar=mar, oma=oma, mfg=c(2,2), new=TRUE)
 plot(sqrt(wa_surveil$hpop_buffered), 
@@ -375,7 +390,7 @@ dev.off()}
 par(mar=c(5.1,4.1,4.1,10.1))
 plot(wa_surveil$potent, xlim=c(114,120), ylim=c(-35.1,-30), col=pn_cols,
      bty="n", xlab="Longitude", ylab="Latitude", legend.mar=0, legend=FALSE,
-     main="Transmission suitability: south-west WA", cex.lab=1.2, cex.main=1.2)
+     main="Transmission suitability: south-west WA", cex.lab=1.2, cex.main=1.4)
      #legend.args=list(text ="Transmission suitability", side=4))
 plot(wa_surveil$at_risk, col=alpha("orange", 0.5), add=TRUE, legend=FALSE)
 par(xpd=FALSE)
