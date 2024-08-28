@@ -730,7 +730,7 @@ write.csv(progress_auc, "output/vic_auc_pool50000_iters100_runs10_neigh3.csv", r
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
                          neighbourhood_matrix = neigh_membership_mat,
-                         pool = starting_point, # matrix of nselect columns
+                         pool = educated_guess, # matrix of nselect columns
                          top_level = 1,
                          plot_out = FALSE)
     tend <- Sys.time()
@@ -767,12 +767,12 @@ progress_pareto3 <- read.csv("output/vic_auc_pool1000_iters100_runs10_pareto3.cs
 
 progress_apple <- read.csv("output/vic_auc_pool50000_iters100_runs10_neigh3.csv")
 
-# auc_agg_fig(list(progress_apple,
-#                  #progress_educated,
-#                  progress50000,
-#                  progress1000),
-#             pal=c(iddu(4)[2:4], brat),
-#             legend_labs=c("neigh 3, pool size 50000", "greedy start", "pool size 50000", "base"))
+auc_agg_fig(list(progress_apple,
+                 progress_educated,
+                 progress50000,
+                 progress1000),
+            pal=c(iddu(4)[2:4], brat),
+            legend_labs=c("neigh 3, pool size 50000", "greedy start", "pool size 50000", "base"))
 
 save(times1000, times5000, times10000, times50000,
      times1000neigh2, times1000neigh3, times1000neigh5, times1000neigh10,
@@ -921,7 +921,7 @@ values(agg_map)[!is.na(values(agg_map))] <- 0
 values(agg_map)[as.numeric(paste(all_sites$.))] <- all_sites$Freq
 values(agg_map)[values(agg_map) == 0] <- NA
 
-final_frontsdf2 <- rbindlist(final_fronts10000) %>%
+final_frontsdf2 <- rbindlist(final_fronts50000) %>%
   as.data.frame()
 agg_pareto2 <- psel(final_frontsdf2, high("sum_pop")*high("sum_risk")) %>%
   arrange(sum_pop)
