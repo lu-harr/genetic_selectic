@@ -1,7 +1,7 @@
 setwd("/data/gpfs/projects/punim1228/jev_spartan/")
 source("code/main.R")
 source("code/genetic_algot.R")
-source("code/wa_setup.R")
+source("code/vic_setup.R")
 
 start_script <- Sys.time()
 
@@ -21,19 +21,13 @@ message("neigh 2")
   neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
   neigh_membership_mat <- values(neigh_stack, mat=TRUE)
   
-  png("figures/neigh2_test.png",
-      height=1000,width=1000,pointsize=40)
-  plot(raster(neigh_mat))
-  plot(rasterToPolygons(raster(neigh_mat)), add=TRUE)
-  dev.off()
-  
   for (ind in 1:nruns){
     tstart <- Sys.time()
-    tmp <- genetic_algot(site_ids = wa_sites$id,
+    tmp <- genetic_algot(site_ids = vic_sites$id,
                          nselect = nselect, 
                          poolsize = 1000,
                          niters = niters,
-                         sandpit = wa_objective$potent,
+                         sandpit = vic_objective$potent,
                          potential_vec = site_ids$potent,
                          pop_vec = site_ids$hpop,
                          sample_method = "neighbours",
@@ -50,12 +44,12 @@ message("neigh 2")
   }
   
   t2 = Sys.time()
-  t2-t1} # expecting 15 mins for vic .. probably longer for WA .. but how much longer ?
-write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
+  t2-t1}
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
 
 save(times_neigh2,
      final_fronts_neigh2,
-     file="output/diagnostics_wa_neigh.rds")
+     file="output/diagnostics_vic_neigh.rds")
 
 message(paste("neigh 3: ", Sys.time() - start_script))
 {set.seed(834903)
@@ -73,19 +67,13 @@ message(paste("neigh 3: ", Sys.time() - start_script))
   neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
   neigh_membership_mat <- values(neigh_stack, mat=TRUE)
   
-  png("figures/neigh3_test.png",
-      height=1000,width=1000,pointsize=40)
-  plot(raster(neigh_mat))
-  plot(rasterToPolygons(raster(neigh_mat)), add=TRUE)
-  dev.off()
-  
   for (ind in 1:nruns){
     tstart <- Sys.time()
-    tmp <- genetic_algot(site_ids = wa_sites$id,
+    tmp <- genetic_algot(site_ids = vic_sites$id,
                          nselect = nselect, 
                          poolsize = 1000,
                          niters = niters,
-                         sandpit = wa_objective$potent,
+                         sandpit = vic_objective$potent,
                          potential_vec = site_ids$potent,
                          pop_vec = site_ids$hpop,
                          sample_method = "neighbours",
@@ -102,12 +90,12 @@ message(paste("neigh 3: ", Sys.time() - start_script))
   }
   
   t2 = Sys.time()
-  t2-t1} # expecting 15 mins for vic .. probably longer for WA .. but how much longer ?
-write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
+  t2-t1}
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
 
 save(times_neigh2, times_neigh3,
      final_fronts_neigh2, times_neigh3,
-     file="output/diagnostics_wa_neigh.rds")
+     file="output/diagnostics_vic_neigh.rds")
 
 message(paste("neigh 4: ", Sys.time() - start_script))
 {set.seed(834903)
@@ -125,19 +113,13 @@ message(paste("neigh 4: ", Sys.time() - start_script))
   neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
   neigh_membership_mat <- values(neigh_stack, mat=TRUE)
   
-  png("figures/neigh4_test.png",
-      height=1000,width=1000,pointsize=40)
-  plot(raster(neigh_mat))
-  plot(rasterToPolygons(raster(neigh_mat)), add=TRUE)
-  dev.off()
-  
   for (ind in 1:nruns){
     tstart <- Sys.time()
-    tmp <- genetic_algot(site_ids = wa_sites$id,
+    tmp <- genetic_algot(site_ids = vic_sites$id,
                          nselect = nselect, 
                          poolsize = 1000,
                          niters = niters,
-                         sandpit = wa_objective$potent,
+                         sandpit = vic_objective$potent,
                          potential_vec = site_ids$potent,
                          pop_vec = site_ids$hpop,
                          sample_method = "neighbours",
@@ -154,12 +136,12 @@ message(paste("neigh 4: ", Sys.time() - start_script))
   }
   
   t2 = Sys.time()
-  t2-t1} # expecting 15 mins for vic .. probably longer for WA .. but how much longer ?
-write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_neigh4.csv", row.names=FALSE)
+  t2-t1}
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh4.csv", row.names=FALSE)
 
 save(times_neigh2, times_neigh3, times_neigh4,
      final_fronts_neigh2, final_fronts_neigh3, final_fronts_neigh4,
-     file="output/diagnostics_wa_neigh.rds")
+     file="output/diagnostics_vic_neigh.rds")
 
 message(paste("neigh 5: ", Sys.time() - start_script))
 {set.seed(834903)
@@ -177,19 +159,13 @@ message(paste("neigh 5: ", Sys.time() - start_script))
   neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
   neigh_membership_mat <- values(neigh_stack, mat=TRUE)
   
-  png("figures/neigh5_test.png",
-      height=1000,width=1000,pointsize=40)
-  plot(raster(neigh_mat))
-  plot(rasterToPolygons(raster(neigh_mat)), add=TRUE)
-  dev.off()
-  
   for (ind in 1:nruns){
     tstart <- Sys.time()
-    tmp <- genetic_algot(site_ids = wa_sites$id,
+    tmp <- genetic_algot(site_ids = vic_sites$id,
                          nselect = nselect, 
                          poolsize = 1000,
                          niters = niters,
-                         sandpit = wa_objective$potent,
+                         sandpit = vic_objective$potent,
                          potential_vec = site_ids$potent,
                          pop_vec = site_ids$hpop,
                          sample_method = "neighbours",
@@ -206,11 +182,11 @@ message(paste("neigh 5: ", Sys.time() - start_script))
   }
   
   t2 = Sys.time()
-  t2-t1} # expecting 15 mins for vic .. probably longer for WA .. but how much longer ?
-write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_neigh5.csv", row.names=FALSE)
+  t2-t1}
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh5.csv", row.names=FALSE)
 
 save(times_neigh2, times_neigh3, times_neigh4, times_neigh5,
      final_fronts_neigh2, final_fronts_neigh3, final_fronts_neigh4, final_fronts_neigh5,
-     file="output/diagnostics_wa_neigh.rds")
+     file="output/diagnostics_vic_neigh.rds")
 
 

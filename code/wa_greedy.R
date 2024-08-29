@@ -49,5 +49,5 @@ write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_greedystart.csv"
 
 save(times_greedy,
      final_fronts_greedy,
-     "output/diagnostics_wa_greedy.rds")
+     file="output/diagnostics_wa_greedy.rds")
 

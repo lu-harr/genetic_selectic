@@ -49,7 +49,7 @@ write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_pareto2.csv", ro
 
 save(times_pareto2,
      final_fronts_pareto2,
-     "output/diagnostics_wa_pareto.rds")
+     file="output/diagnostics_wa_pareto.rds")
 
 message(paste("pareto 3: ", Sys.time() - start_script))
 {set.seed(834903)
@@ -94,6 +94,6 @@ write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_pareto3.csv", ro
 
 save(times_pareto2, times_pareto3,
      final_fronts_pareto2, final_fronts_pareto3,
-     "output/diagnostics_wa_pareto.rds")
+     file="output/diagnostics_wa_pareto.rds")
 
 

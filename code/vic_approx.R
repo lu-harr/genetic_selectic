@@ -433,7 +433,7 @@ write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_neigh3.csv", ro
   progress_auc <- matrix(NA, nrow=niters, ncol=nruns)
   final_fronts1000neigh5 <- rep(list(NA), nruns)
   
-  neigh_mat <- focalWeight(id_ras, 0.45, "circle")
+  neigh_mat <- focalWeight(id_ras, 0.4, "circle")
   neigh_mat[!neigh_mat == 0] = 1
   neigh_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
   neigh_stack <- subset(neigh_stack, which(neigh_mat != 0))
