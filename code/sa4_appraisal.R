@@ -308,7 +308,7 @@ ycent=-25
 axis(1, at=c(xpos, xpos + 100/(111.320*cos(ycent/180))), pos=ypos, labels=c("",""))
 text(xpos + 100/(111.320*cos(ycent/180))/2, ypos-1, "100 km", cex=1.5)
 
-par(fig=c(0,0.15,0.3,5), new=TRUE)
+par(fig=c(0,0.15,0.3,0.5), new=TRUE)
 plot(st_geometry(state_shp))
 plot(st_geometry(state_shp[state_shp$STE_NAME21 == "Western Australia",]), col="#c23375", add=TRUE)
 

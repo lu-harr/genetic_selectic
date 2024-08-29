@@ -230,8 +230,6 @@ pareto_progress_pc_pts <- function(pareto_progress,
 
 # tmp3 <- pareto_progress_pc_pts(tmp$pareto_progress, exact_toy_pareto)
 
-
-library(bayestestR)
 pareto_progress_auc <- function(pareto_progress,
                                 exact_soln=c(),
                                 minx=0, miny=0){
@@ -264,7 +262,7 @@ pareto_progress_auc <- function(pareto_progress,
     if (exact_auc != 0){
       out <- c(out, exact_auc - area_under_curve(tmp[,1], tmp[,2], method="step"))
     } else {
-      message(area_under_curve(tmp[,1], tmp[,2], method="step"))
+      # message(area_under_curve(tmp[,1], tmp[,2], method="step"))
       out <- c(out, area_under_curve(tmp[,1], tmp[,2], method="step"))
     }
     
@@ -274,9 +272,6 @@ pareto_progress_auc <- function(pareto_progress,
 }
 # check this works when I don't give exact soln ....
 
-
-
-library(idpalette)
 auc_agg_fig <- function(inlst, 
                         niters=100, 
                         lines_only=FALSE, 

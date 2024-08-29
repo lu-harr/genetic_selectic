@@ -13,11 +13,10 @@ vic_shadow <- vic_shp %>%
   st_simplify(dTolerance = 1000)
 # ugly ! ah well !
 
-vic_objective <- stack(raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif'),
-                       raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif')) %>%
-                         aggregate(AGG_FACTOR) %>%
-                         crop(extent(vic_shadow)) %>%
-                         mask(vic_shadow)
+vic_objective <- objective_rasters %>%
+   aggregate(AGG_FACTOR) %>%
+   crop(extent(vic_shadow)) %>%
+   mask(vic_shadow)
 names(vic_objective) <- c("potent", "hpop")
 
 tmp <- vic_objective
@@ -77,6 +76,7 @@ vic_sites <- site_ids[!is.na(values(vic_objective$potent)),]
 plot(vic_objective$potent)
 #points(vic_mozzies$longitude, vic_mozzies$latitude, pch=16)
 points(site_ids[vic_mozzies$pix, c("x","y")], col="blue", pch=16)
+
 objective_func = function(x, catch_mem, vec){
   sum(vec[unique(as.vector(catch_mem[unlist(x),]))], na.rm=TRUE)
 }
@@ -785,12 +785,10 @@ save(times1000, times5000, times10000, times50000,
      final_fronts_apple,
      file="output/vic_diagnostics.rds")
 
-
-
 load("output/vic_diagnostics.rds")
 
-# very interesting ...
-# might need to make the box_extents the same for all of these for context ...?
+################################################################################
+# okay now we're plotting
 
 {png("figures/vic_sensitivity.png",
      width=2400,
@@ -854,6 +852,8 @@ auc_agg_fig(list(progress50000, progress_educated, progress_apple))
 min(pool_lim, pareto_lim, neigh_lim, loaded_lim) # 1987140
 max(pool_lim, pareto_lim, neigh_lim, loaded_lim)
 
+#################################################################################
+# some times calculations
 mean(times1000)
 mean(times1000neigh2)
 mean(times1000neigh3) # does take a tiny bit longer
@@ -890,6 +890,7 @@ abline(mod$coefficients[[1]], mod$coefficients[[2]])
 mod$coefficients[[1]] + mod$coefficients[[2]]*50000 # 84 minutes per run
 # 14 hours
 
+#################################################################################
 # final_frontsdf <- rbindlist(final_fronts_educated) %>%
 #   as.data.frame()
 # tmp <- final_frontsdf[,grep("site", names(final_frontsdf))]
@@ -915,46 +916,39 @@ all_sites <- agg_pareto %>%
   unlist() %>%
   ftable() %>%
   as.data.frame()
+
+give_me_design_and_catch <- function(ras, catch_mat, df, row_ind){
+  # for the _mapped figures
+  values(ras) <- NA
+  catch <- ras
+  values(ras)[unlist(catch_mat[unlist(df[row_ind, grep("site", names(df))]),])] <- 1
+  values(catch)[unique(as.vector(catch_membership_mat[unlist(df[row_ind, names(df)])]))] <- 1
+  return(list(design=ras,
+              catch=catch))
+}
+
+pot_razzes <- give_me_design_and_catch(vic_objective$potent,
+                                       catch_membership_mat,
+                                       agg_pareto,
+                                       1)
+
+pop_razzes <- give_me_design_and_catch(vic_objective$potent,
+                                      catch_membership_mat,
+                                      agg_pareto,
+                                      nrow(agg_pareto))
+
+mid <- nrow(agg_pareto)/2
+mid_razzes <- give_me_design_and_catch(vic_objective$potent,
+                                      catch_membership_mat,
+                                      agg_pareto,
+                                      mid)
   
 agg_map <- vic_objective$potent
 values(agg_map)[!is.na(values(agg_map))] <- 0
 values(agg_map)[as.numeric(paste(all_sites$.))] <- all_sites$Freq
 values(agg_map)[values(agg_map) == 0] <- NA
 
-final_frontsdf2 <- rbindlist(final_fronts50000) %>%
-  as.data.frame()
-agg_pareto2 <- psel(final_frontsdf2, high("sum_pop")*high("sum_risk")) %>%
-  arrange(sum_pop)
-
-# a little concerned the same design is in here a bunch of times?
-all_sites2 <- agg_pareto2 %>%
-  dplyr::select(grep("site", names(agg_pareto2))) %>%
-  unique() %>%
-  unlist() %>%
-  ftable() %>%
-  as.data.frame()
-
-agg_map2 <- vic_objective$potent
-values(agg_map2)[!is.na(values(agg_map2))] <- 0
-values(agg_map2)[as.numeric(paste(all_sites2$.))] <- all_sites2$Freq
-values(agg_map2)[values(agg_map2) == 0] <- NA
-
-pot_map <- vic_objective$potent
-values(pot_map) <- NA
-values(pot_map)[unlist(agg_pareto[1,grep("site", names(agg_pareto))])] <- 1
-
-pot_catch <- vic_objective$potent
-values(pot_catch) <- NA
-values(pot_catch)[unique(as.vector(catch_membership_mat[unlist(agg_pareto[1,grep("site", names(agg_pareto))]),]))] <- 1
-
-pop_map <- vic_objective$potent
-values(pop_map) <- NA
-values(pop_map)[unlist(agg_pareto[nrow(agg_pareto), grep("site", names(agg_pareto))])] <- 1
-
-pop_catch <- vic_objective$potent
-values(pop_catch) <- NA
-values(pop_catch)[unique(as.vector(catch_membership_mat[unlist(agg_pareto[nrow(agg_pareto),grep("site", names(agg_pareto))]),]))] <- 1
-
+# leaving this here but get rid ..
 mid <- nrow(agg_pareto)/2
 mid_map <- vic_objective$potent
 values(mid_map) <- NA
@@ -973,10 +967,6 @@ actual_catch <- vic_objective$potent
 values(actual_catch) <- NA
 values(actual_catch)[unique(as.vector(catch_membership_mat[vic_mozzies$pix,]))] <- 1
 
-plot(agg_pareto$sum_pop, agg_pareto$sum_risk, col=alpha("blue", 0.2), pch=16) 
-# need to investigate the tail here - plot in geographic space
-existing_potent
-
 {png("figures/vic_mapped.png",
     width=2500,
     height=2000,
@@ -987,20 +977,12 @@ plot(final_frontsdf$sum_pop, final_frontsdf$sum_risk,
      xlab="Sum(Human Population Density)",
      ylab="Sum(Potential Risk)",
      cex.lab=1.2, cex.axis=1.2)
-#points(final_frontsdf2$sum_pop, final_frontsdf2$sum_risk, col="blue")
-#points(agg_pareto2$sum_pop, agg_pareto2$sum_risk, col="blue", pch=16)
-#lines(agg_pareto2$sum_pop, agg_pareto2$sum_risk, col="blue", lwd=2)
-#lines(rep(max(agg_pareto2$sum_pop), 2), c(0, agg_pareto2$sum_risk[nrow(agg_pareto2)]), col="blue", lty=2, lwd=2)
-#lines(c(0, agg_pareto2$sum_pop[1]), rep(max(agg_pareto2$sum_risk), 2), col="blue", lty=2, lwd=2)
-
 lines(rep(max(agg_pareto$sum_pop), 2), c(0, agg_pareto$sum_risk[nrow(agg_pareto)]), col="grey", lty=2, lwd=2)
 lines(c(0, agg_pareto$sum_pop[1]), rep(max(agg_pareto$sum_risk), 2), col="grey", lty=2, lwd=2)
 points(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, pch=16)
 lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, lwd=2)
 #text(30000, 70, paste("AUF:\n", format(round(pareto_progress_auc(list(agg_pareto)), digits=0), big.mark=",")),
 #     col=alpha(brat, 0.6), cex=2.5, font=2)
-#text(30000, 50, paste("best uninformed AUF:\n", format(round(pareto_progress_auc(list(agg_pareto2)), digits=0), big.mark=",")),
-#     col=alpha("blue", 0.6), cex=2.5, font=2)
 text(existing_hpop, 90, "Existing\n surveillance", col=iddu(2)[2], cex=1.2)
 arrows(existing_hpop, 93, existing_hpop, existing_potent-1, col=iddu(2)[2], lwd=2)
 points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
@@ -1012,7 +994,6 @@ points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
 
 # make it a 3*3 !
 par(mfrow=c(3,3), oma=c(0,2,0,0), mar=c(0,0,0,0), mfg=c(1,3), bty="n", new=TRUE)
-#par(mar=c(4,2,2,6), bty="n")
 plot(agg_map, col=greens(100), axes=FALSE, bty="n", 
      legend=FALSE)
 plot(agg_map, col=greens(100), legend.only=TRUE, 
@@ -1033,11 +1014,9 @@ plot(pot_map, add=TRUE, col=berry, legend=FALSE)
 # add map of catchment?
 plot(st_geometry(vic_shp), add=TRUE)
 plot(mid_catch, col=alpha("orange", 0.2), axes=FALSE, bty="n", legend=FALSE)
-     #legend.args=list(text="Frequency selected", side=2, line=1))
 plot(mid_map, col="orange", add=TRUE, legend=FALSE)
 plot(st_geometry(vic_shp), add=TRUE, legend=FALSE)
 plot(pop_catch, col=alpha(purp, 0.2), axes=FALSE, bty="n", legend=FALSE)
-     #legend.args=list(text="Frequency selected", side=2, line=1))
 plot(pop_map, col=purp, add=TRUE, legend=FALSE) # or plot points as in the toy fig ...
 plot(st_geometry(vic_shp), add=TRUE)
 
@@ -1051,17 +1030,67 @@ subfigure_label(par()$usr, 0.33,0.28,"(e)", 1.2)
 subfigure_label(par()$usr, 0.68,0.28,"(f)", 1.2)
 dev.off()}
 
+
+#################################################################################
+# supp figure: best settings
+# two panel: AUC on left, objective space on right
+
+final_frontsdf_apple <- rbindlist(final_fronts_apple) %>%
+  as.data.frame()
+pareto_apple <- psel(final_frontsdf_apple, high("sum_pop")*high("sum_risk")) %>%
+  arrange(sum_pop)
+
+final_frontsdf_pear <- rbindlist(final_fronts_pear) %>%
+  as.data.frame()
+pareto_pear <- psel(final_frontsdf_pear, high("sum_pop")*high("sum_risk")) %>%
+  arrange(sum_pop)
+
+
+pareto_best <- psel() # fill in
+
+
+light_blue <- iddu(4)[2]
+{png("figures/vic_best_settings.png",
+     width=2500,
+     height=2000,
+     pointsize=35)
+  
 par(mfrow=c(2,1))
-plot(vic_objective$potent, main="Potential risk of transmission", legend=FALSE)
-plot(vic_objective$hpop, main="Human population density", legend=FALSE)
 
+# so first and second are in tuning figure, third and fourth are my best shots ...
+# expect them to perform slightly differently? But we'll see
+best_lim <- auc_agg_fig(list(progress_50000,
+                              progress_educated,
+                              progress_apple,
+                              progress_pear),
+                         legend_labs=c("Pool size 50,000, 1-neighbours, random start",
+                                       "Pool size 1,000, 1-neighbours, greedy start",
+                                       "Pool size 50,000, 3-neighbours, random start",
+                                       "Pool size 50,000, 3-neighbours, greedy start"),
+                         legend_title="Settings",
+                         pal=c(iddu(4)[2:4], brat, "orange"),
+                         ylim=c(1987140,4408493))
 
+plot(final_frontsdf_apple$sum_pop, final_frontsdf_apple$sum_risk, 
+     xlab="Sum(Human Population Density)",
+     ylab="Sum(Potential Risk)",
+     cex.lab=1.2, cex.axis=1.2, "green4") # i just know i'm going to hate this
+points(final_frontsdf_pear$sum_pop, final_frontsdf_pear$sum_risk, "skyblue3") # dark blue?
 
+lines(pareto_apple$sum_pop, pareto_apple$sum_risk, col=light_blue, lwd=2)
+lines(rep(max(pareto_apple$sum_pop), 2), c(0, pareto_apple$sum_risk[nrow(pareto_apple)]), col=light_blue, lty=2, lwd=2)
+lines(c(0, pareto_apple$sum_pop[1]), rep(max(pareto_apple$sum_risk), 2), col=light_blue, lty=2, lwd=2)
 
+lines(rep(max(pareto_pear$sum_pop), 2), c(0, pareto_pear$sum_risk[nrow(pareto_pear)]), col=brat, lty=2, lwd=2)
+lines(c(0, pareto_pear$sum_pop[1]), rep(max(pareto_pear$sum_risk), 2), col=brat, lty=2, lwd=2)
+lines(pareto_pear$sum_pop, pareto_pear$sum_risk, col=brat, lwd=2)
 
+points(pareto_apple$sum_pop, pareto_apple$sum_risk, col=light_blue, pch=16)
+points(pareto_pear$sum_pop, pareto_pear$sum_risk, col=brat, pch=16)
 
+# also sketch in pareto_best
 
-
+dev.off()}
 
 
 

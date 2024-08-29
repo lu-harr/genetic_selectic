@@ -1,6 +1,10 @@
 # working from jev_multi_site
 getwd()
-setwd("~/Desktop/knowlesi/multi_site")
+# setwd("~/Desktop/knowlesi/multi_site")
+setwd("/data/gpfs/projects/punim1228/jev_spartan")
+getwd()
+
+message(.libPaths())
 
 library(sf)
 library(raster)
@@ -11,10 +15,13 @@ library(RColorBrewer)
 library(scales)
 library(viridisLite)
 library(data.table)
-library(rPref)
-library(idpalette)
+library(rPref, lib.loc="~/R_libs/4.2.1")
+library(idpalette, lib.loc="~/R_libs/4.2.1")
+library(bayestestR, lib.loc="~/R_libs/4.2.1")
 
 AGG_FACTOR <- 10
+
+message(.libPaths())
 
 #source("code/iterative_select_funcs.R")
 pinks <- colorRampPalette(colors = c("#f7f7f7", "#c23375"))
@@ -40,7 +47,19 @@ empty_plot_for_legend = function(){
   plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", bty="n")
 }
 
-states <- st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp")
+# objective_rasters <- stack(raster('~/Desktop/jev/pathogen_paper/output/continuous suit vectors and avian.tif'),
+#                            raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif'))
+# 
+# states <- st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp")
+
+
+objective_rasters <- stack(raster('data/continuous suit vectors and avian.tif'),
+                           raster('data/hpop_blur_aus_0.2_res_0.008.tif'))
+# should be STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp
+states <- st_read("data/STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp")
+
+
+
 # all_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/national_mozzie_data/mosquito_detections_all_w_qld_sa.csv')
 
 # check this is the data I end up using in JEV 1?

@@ -3,6 +3,7 @@ getwd()
 
 AGG_FACTOR = 10
 
+# this is now the wrong raster :(
 guelphia_potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif') %>%
   crop(c(141, 146, -37.9, -32.9)) %>%
   aggregate(AGG_FACTOR) %>% # aggregated by mean .... just so you know ...
