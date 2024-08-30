@@ -37,7 +37,7 @@ nrow(vic_mozzies)
 
 progress1000 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
 progress5000 <- read.csv("output/vic/vic_auc_pool5000_iters100_runs10.csv")
-#progress10000 <- read.csv("output/vic/vic_auc_pool10000_iters100_runs10.csv")
+progress10000 <- read.csv("output/vic/vic_auc_pool10000_iters100_runs10.csv")
 #progress50000 <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10.csv")
 
 progress_neigh1 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
@@ -70,35 +70,40 @@ load("output/vic/diagnostics_vic_greedy.rds")
   par(mfrow=c(2,2), mar=c(2.1,2.1,2.1,2.1), oma=c(3,4,1,0))
   
   pool_lim <- auc_agg_fig(list(progress1000,
-                               progress5000),
-                          #progress10000,
-                          #progress50000),
-                          legend_labs=c("1,000", "5,000"), #"10,000", "50,000"),
+                               progress5000,
+                                progress10000),
+                                #progress50000),
+                          legend_labs=c("1,000", "5,000", "10,000"),# "50,000"),
                           legend_title="Pool size",
-                          pal=c(iddu(4)[2:4], brat))
+                          pal=c(iddu(4)[2:4], brat),
+                          ylim=c(3397865,6591447))
   
   neigh_lim <- auc_agg_fig(list(progress_neigh1,
-                                #progress_neigh2,
+                                progress_neigh2,
                                 progress_neigh3,
+                                progress_neigh4,
                                 progress_neigh5),
                            #progress_neigh10),
-                           legend_labs=c("1-neighbours", #"2-neighbours", 
-                                         "3-neighbours", "5-neighbours"),# "10-neighbours"),
+                           legend_labs=c("1-neighbours", "2-neighbours", 
+                                         "3-neighbours", "4-neighbours","5-neighbours"),# "10-neighbours"),
                            legend_title="Neighbourhood size",
-                           pal=c(iddu(4)[2:4], brat, "orange"))
+                           pal=c(iddu(4)[2:4], brat, iddu(4)[1]),
+                           ylim=c(3397865,6591447))
   
   pareto_lim <- auc_agg_fig(list(progress_pareto1,
                                  progress_pareto2,
                                  progress_pareto3),
                             legend_labs=c("Rank 1", "Rank 2", "Rank 3"),
                             legend_title="Goldberg ranking cutoff",
-                            pal=iddu(4)[2:4])
+                            pal=iddu(4)[2:4],
+                            ylim=c(3397865,6591447))
   
   loaded_lim <- auc_agg_fig(list(progress_uneducated,
                                  progress_educated),
                             legend_labs=c("Random", "Greedy"),
                             legend_title="Starting pool",
-                            pal=iddu(4)[2:4])
+                            pal=iddu(4)[2:4],
+                            ylim=c(3397865,6591447))
   
   mtext("Area under estimated Pareto front", 2, outer=TRUE, line=2, cex=1.2)
   mtext("Iteration", 1, outer=TRUE, line=1, cex=1.2)
@@ -111,10 +116,10 @@ load("output/vic/diagnostics_vic_greedy.rds")
   subfigure_label(par()$usr, 0.515, 0.48, "(d)")
   dev.off()}
 
-
+range(pool_lim, neigh_lim, pareto_lim, loaded_lim)
 #################################################################################
 # vic map figure
-
+message("Make sure this is our best guess: ")
 final_frontsdf <- rbindlist(final_frontsgreedy) %>%
   as.data.frame()
 agg_pareto <- psel(final_frontsdf, high("sum_pop")*high("sum_risk")) %>%
@@ -177,15 +182,16 @@ values(actual_catch)[unique(as.vector(catch_membership_mat[vic_mozzies$pix,]))] 
   plot(final_frontsdf$sum_pop, final_frontsdf$sum_risk, 
        xlab="Sum(Human Population Density)",
        ylab="Sum(Potential Risk)",
-       cex.lab=1.2, cex.axis=1.2)
+       cex.lab=1.2, cex.axis=1.2,
+       xlim=range(existing_hpop, final_frontsdf$sum_pop))
   lines(rep(max(agg_pareto$sum_pop), 2), c(0, agg_pareto$sum_risk[nrow(agg_pareto)]), col="grey", lty=2, lwd=2)
   lines(c(0, agg_pareto$sum_pop[1]), rep(max(agg_pareto$sum_risk), 2), col="grey", lty=2, lwd=2)
   points(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, pch=16)
   lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, lwd=2)
   #text(30000, 70, paste("AUF:\n", format(round(pareto_progress_auc(list(agg_pareto)), digits=0), big.mark=",")),
   #     col=alpha(brat, 0.6), cex=2.5, font=2)
-  text(existing_hpop, 90, "Existing\n surveillance", col=iddu(2)[2], cex=1.2)
-  arrows(existing_hpop, 93, existing_hpop, existing_potent-1, col=iddu(2)[2], lwd=2)
+  text(existing_hpop, 135, "Existing\n surveillance", col=iddu(2)[2], cex=1.2)
+  #arrows(existing_hpop, 93, existing_hpop, existing_potent-1, col=iddu(2)[2], lwd=2)
   points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
          col=c(berry, "orange", purp), pch=16, cex=1.5)
   points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
