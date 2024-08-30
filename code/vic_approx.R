@@ -3,6 +3,22 @@
 source("code/main.R")
 source("code/genetic_algot.R")
 
+#pot1 <- raster("/Users/harrisonl2/Desktop/jev/from_Freya_local/JEV_secure/figures/continuous suit vectors and avian.tif")
+# 18/6/23
+pot2 <- raster("/Users/harrisonl2/Desktop/knowlesi/multi_site/data/continuous suit vectors and avian.tif")
+pot5 <- raster("/Users/harrisonl2/Desktop/jev/pathogen_paper/output/continuous suit vectors and avian.tif")
+# 1/11/23
+pot3 <- raster("/Users/harrisonl2/Desktop/jev/from_Freya_local/JEV_secure/output/phase_2/continuous suit vectors and avian.tif")
+# 31/10/23
+pot4 <- raster("/Users/harrisonl2/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif")
+# 8/2/24
+pot6 <- raster("/Users/harrisonl2/Desktop/jev/pathogen_paper/model_2022/output/continuous suit vectors and avian.tif")
+# 2 and 5 are the same - we knew that
+# and that's it they're all freakin different !!!
+# I *was* using pot4 ... let's see if I can recover everything
+
+
+
 vic_shp <- states %>%
   filter(STE_NAME21 == "Victoria") %>%
   st_simplify(dTolerance = 1000)

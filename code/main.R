@@ -47,11 +47,14 @@ empty_plot_for_legend = function(){
   plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", bty="n")
 }
 
+# these are the older ones:
+# objective_rasters <- stack(raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif'),
+#                            raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif'))
+
 # objective_rasters <- stack(raster('~/Desktop/jev/pathogen_paper/output/continuous suit vectors and avian.tif'),
 #                            raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif'))
 # 
 # states <- st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp")
-
 
 objective_rasters <- stack(raster('data/continuous suit vectors and avian.tif'),
                            raster('data/hpop_blur_aus_0.2_res_0.008.tif'))
