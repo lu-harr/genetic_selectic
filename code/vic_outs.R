@@ -38,7 +38,7 @@ nrow(vic_mozzies)
 progress1000 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
 progress5000 <- read.csv("output/vic/vic_auc_pool5000_iters100_runs10.csv")
 progress10000 <- read.csv("output/vic/vic_auc_pool10000_iters100_runs10.csv")
-#progress50000 <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10.csv")
+progress50000 <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10.csv")
 
 progress_neigh1 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
 progress_neigh2 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_neigh2.csv")
@@ -53,6 +53,9 @@ progress_pareto3 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_pareto
 progress_uneducated <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
 progress_educated <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_greedystart.csv")
 
+progress_apple <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3.csv")
+progress_pear <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3_greedystart.csv")
+
 #progress_educated <- read.csv("output/old_rasters/vic_auc_pool1000_iters100_runs10_greedystart.csv")
 #load("output/old_rasters/diagnostics_vic_greedy.rds")
 
@@ -60,6 +63,8 @@ load("output/vic/diagnostics_vic_pool.rds")
 load("output/vic/diagnostics_vic_neigh.rds")
 load("output/vic/diagnostics_vic_pareto.rds")
 load("output/vic/diagnostics_vic_greedy.rds")
+load("output/vic/diagnostics_vic_50000_neigh3_greedy.rds")
+load("output/vic/diagnostics_vic_50000_neigh3.rds")
 
 # incorporate the rest of the bits in once I've got them and set common ylim
 {png("figures/vic_sensitivity.png",
@@ -68,15 +73,16 @@ load("output/vic/diagnostics_vic_greedy.rds")
      pointsize = 40)
   
   par(mfrow=c(2,2), mar=c(2.1,2.1,2.1,2.1), oma=c(3,4,1,0))
+  ylim=c(3397865,6691487)
   
   pool_lim <- auc_agg_fig(list(progress1000,
                                progress5000,
-                                progress10000),
-                                #progress50000),
-                          legend_labs=c("1,000", "5,000", "10,000"),# "50,000"),
+                                progress10000,
+                                progress50000),
+                          legend_labs=c("1,000", "5,000", "10,000", "50,000"),
                           legend_title="Pool size",
                           pal=c(iddu(4)[2:4], brat),
-                          ylim=c(3397865,6591447))
+                          ylim=ylim)
   
   neigh_lim <- auc_agg_fig(list(progress_neigh1,
                                 progress_neigh2,
@@ -88,7 +94,7 @@ load("output/vic/diagnostics_vic_greedy.rds")
                                          "3-neighbours", "4-neighbours","5-neighbours"),# "10-neighbours"),
                            legend_title="Neighbourhood size",
                            pal=c(iddu(4)[2:4], brat, iddu(4)[1]),
-                           ylim=c(3397865,6591447))
+                           ylim=ylim)
   
   pareto_lim <- auc_agg_fig(list(progress_pareto1,
                                  progress_pareto2,
@@ -96,14 +102,14 @@ load("output/vic/diagnostics_vic_greedy.rds")
                             legend_labs=c("Rank 1", "Rank 2", "Rank 3"),
                             legend_title="Goldberg ranking cutoff",
                             pal=iddu(4)[2:4],
-                            ylim=c(3397865,6591447))
+                            ylim=ylim)
   
   loaded_lim <- auc_agg_fig(list(progress_uneducated,
                                  progress_educated),
                             legend_labs=c("Random", "Greedy"),
                             legend_title="Starting pool",
                             pal=iddu(4)[2:4],
-                            ylim=c(3397865,6591447))
+                            ylim=ylim)
   
   mtext("Area under estimated Pareto front", 2, outer=TRUE, line=2, cex=1.2)
   mtext("Iteration", 1, outer=TRUE, line=1, cex=1.2)
@@ -120,7 +126,12 @@ range(pool_lim, neigh_lim, pareto_lim, loaded_lim)
 #################################################################################
 # vic map figure
 message("Make sure this is our best guess: ")
-final_frontsdf <- rbindlist(final_frontsgreedy) %>%
+final_frontsdf <- final_fronts_apple %>%
+  append(final_fronts_pear) %>%
+  append(final_fronts_neigh3) %>% 
+  append(final_frontsgreedy) %>%
+  append(final_fronts50000) %>%
+  rbindlist() %>%
   as.data.frame()
 agg_pareto <- psel(final_frontsdf, high("sum_pop")*high("sum_risk")) %>%
   arrange(sum_pop)

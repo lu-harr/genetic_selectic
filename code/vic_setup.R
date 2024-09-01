@@ -58,3 +58,48 @@ educated_guess <- matrix(c(sample(vic_sites$id[order(vic_sites$potent,
                          ncol=nselect, byrow=TRUE) %>%
   as.data.frame()
 names(educated_guess) <- paste("site", 1:nselect, sep="")
+
+# greedy_sites <- educated_guess %>%
+#   unlist() %>%
+#   ftable() %>%
+#   as.data.frame()
+# 
+# greedy_map <- vic_objective$potent
+# values(greedy_map)[!is.na(values(greedy_map))] <- 0
+# values(greedy_map)[as.numeric(paste(greedy_sites$.))] <- greedy_sites$Freq
+# greedy_map <- trim(greedy_map)
+# values(greedy_map)[values(greedy_map) == 0] <- NA
+# 
+# leg_minmax <- range(values(greedy_map), values(wa_greedy_map), na.rm=TRUE)
+# 
+# {png("figures/greedy_start.png",
+#      height=1500,
+#      width=2200,
+#      pointsize=40)
+#   par(mfrow=c(1,2), mar=c(0,0.2,3.1,1.1), xpd=NA,
+#       oma=c(0,2,0,4), bty="n")
+#   plot(greedy_map, col=greens(100), axes=FALSE,
+#        breaks=seq(leg_minmax[1], leg_minmax[2], length.out=101),
+#        legend=FALSE, legend.mar=0)
+#   par(xpd=NA)
+#   plot(st_geometry(vic_shp), add=TRUE)
+#   #par(oma=c(0,0,0,0), new=TRUE)
+#   plot(wa_greedy_map, col=greens(100), axes=FALSE,
+#        breaks=seq(leg_minmax[1], leg_minmax[2], length.out=101),
+#        legend=FALSE)
+#   plot(st_geometry(wa_shp), add=TRUE)
+#   par(mfrow=c(1,1), new=TRUE, mar=c(0,4.1,3.1,2.1), oma=c(0,0,0,2))
+#   plot(wa_greedy_map, col=greens(100), legend.only=TRUE,
+#        legend.args=list(text="Frequency", 2, line=1),
+#        breaks=seq(leg_minmax[1], leg_minmax[2], length.out=101),
+#        axis.args=list(at=seq(250,500,50), labels=seq(250,500,50)),
+#        legend.mar=2)
+#   mtext("Greedy starting pools", 3, font=2, cex=1.4, line=1)
+#   par(new=TRUE, xpd=NA, bty="n")
+#   empty_plot_for_legend()
+#   subfigure_label(par()$usr, -0.05, 0.95, "(a)")
+#   subfigure_label(par()$usr, 0.5, 0.95, "(b)")
+#   dev.off()}
+
+
+

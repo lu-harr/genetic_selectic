@@ -1,7 +1,10 @@
 # script for Victoria-wide appraisal, trimmed down from jev/code/mozzie_surveillance_potential.R
 
-potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
-hpop <- raster("~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif")
+# potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif')
+# hpop <- raster("~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif")
+
+potential <- raster('data/continuous suit vectors and avian.tif')
+hpop <- raster('data/hpop_blur_aus_0.2_res_0.008.tif')
 
 states = st_read("~/Desktop/jev/data/admin/STE_2021_AUST_SHP_GDA2020/STE_2021_AUST_GDA2020.shp")
 sa4s <- st_read("~/Desktop/jev/data/admin/SA4_2021_AUST_SHP_GDA2020/SA4_2021_AUST_GDA2020.shp")
@@ -76,6 +79,8 @@ wa_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/phase_2/c
   subset(data_source == "WA") %>%
   filter(as.Date(date) > as.Date("2022-07-01"))
 
+# 283, 317
+
 # number of unique locations
 nrow(unique(vic_mozzies[,c("longitude","latitude")]))
 nrow(unique(wa_mozzies[,c("longitude","latitude")]))
@@ -86,34 +91,34 @@ range(wa_mozzies$date)
 nrow(vic_mozzies)
 nrow(wa_mozzies)
 
-# number of unique pixels (fine case)
-id_ras <- potential
-values(id_ras) <- 1:ncell(potential)
-vic_mozzies %>%
-  mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
-  group_by(pix) %>%
-  summarise() %>%
-  nrow()
-wa_mozzies %>%
-  mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
-  group_by(pix) %>%
-  summarise() %>%
-  nrow()
-
-# number of unique pixels (coarse case)
-id_ras <- potential %>%
-  aggregate(AGG_FACTOR)
-values(id_ras) <- 1:ncell(id_ras)
-vic_mozzies %>%
-  mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
-  group_by(pix) %>%
-  summarise() %>%
-  nrow()
-wa_mozzies %>%
-  mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
-  group_by(pix) %>%
-  summarise() %>%
-  nrow()
+# # number of unique pixels (fine case)
+# id_ras <- potential
+# values(id_ras) <- 1:ncell(potential)
+# vic_mozzies %>%
+#   mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
+#   group_by(pix) %>%
+#   summarise() %>%
+#   nrow()
+# wa_mozzies %>%
+#   mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
+#   group_by(pix) %>%
+#   summarise() %>%
+#   nrow()
+# 
+# # number of unique pixels (coarse case)
+# id_ras <- potential %>%
+#   aggregate(AGG_FACTOR)
+# values(id_ras) <- 1:ncell(id_ras)
+# vic_mozzies %>%
+#   mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
+#   group_by(pix) %>%
+#   summarise() %>%
+#   nrow()
+# wa_mozzies %>%
+#   mutate(pix = raster::extract(id_ras, cbind(longitude, latitude))) %>%
+#   group_by(pix) %>%
+#   summarise() %>%
+#   nrow()
 
 # function straight out of the report: 
 # give me a map of objectives with existing surveillance overlaid
@@ -259,13 +264,13 @@ plot(sqrt(vic_surveil$hpop_buffered),
      legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
 par(new=TRUE, mar=mar, oma=oma, mfg=c(1,2))
 hpop_breaks=c(25,100, 250, 500)
-plot(sqrt(vic_surveil$hpop), col=purps(100),  
+plot(sqrt(vic_surveil$hpop), col=purps,  
      legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
 plot(sqrt(vic_surveil$hpop), legend.only=TRUE,
      legend.args=list("Distance-weighted human population density", side=1, line=3, cex=1.4),
      axis.args=list(at=sqrt(hpop_breaks), labels=hpop_breaks, cex=1.2),
      cex.axis=1.2, legend.width=1.5, horizontal=TRUE,
-     col=purps(100))
+     col=purps)
 par(new=TRUE, mar=mar, oma=oma, mfg=c(1,2))
 plot(vic_surveil$at_risk, col=alpha("orange", 0.5),
      legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
@@ -321,7 +326,7 @@ plot(sqrt(wa_surveil$hpop_buffered),
      legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
 par(new=TRUE, mar=mar, oma=oma, mfg=c(2,2))
 hpop_breaks=c(1,25,100,300)
-plot(sqrt(wa_surveil$hpop), col=purps(100),  
+plot(sqrt(wa_surveil$hpop), col=purps,  
      legend=FALSE, xaxt="n", yaxt="n", horizontal=TRUE, legend.mar=0)
 par(new=TRUE, mar=mar, oma=oma, mfg=c(2,2))
 plot(wa_surveil$at_risk, col=alpha("orange", 0.5),
@@ -352,7 +357,7 @@ plot(sqrt(wa_surveil$hpop), legend.only=TRUE,
      legend.args=list("Distance-weighted human population density", side=1, line=3, cex=1.4),
      axis.args=list(at=sqrt(hpop_breaks), labels=hpop_breaks, cex=1.2),
      cex.axis=1.2, legend.width=1.5, horizontal=TRUE,
-     col=purps(100))
+     col=purps)
 
 
 

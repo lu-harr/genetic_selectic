@@ -85,7 +85,7 @@ names(educated_guess) <- paste("site", 1:nselect, sep="")
 #   unlist() %>%
 #   ftable() %>%
 #   as.data.frame()
-
+# 
 # wa_greedy_map <- wa_objective$potent
 # values(wa_greedy_map)[!is.na(values(wa_greedy_map))] <- 0
 # values(wa_greedy_map)[as.numeric(paste(greedy_sites$.))] <- greedy_sites$Freq

@@ -4,7 +4,7 @@ source("code/main.R")
 source("code/genetic_algot.R")
 
 #pot1 <- raster("/Users/harrisonl2/Desktop/jev/from_Freya_local/JEV_secure/figures/continuous suit vectors and avian.tif")
-# 18/6/23
+# 18/6/24
 pot2 <- raster("/Users/harrisonl2/Desktop/knowlesi/multi_site/data/continuous suit vectors and avian.tif")
 pot5 <- raster("/Users/harrisonl2/Desktop/jev/pathogen_paper/output/continuous suit vectors and avian.tif")
 # 1/11/23

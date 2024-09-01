@@ -36,7 +36,7 @@ nrow(wa_mozzies)
 progress1000 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
 progress5000 <- read.csv("output/wa/wa_auc_pool5000_iters100_runs10.csv")
 progress10000 <- read.csv("output/wa/wa_auc_pool10000_iters100_runs10.csv")
-#progress50000 <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10.csv")
+progress50000 <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10.csv")
 
 progress_neigh1 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
 progress_neigh2 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_neigh2.csv")
@@ -51,10 +51,17 @@ progress_pareto3 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_pareto3.
 progress_uneducated <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
 progress_educated <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_greedystart.csv")
 
+progress_apple <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10_neigh4.csv")
+#progress_pear <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10_neigh4_greedystart.csv")
+# oops overwrote it ... later problem
+
 load("output/wa/diagnostics_wa_pool.rds")
 load("output/wa/diagnostics_wa_neigh.rds")
 load("output/wa/diagnostics_wa_pareto.rds")
 load("output/wa/diagnostics_wa_greedy.rds")
+load("output/wa/diagnostics_wa_apple.rds")
+load("output/wa/diagnostics_wa_pear.rds")
+
 
 # mapped assessment given old surface
 # load("output/old_rasters/diagnostics_wa_greedy.rds")
@@ -69,9 +76,9 @@ load("output/wa/diagnostics_wa_greedy.rds")
   
   pool_lim <- auc_agg_fig(list(progress1000,
                                progress5000,
-                               progress10000),
-                               #progress50000),
-                          legend_labs=c("1,000", "5,000", "10,000"),# "50,000"),
+                               progress10000,
+                               progress50000),
+                          legend_labs=c("1,000", "5,000", "10,000", "50,000"),
                           legend_title="Pool size",
                           pal=c(iddu(4)[2:4], brat),
                           ylim=c(463220.9, 3018271.0))
@@ -122,7 +129,9 @@ range(loaded_lim, neigh_lim, pareto_lim, pool_lim)
 #################################################################################
 # wa map figure
 message("Make sure this is our best guess: ")
-final_frontsdf <- rbindlist(final_fronts_neigh4) %>%
+final_frontsdf <- final_fronts_apple %>%
+  append(final_fronts_pear) %>%
+  rbindlist() %>%
   as.data.frame()
 agg_pareto <- psel(final_frontsdf, high("sum_pop")*high("sum_risk")) %>%
   arrange(sum_pop)
@@ -253,7 +262,7 @@ values(actual_catch)[unique(as.vector(catch_membership_mat[wa_mozzies$pix,]))] <
   lines(c(0, agg_pareto$sum_pop[1]), rep(max(agg_pareto$sum_risk), 2), col="grey", lty=2, lwd=2)
   points(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, pch=16)
   lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, lwd=2)
-  text(existing_hpop, 150, "Existing\n surveillance", col=iddu(2)[2], cex=1.6)
+  text(existing_hpop, 145, "Existing\n surveillance", col=iddu(2)[2], cex=1.6)
   points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
          col=c(berry, "orange", purp), pch=16, cex=1.5)
   points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
