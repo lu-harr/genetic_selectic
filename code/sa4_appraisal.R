@@ -224,9 +224,9 @@ extreme_purps = colorRampPalette(purps[c(seq(1,30,5),30:100)])(1000)
 
 # have popped the plotting outside the function because I was getting fed! up!
 {png("figures/surveillance_potential_vic_wa.png",
-           height=4800, width=4000, res=300)
+           height=5000, width=4000, res=300)
   mar=c(2.1,1.1,1.1,1.1)
-  oma=c(16,2,0,0)
+  oma=c(22,2,0,0)
 par(mfrow=c(2,2), mar=mar, oma=oma, bty="n")
 
 plot(vic_surveil$potential_buffered, 
@@ -255,7 +255,7 @@ text(xpos + 100/(111.320*cos(ycent/180))/2, ypos-0.5, "100 km", cex=1.5)
 
 par(fig=c(0.3,0.45,0.8,1), new=TRUE)
 plot(st_geometry(state_shp))
-plot(st_geometry(state_shp[state_shp$STE_NAME21 == "Victoria",]), col="#c23375", add=TRUE)
+plot(st_geometry(state_shp[state_shp$STE_NAME21 == "Victoria",]), col="grey70", add=TRUE)
 
 par(fig=c(0,1,0,1), new=TRUE)
 par(new=TRUE, mfrow=c(2,2), mar=mar, oma=oma, mfg=c(1,2))
@@ -290,7 +290,7 @@ for (i in 1:nrow(lab_deets_vic)){
 
 # reset margins for WA (she's a little longer than wider)
 mar=c(4.1,1.1,0.1,1.1)
-oma=c(6,2,0,0)
+oma=c(12,2,0,0)
 par(mfrow=c(2,2), mar=mar, oma=oma, new=TRUE, mfg=c(2,1), bty="n", xpd=NA)
 
 plot(wa_surveil$potential_buffered, 
@@ -315,7 +315,7 @@ text(xpos + 100/(111.320*cos(ycent/180))/2, ypos-1, "100 km", cex=1.5)
 
 par(fig=c(0,0.15,0.3,0.5), new=TRUE)
 plot(st_geometry(state_shp))
-plot(st_geometry(state_shp[state_shp$STE_NAME21 == "Western Australia",]), col="#c23375", add=TRUE)
+plot(st_geometry(state_shp[state_shp$STE_NAME21 == "Western Australia",]), col="grey70", add=TRUE)
 
 par(fig=c(0,1,0,1), new=TRUE)
 par(new=TRUE, mfrow=c(2,2), mar=mar, oma=oma, mfg=c(2,1))
@@ -346,7 +346,7 @@ for (i in 1:nrow(lab_deets_wa)){
 
 # can I fenangle the WA legends a little lower?
 mar=c(2.1,1.1,0.1,1.1)
-oma=c(4,2,0,0)
+oma=c(10,2,0,0)
 par(mfrow=c(2,2), mar=mar, oma=oma, new=TRUE, mfg=c(2,1))
 plot(wa_surveil$potent, legend.only=TRUE,
      legend.args=list("Transmission suitability", side=1, line=3, cex=1.4),
@@ -359,17 +359,17 @@ plot(sqrt(wa_surveil$hpop), legend.only=TRUE,
      cex.axis=1.2, legend.width=1.5, horizontal=TRUE,
      col=purps)
 
-
-
 # Finishing touches ...
-par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1), xpd=NA)
+par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1), xpd=NA, oma=c(0,2,0,0))
 plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
-legend(0.78,1.05, fill=alpha("orange", 0.5), cex=1.5,
-       "Areas of highest \ntransmission suitability", bty="n")
-subfigure_label(par()$usr, 0, 0.95, "(a)", 1.5)
-subfigure_label(par()$usr, 0.5, 0.95, "(b)", 1.5)
-subfigure_label(par()$usr, 0, 0.5, "(c)", 1.5)
-subfigure_label(par()$usr, 0.5, 0.5, "(d)", 1.5)
+legend(0.27,0, fill=alpha("orange", 0.5), cex=1.5,
+       "Areas of highest transmission suitability", bty="n")
+legend(0.31,-0.02, col="purple", pch=0, cex=1.5,
+       "Recent mosquito surveillance", bty="n")
+subfigure_label(par()$usr, 0, 0.96, "(a)", 1.5)
+subfigure_label(par()$usr, 0.5, 0.96, "(b)", 1.5)
+subfigure_label(par()$usr, 0, 0.52, "(c)", 1.5)
+subfigure_label(par()$usr, 0.5, 0.52, "(d)", 1.5)
 
 dev.off()}
 

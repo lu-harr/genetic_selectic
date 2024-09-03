@@ -32,8 +32,23 @@ existing_hpop <- objective_func(vic_mozzies$pix,
                                 catch_membership_mat,
                                 vic_objective$buffer_hpop)
 
-nrow(vic_mozzies)
+# these are in the vic_setup script
+# naive_risk <- c(objective_func(naive_risk,
+#                                catch_membership_mat,
+#                                vic_objective$buffer_potent),
+#                 objective_func(naive_risk,
+#                                catch_membership_mat,
+#                                vic_objective$buffer_hpop))
+# 
+# naive_pop <- c(objective_func(naive_pop,
+#                                catch_membership_mat,
+#                                vic_objective$buffer_potent),
+#                 objective_func(naive_pop,
+#                                catch_membership_mat,
+#                                vic_objective$buffer_hpop))
+                
 
+nrow(vic_mozzies)
 
 progress1000 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
 progress5000 <- read.csv("output/vic/vic_auc_pool5000_iters100_runs10.csv")
@@ -56,6 +71,9 @@ progress_educated <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_greed
 progress_apple <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3.csv")
 progress_pear <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3_greedystart.csv")
 
+progress_apple_10000 <- read.csv("output/vic/vic_auc_pool100000_iters100_runs10_neigh3.csv")
+progress_pear_10000 <- read.csv("output/vic/vic_auc_pool100000_iters100_runs10_neigh3_greedystart.csv")
+
 #progress_educated <- read.csv("output/old_rasters/vic_auc_pool1000_iters100_runs10_greedystart.csv")
 #load("output/old_rasters/diagnostics_vic_greedy.rds")
 
@@ -65,6 +83,12 @@ load("output/vic/diagnostics_vic_pareto.rds")
 load("output/vic/diagnostics_vic_greedy.rds")
 load("output/vic/diagnostics_vic_50000_neigh3_greedy.rds")
 load("output/vic/diagnostics_vic_50000_neigh3.rds")
+final_fronts_apple_50000 <- final_fronts_apple
+final_fronts_pear_50000 <- final_fronts_pear
+load("output/vic/diagnostics_vic_100000_neigh3_greedy.rds")
+load("output/vic/diagnostics_vic_100000_neigh3.rds")
+
+
 
 # incorporate the rest of the bits in once I've got them and set common ylim
 {png("figures/vic_sensitivity.png",
@@ -128,13 +152,20 @@ range(pool_lim, neigh_lim, pareto_lim, loaded_lim)
 message("Make sure this is our best guess: ")
 final_frontsdf <- final_fronts_apple %>%
   append(final_fronts_pear) %>%
-  append(final_fronts_neigh3) %>% 
-  append(final_frontsgreedy) %>%
-  append(final_fronts50000) %>%
+  append(final_fronts_apple_50000) %>%
+  append(final_fronts_pear_50000) %>%
   rbindlist() %>%
   as.data.frame()
+
 agg_pareto <- psel(final_frontsdf, high("sum_pop")*high("sum_risk")) %>%
   arrange(sum_pop)
+
+final_front_auf(agg_pareto)
+
+# plot(agg_pareto$sum_pop, agg_pareto$sum_risk)
+# lines(agg_pareto$sum_pop, agg_pareto$sum_risk)
+# points(agg_pareto$sum_pop, agg_pareto$sum_risk, col="blue")
+# lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col="blue")
 
 # a little concerned the same design is in here a bunch of times?
 all_sites <- agg_pareto %>%
@@ -201,7 +232,8 @@ values(actual_catch)[unique(as.vector(catch_membership_mat[vic_mozzies$pix,]))] 
   lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, lwd=2)
   #text(30000, 70, paste("AUF:\n", format(round(pareto_progress_auc(list(agg_pareto)), digits=0), big.mark=",")),
   #     col=alpha(brat, 0.6), cex=2.5, font=2)
-  text(existing_hpop, 135, "Existing\n surveillance", col=iddu(2)[2], cex=1.2)
+  #text(existing_hpop, 135, "Existing\n surveillance", col=iddu(2)[2], cex=1.2)
+  text(existing_hpop, 135, "Existing\nsurveillance", col=iddu(2)[2], cex=1.2, adj=c(0,0.5))
   #arrows(existing_hpop, 93, existing_hpop, existing_potent-1, col=iddu(2)[2], lwd=2)
   points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
          col=c(berry, "orange", purp), pch=16, cex=1.5)
@@ -209,6 +241,11 @@ values(actual_catch)[unique(as.vector(catch_membership_mat[vic_mozzies$pix,]))] 
          col=c(berry, "orange", purp), cex=3, lwd=2)
   points(existing_hpop, existing_potent, col=iddu(2)[2], pch=16, cex=1.5) # make this a little easier to see?
   points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
+  
+  # points(c(naive_risk[2], naive_pop[2]), c(naive_risk[1], naive_pop[1]),
+  #        col="blue")
+  # lines(c(naive_risk[2], naive_pop[2]), c(naive_risk[1], naive_pop[1]),
+  #        col="blue")
   
   # make it a 3*3 !
   par(mfrow=c(3,3), oma=c(0,2,0,0), mar=c(0,0,0,0), mfg=c(1,3), bty="n", new=TRUE)
@@ -250,6 +287,65 @@ values(actual_catch)[unique(as.vector(catch_membership_mat[vic_mozzies$pix,]))] 
   subfigure_label(par()$usr, 0.68,0.28,"(f)", 1.2)
   dev.off()}
 
+
+
+# playing around with best estimates
+auc_agg_fig(list(progress_apple,
+                 progress_pear,
+                 progress_apple_10000,
+                 progress_pear_10000),
+            legend_labs=c("random 50000", "greedy 50000", "random 100000", "greedy 100000"),
+            legend_title="run",
+            pal=c(iddu(4)[2:4], brat))
+# interesting
+
+final_frontsdf <- final_fronts_apple_50000 %>%
+  append(final_fronts_pear_50000) %>%
+  #append(final_fronts_apple) %>% 
+  #append(final_fronts_pear) %>%
+  #append(final_fronts50000) %>%
+  rbindlist() %>%
+  as.data.frame()
+agg_pareto <- psel(final_frontsdf, high("sum_pop")*high("sum_risk")) %>%
+  arrange(sum_pop)
+
+final_frontsdf2 <- final_fronts_apple %>%
+  #append(final_fronts_pear_50000) %>%
+  #append(final_fronts_apple) %>% 
+  append(final_fronts_pear) %>%
+  #append(final_fronts50000) %>%
+  rbindlist() %>%
+  as.data.frame()
+agg_pareto2 <- psel(final_frontsdf2, high("sum_pop")*high("sum_risk")) %>%
+  arrange(sum_pop)
+
+plot(final_frontsdf2$sum_pop, final_frontsdf2$sum_risk, 
+     xlab="Sum(Human Population Density)",
+     ylab="Sum(Potential Risk)",
+     cex.lab=1.2, cex.axis=1.2,
+     xlim=c(0, max(final_frontsdf$sum_pop)),
+     ylim=c(0, max(final_frontsdf$sum_risk))) #range(existing_hpop, final_frontsdf$sum_pop))
+points(final_frontsdf$sum_pop, final_frontsdf$sum_risk, col="blue")
+lines(rep(max(agg_pareto$sum_pop), 2), c(0, agg_pareto$sum_risk[nrow(agg_pareto)]), col="grey", lty=2, lwd=2)
+lines(c(0, agg_pareto$sum_pop[1]), rep(max(agg_pareto$sum_risk), 2), col="grey", lty=2, lwd=2)
+points(agg_pareto$sum_pop, agg_pareto$sum_risk, col="red", pch=16)
+lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col="red", lwd=2)
+
+points(agg_pareto2$sum_pop, agg_pareto2$sum_risk, col=brat, pch=16)
+lines(agg_pareto2$sum_pop, agg_pareto2$sum_risk, col=brat, lwd=2)
+
+text(existing_hpop, 135, "Existing\n surveillance", col=iddu(2)[2], cex=1.2)
+#arrows(existing_hpop, 93, existing_hpop, existing_potent-1, col=iddu(2)[2], lwd=2)
+points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
+       col=c(berry, "orange", purp), pch=16, cex=1.5)
+points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
+       col=c(berry, "orange", purp), cex=3, lwd=2)
+points(agg_pareto2[c(1,mid,nrow(agg_pareto2)), c("sum_pop", "sum_risk")], 
+       col=c(berry, "orange", purp), pch=16, cex=1.5)
+points(agg_pareto2[c(1,mid,nrow(agg_pareto2)), c("sum_pop", "sum_risk")], 
+       col=c(berry, "orange", purp), cex=3, lwd=2)
+points(existing_hpop, existing_potent, col=iddu(2)[2], pch=16, cex=1.5) # make this a little easier to see?
+points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
 
 
 

@@ -81,6 +81,9 @@ educated_guess <- matrix(c(sample(wa_sites$id[order(wa_sites$potent,
   as.data.frame()
 names(educated_guess) <- paste("site", 1:nselect, sep="")
 
+naive_pop <- wa_sites$id[order(wa_sites$hpop, decreasing = TRUE)][1:100]
+naive_risk <- wa_sites$id[order(wa_sites$potent, decreasing = TRUE)][1:100]
+
 # greedy_sites <- educated_guess %>%
 #   unlist() %>%
 #   ftable() %>%

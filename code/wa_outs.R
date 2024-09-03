@@ -30,6 +30,21 @@ existing_hpop <- objective_func(wa_mozzies$pix,
                                 catch_membership_mat,
                                 wa_objective$buffer_hpop)
 
+# these are in the wa_setup script
+naive_risk <- c(objective_func(naive_risk,
+                               catch_membership_mat,
+                               wa_objective$buffer_potent),
+                objective_func(naive_risk,
+                               catch_membership_mat,
+                               wa_objective$buffer_hpop))
+
+naive_pop <- c(objective_func(naive_pop,
+                              catch_membership_mat,
+                              wa_objective$buffer_potent),
+               objective_func(naive_pop,
+                              catch_membership_mat,
+                              wa_objective$buffer_hpop))
+
 nrow(wa_mozzies)
   
 
@@ -131,10 +146,16 @@ range(loaded_lim, neigh_lim, pareto_lim, pool_lim)
 message("Make sure this is our best guess: ")
 final_frontsdf <- final_fronts_apple %>%
   append(final_fronts_pear) %>%
+  append(final_fronts_neigh4) %>% 
+  #append(final_fronts_greedy) %>%
+  #append(final_fronts50000) %>%
   rbindlist() %>%
   as.data.frame()
+
 agg_pareto <- psel(final_frontsdf, high("sum_pop")*high("sum_risk")) %>%
   arrange(sum_pop)
+
+final_front_auf(agg_pareto)
 
 # a little concerned the same design is in here a bunch of times?
 all_sites <- agg_pareto %>%
@@ -269,6 +290,11 @@ values(actual_catch)[unique(as.vector(catch_membership_mat[wa_mozzies$pix,]))] <
          col=c(berry, "orange", purp), cex=3, lwd=2)
   points(existing_hpop, existing_potent, col=iddu(2)[2], pch=16, cex=1.5) # make this a little easier to see?
   points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
+  
+  # points(c(naive_risk[2], naive_pop[2]), c(naive_risk[1], naive_pop[1]),
+  #        col="blue")
+  # lines(c(naive_risk[2], naive_pop[2]), c(naive_risk[1], naive_pop[1]),
+  #        col="blue")
   
   par(mar=c(0,0,0,0), bty="n")
   plot(agg_map, col=greens(100), axes=FALSE, bty="n", 

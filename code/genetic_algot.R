@@ -270,7 +270,23 @@ pareto_progress_auc <- function(pareto_progress,
   
   out
 }
-# check this works when I don't give exact soln ....
+
+
+final_front_auf <- function(final_front, 
+                            obj1="sum_risk", obj2="sum_pop",
+                            minx=0, miny=0){
+  final_front <- final_front %>%
+    dplyr::select(all_of(obj1), all_of(obj2)) %>%
+    arrange(obj1)
+  final_front <- rbind(c(max(final_front[,obj1]), 0),
+                       final_front,
+                       c(0,max(final_front[,obj2])))
+  
+  area_under_curve(final_front[,1], final_front[,2], method="step")
+}
+
+
+
 
 auc_agg_fig <- function(inlst, 
                         niters=100, 
