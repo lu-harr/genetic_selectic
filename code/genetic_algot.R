@@ -232,7 +232,8 @@ pareto_progress_pc_pts <- function(pareto_progress,
 
 pareto_progress_auc <- function(pareto_progress,
                                 exact_soln=c(),
-                                minx=0, miny=0){
+                                minx=0, miny=0,
+                                method="step"){
   # using area_under_curve implemented in bayestestR:
   # trapezoid = sum((rowMeans(cbind(y[-length(y)], y[-1]))) * (x[-1] - x[-length(x)])), 
   # step = sum(y[-length(y)] * (x[-1] - x[-length(x)])), 
@@ -245,7 +246,7 @@ pareto_progress_auc <- function(pareto_progress,
     exact_soln <- rbind(c(minx, max(exact_soln[,2])),
                         exact_soln,
                         c(max(exact_soln[,1]), miny))
-    exact_auc <- area_under_curve(exact_soln[,1], exact_soln[,2], method="step")
+    exact_auc <- area_under_curve(exact_soln[,1], exact_soln[,2], method=method)
   } else {
     exact_auc <- 0
   }
@@ -260,16 +261,18 @@ pareto_progress_auc <- function(pareto_progress,
                  tmp,
                  c(max(tmp[,1]), miny))
     if (exact_auc != 0){
-      out <- c(out, exact_auc - area_under_curve(tmp[,1], tmp[,2], method="step"))
+      out <- c(out, exact_auc - area_under_curve(tmp[,1], tmp[,2], method=method))
     } else {
       # message(area_under_curve(tmp[,1], tmp[,2], method="step"))
-      out <- c(out, area_under_curve(tmp[,1], tmp[,2], method="step"))
+      out <- c(out, area_under_curve(tmp[,1], tmp[,2], method=method))
     }
     
   }
   
   out
 }
+
+
 
 
 final_front_auf <- function(final_front, 
@@ -331,7 +334,7 @@ auc_agg_fig <- function(inlst,
   }
   
   message(paste("auc range:", ylim, collapse=" "))
-  plot(0, type="n", xlim=c(0,niters), ylim=c(miny, maxy), 
+  plot(0, type="n", xlim=c(1,niters), ylim=c(miny, maxy), 
        xlab="Iteration", ylab=ylab,
        main=main)
   

@@ -1,6 +1,7 @@
 # process vic outputs and run up vic_sensitivity.png and vic_mapped.png
 # need to run what's in main.R
 source("code/vic_setup.R")
+source("code/genetic_algot.R")
 
 vic_mozzies <- read.csv('~/Desktop/jev/from_Freya_local/JEV_secure/data/phase_2/clean/pathogen/all_moz_surveillance.csv') %>%
   rename(host_type=host_species) %>% 
@@ -346,6 +347,185 @@ points(agg_pareto2[c(1,mid,nrow(agg_pareto2)), c("sum_pop", "sum_risk")],
        col=c(berry, "orange", purp), cex=3, lwd=2)
 points(existing_hpop, existing_potent, col=iddu(2)[2], pch=16, cex=1.5) # make this a little easier to see?
 points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
+
+
+##############################################################################
+# SUPP: FRONT CONTENT (greedy start vs pool 50,000?)
+# one or three panels? (a) fronts of similar auf in objective space, 
+# (b)(c) fronts of similar auf but different construction in geographic space (potentially overkill)
+
+final_frontsdf <- final_fronts50000 %>%
+  rbindlist() %>%
+  as.data.frame()
+pareto1 <- final_fronts50000[[9]] %>%
+  arrange(sum_pop)
+
+final_frontsdf2 <- final_frontsgreedy %>%
+  rbindlist() %>%
+  as.data.frame()
+pareto2 <- final_frontsgreedy[[7]] %>%
+  arrange(sum_pop)
+
+
+{png("figures/supp_front_shape.png",
+    height=1000,
+    width=1300,
+    pointsize=30)
+plot(final_frontsdf2$sum_pop, final_frontsdf2$sum_risk, 
+     xlab="Sum(Human Population Density)",
+     ylab="Sum(Potential Risk)",
+     cex.lab=1.2, cex.axis=1.2,
+     xlim=c(0, max(final_frontsdf$sum_pop)),
+     ylim=c(0, max(final_frontsdf2$sum_risk)),
+     col=alpha(iddu(4)[2], 0.7),
+     main="Two fronts with similar AUFs have different shapes",
+     cex.main=1.3, cex=0.8)
+points(final_frontsdf$sum_pop, final_frontsdf$sum_risk, col=alpha(brat, 0.7), cex=0.8)
+
+lines(rep(max(pareto1$sum_pop), 2), 
+      c(0, pareto1$sum_risk[nrow(pareto1)]), 
+      col=brat, lty=2, lwd=2)
+lines(c(0, pareto1$sum_pop[1]), rep(max(pareto1$sum_risk), 2), 
+      col=brat, lty=2, lwd=2)
+lines(pareto1$sum_pop, pareto1$sum_risk, col=brat, lwd=2)
+lines(pareto2$sum_pop, pareto2$sum_risk, col=iddu(4)[2], lwd=2)
+lines(rep(max(pareto2$sum_pop), 2), 
+      c(0, pareto2$sum_risk[nrow(pareto2)]), 
+      col=iddu(4)[2], lty=2, lwd=2)
+lines(c(0, pareto2$sum_pop[1]), rep(max(pareto2$sum_risk), 2), 
+      col=iddu(4)[2], lty=2, lwd=2)
+
+points(pareto1$sum_pop, pareto1$sum_risk, col=brat, pch=16)
+points(pareto2$sum_pop, pareto2$sum_risk, col=iddu(4)[2], pch=16)
+
+legend("bottomleft", 
+       c(paste0("Pool size 50,000"),# (AUF ", format(final_front_auf(pareto1), big.mark=","), ")"),
+         paste0("Greedy start")),# (AUF ", format(final_front_auf(pareto2), big.mark=","), ")")),
+       fill=c(brat, alpha(iddu(4)[2])),
+       cex=1.2)
+dev.off()}
+
+
+
+
+##############################################################################
+# SUPP: CONCAVITY INVESTIGATION
+# two panels: (a) zoomed in auf_agg plot over iter showing dip and recovery?,
+# (b) fronts in objective space showing concavity
+
+{set.seed(834903)
+  t1 = Sys.time()
+  niters = 100
+  
+  neigh_mat <- focalWeight(id_ras, 0.12, "circle") # queens case
+  neigh_mat[!neigh_mat == 0] = 1
+  catchment_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+  catchment_stack <- subset(catchment_stack, which(neigh_mat != 0))
+  catch_membership_mat <- values(catchment_stack, mat=TRUE)
+  
+  tstart <- Sys.time()
+  tmp <- genetic_algot(site_ids = vic_sites$id,
+                       nselect = nselect, 
+                       poolsize = 1000,
+                       niters = niters,
+                       sandpit = vic_objective$potent,
+                       potential_vec = site_ids$potent,
+                       pop_vec = site_ids$hpop,
+                       sample_method = "neighbours",
+                       catchment_matrix = catch_membership_mat,
+                       neighbourhood_matrix = catch_membership_mat,
+                       pool = educated_guess, # matrix of nselect columns
+                       top_level = 1,
+                       plot_out = FALSE)
+  tend <- Sys.time()
+}
+
+plot_front_in_objective_space <- function(front, obj1="sum_risk", obj2="sum_pop", col="blue"){
+  front <- front[order(front[,obj1]),]
+  points(front[,obj1], front[,obj2], col=col, lwd=2)
+  lines(front[,obj1], front[,obj2], col=col)
+  lines(c(0, min(front[,obj1])), rep(max(front[,obj2]), 2), col=col, lty=2)
+  lines(rep(max(front[,obj1]), 2), c(0, min(front[,obj2])), col=col, lty=2)
+  
+  polygon(c(0,0, front[,obj1], max(front[,obj1])),
+          c(0,max(front[,obj2]), front[,obj2], 0), col=alpha(col, 0.2), border=col, lwd=2)
+}
+
+plot_front_in_objective_space_step <- function(front, obj1="sum_risk", obj2="sum_pop", col="blue"){
+  front <- front[order(front[,obj1]),]
+  points(front[,obj1], front[,obj2], col=col, lwd=2)
+  # lines(front[,obj1], front[,obj2], col=col)
+  # lines(c(0, min(front[,obj1])), rep(max(front[,obj2]), 2), col=col, lty=2)
+  # lines(rep(max(front[,obj1]), 2), c(0, min(front[,obj2])), col=col, lty=2)
+  
+  polygon(c(0, 0, front[1,obj1], rep(front[-c(1, nrow(front)),obj1], each=2), rep(max(front[,obj1]), 3)),
+          c(0, rep(max(front[,obj2]), 3), rep(front[-c(1, nrow(front)),obj2], each=2), front[nrow(front), obj2], 0), 
+          col=alpha(col, 0.2), border=col, lwd=2)
+}
+
+select <- c(1,2,4)
+pal=viridis(4)[c(1,3,4)]
+xlab="Sum(Potential Risk)"
+ylab="Sum(Human Population Density)"
+
+
+{png("figures/auf_decreasing.png",
+    height=2000,
+    width=3000,
+    pointsize=45)
+par(mfrow=c(1,3), oma=c(0,0,2,0))
+
+loaded_lim <- auc_agg_fig(list(progress_educated[1:15,]),
+                          pal=iddu(4)[3],
+                          niters=15,
+                          ylim=c(6050000, 6409262),
+                          upper=FALSE,
+                          ylab="Area under estimated Pareto front")
+lines(1:15, pareto_progress_auc(tmp$pareto_progress[1:15]), col=iddu(4)[4], lwd=2)
+#plot(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="trapezoid"), col=iddu(4)[2], lwd=2, type="l")
+#plot(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="spline"), col=iddu(4)[3], lwd=2, type="l")
+points(1:15, pareto_progress_auc(tmp$pareto_progress[1:15]), col=iddu(4)[4], lwd=4, cex=1.2)
+points(select, pareto_progress_auc(tmp$pareto_progress[select]), col=pal, cex=1.2, pch=16)
+
+par(mfrow=c(2,3), mfg=c(1,2))
+plot(0, xlim=range(tmp$pareto_progress$`iter 1`$sum_risk), 
+     ylim=range(tmp$pareto_progress$`iter 1`$sum_pop),
+     xlab=xlab, ylab=ylab)
+for (ind in 1:2){
+  plot_front_in_objective_space(tmp$pareto_progress[[select[ind]]], col=pal[ind])
+}
+plot(0, xlim=range(tmp$pareto_progress$`iter 1`$sum_risk), 
+     ylim=range(tmp$pareto_progress$`iter 1`$sum_pop),
+     xlab=xlab, ylab=ylab)
+for (ind in 2:3){
+  plot_front_in_objective_space(tmp$pareto_progress[[select[ind]]], col=pal[ind])
+}
+
+par(mfrow=c(2,3), mfg=c(2,2))
+plot(0, xlim=range(tmp$pareto_progress$`iter 1`$sum_risk), 
+     ylim=range(tmp$pareto_progress$`iter 1`$sum_pop),
+     xlab=xlab, ylab=ylab)
+for (ind in 1:2){
+  plot_front_in_objective_space_step(tmp$pareto_progress[[select[ind]]], col=pal[ind])
+}
+plot(0, xlim=range(tmp$pareto_progress$`iter 1`$sum_risk), 
+     ylim=range(tmp$pareto_progress$`iter 1`$sum_pop),
+     xlab=xlab, ylab=ylab)
+for (ind in 2:3){
+  plot_front_in_objective_space_step(tmp$pareto_progress[[select[ind]]], col=pal[ind])
+}
+
+par(mfrow=c(1,1), new=TRUE, mar=rep(1,4), xpd=NA)
+plot(0, xlab="", ylab="", xlim=c(0,1), ylim=c(0,1), axes=FALSE, bty="n", type="n")
+text(0.7,1.1, "Area under front (trapezoid)", font=2, cex = 0.8)
+text(0.7,0.51, "Area under front (step)", font=2, cex = 0.8)
+subfigure_label(par()$usr, 0, 1.02, "(a)", cex.label = 0.8)
+subfigure_label(par()$usr, 0.33, 1.02, "(b)", cex.label = 0.8)
+subfigure_label(par()$usr, 0.68, 1.02, "(c)", cex.label = 0.8)
+subfigure_label(par()$usr, 0.33, 0.47, "(d)", cex.label = 0.8)
+subfigure_label(par()$usr, 0.68, 0.47, "(e)", cex.label = 0.8)
+dev.off()}
+
 
 
 

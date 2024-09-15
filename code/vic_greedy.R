@@ -37,7 +37,7 @@ start_script <- Sys.time()
                          plot_out = FALSE)
     tend <- Sys.time()
     
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, method="trapezoid")
     timesgreedy[ind] <- tend - tstart
     final_frontsgreedy[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
@@ -45,7 +45,7 @@ start_script <- Sys.time()
   t2 = Sys.time()
   t2-t1}
 
-write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_greedystart.csv", row.names=FALSE)
+write.csv(progress_auc, "output/vic_auc_pool1000_iters100_runs10_greedystart_trapezoid.csv", row.names=FALSE)
 save(timesgreedy,
      final_frontsgreedy,
-     file="output/diagnostics_vic_greedy.rds")
+     file="output/diagnostics_vic_greedy_trapezoid.rds")

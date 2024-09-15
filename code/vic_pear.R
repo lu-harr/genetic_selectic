@@ -96,7 +96,7 @@ start_script <- Sys.time()
                          plot_out = FALSE)
     tend <- Sys.time()
     message(paste("greedy: ", ind, ";",tend-tstart))
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, method="trapezoid")
     times_pear[ind] <- tend - tstart
     final_fronts_pear[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
@@ -104,7 +104,7 @@ start_script <- Sys.time()
   t2 = Sys.time()
   t2-t1}
 
-write.csv(progress_auc, "output/vic_auc_pool100000_iters100_runs10_neigh3_greedystart.csv", row.names=FALSE)
+write.csv(progress_auc, "output/vic_auc_pool100000_iters100_runs10_neigh3_greedystart_trapezoid.csv", row.names=FALSE)
 save(times_pear,
      final_fronts_pear,
-     file="output/diagnostics_vic_100000_neigh3_greedy.rds")
+     file="output/diagnostics_vic_100000_neigh3_greedy_trapezoid.rds")

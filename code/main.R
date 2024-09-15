@@ -15,6 +15,9 @@ library(RColorBrewer)
 library(scales)
 library(viridisLite)
 library(data.table)
+# library(rPref)
+# library(idpalette)
+# library(bayestestR)
 library(rPref, lib.loc="~/R_libs/4.2.1")
 library(idpalette, lib.loc="~/R_libs/4.2.1")
 library(bayestestR, lib.loc="~/R_libs/4.2.1")
@@ -23,7 +26,6 @@ AGG_FACTOR <- 10
 
 message(.libPaths())
 
-#source("code/iterative_select_funcs.R")
 pinks <- colorRampPalette(colors = c("#f7f7f7", "#c23375"))
 purps <- colorRampPalette(brewer.pal(9,"Purples"))
 #extreme_purps = colorRampPalette(purps[c(seq(1,30,5),30:100)])(100)
