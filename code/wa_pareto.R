@@ -38,18 +38,18 @@ message("pareto 2")
                          plot_out = FALSE)
     tend <- Sys.time()
     
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, method="trapezoid")
     times_pareto2[ind] <- tend - tstart
     final_fronts_pareto2[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_pareto2.csv", row.names=FALSE)
+write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_pareto2_trapezoid.csv", row.names=FALSE)
 
 save(times_pareto2,
      final_fronts_pareto2,
-     file="output/diagnostics_wa_pareto.rds")
+     file="output/diagnostics_wa_pareto_trapezoid.rds")
 
 message(paste("pareto 3: ", Sys.time() - start_script))
 {set.seed(834903)
@@ -83,17 +83,17 @@ message(paste("pareto 3: ", Sys.time() - start_script))
                          top_level = 3,
                          plot_out = FALSE)
     tend <- Sys.time()
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, method="trapezoid")
     times_pareto3[ind] <- tend - tstart
     final_fronts_pareto3[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_pareto3.csv", row.names=FALSE)
+write.csv(progress_auc, "output/wa_auc_pool1000_iters100_runs10_pareto3_trapezoid.csv", row.names=FALSE)
 
 save(times_pareto2, times_pareto3,
      final_fronts_pareto2, final_fronts_pareto3,
-     file="output/diagnostics_wa_pareto.rds")
+     file="output/diagnostics_wa_pareto_trapezoid.rds")
 
 

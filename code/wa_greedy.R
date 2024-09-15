@@ -38,16 +38,16 @@ message("here we go: greedy start")
                          plot_out = FALSE)
     tend <- Sys.time()
     
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, method="trapezoid")
     times_greedy[ind] <- tend - tstart
     final_fronts_greedy[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
   
   t2 = Sys.time()
   t2-t1} # expecting 15 mins for vic .. probably longer for WA .. but how much longer ?
-write.csv(progress_auc, "output/old_rasters/wa_auc_pool1000_iters100_runs10_greedystart.csv", row.names=FALSE)
+write.csv(progress_auc, "output/old_rasters/wa_auc_pool1000_iters100_runs10_greedystart_trapezoid.csv", row.names=FALSE)
 
 save(times_greedy,
      final_fronts_greedy,
-     file="output/old_rasters/diagnostics_wa_greedy.rds")
+     file="output/old_rasters/diagnostics_wa_greedy_trapezoid.rds")
 

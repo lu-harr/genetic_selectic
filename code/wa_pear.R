@@ -43,16 +43,16 @@ neigh_membership_mat <- values(neigh_stack, mat=TRUE)
                          plot_out = FALSE)
     tend <- Sys.time()
     message(paste("pear: ", ind, ";",tend-tstart))
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, method="trapezoid")
     times_pear[ind] <- tend - tstart
     final_fronts_pear[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/wa_auc_pool50000_iters100_runs10_neigh4_greedystart.csv", row.names=FALSE)
+write.csv(progress_auc, "output/wa_auc_pool50000_iters100_runs10_neigh4_greedystart_trapezoid.csv", row.names=FALSE)
 
 
 save(times_pear,
      final_fronts_pear,
-     file="output/diagnostics_wa_pear.rds")
+     file="output/diagnostics_wa_pear_trapezoid.rds")

@@ -482,7 +482,7 @@ loaded_lim <- auc_agg_fig(list(progress_educated[1:15,]),
                           upper=FALSE,
                           ylab="Area under estimated Pareto front")
 lines(1:15, pareto_progress_auc(tmp$pareto_progress[1:15]), col=iddu(4)[4], lwd=2)
-#plot(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="trapezoid"), col=iddu(4)[2], lwd=2, type="l")
+plot(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="trapezoid"), col=iddu(4)[2], lwd=2, type="l")
 #plot(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="spline"), col=iddu(4)[3], lwd=2, type="l")
 points(1:15, pareto_progress_auc(tmp$pareto_progress[1:15]), col=iddu(4)[4], lwd=4, cex=1.2)
 points(select, pareto_progress_auc(tmp$pareto_progress[select]), col=pal, cex=1.2, pch=16)
