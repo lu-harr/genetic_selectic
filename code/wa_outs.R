@@ -153,7 +153,7 @@ load("output/wa_trapezoid/diagnostics_wa_pear_trapezoid.rds")
   loaded_lim <- auc_agg_fig(list(progress_uneducated,
                                  progress_educated),
                             legend_labs=c("Random", "Greedy"),
-                            legend_title="Starting pool",
+                            legend_title="Initialisation",
                             pal=iddu(4)[2:4],
                             ylim=c(463220.9, 3018271.0))
   

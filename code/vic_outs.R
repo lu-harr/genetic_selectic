@@ -79,6 +79,7 @@ progress1000 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_
 progress5000 <- read.csv("output/vic_trapezoid/vic_auc_pool5000_iters100_runs10_trapezoid.csv")
 progress10000 <- read.csv("output/vic_trapezoid/vic_auc_pool10000_iters100_runs10_trapezoid.csv")
 progress50000 <- read.csv("output/vic_trapezoid/vic_auc_pool50000_iters100_runs10_trapezoid.csv")
+# never even used the 100,000 here!
 
 progress_neigh1 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_trapezoid.csv")
 progress_neigh2 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_neigh2_trapezoid.csv")
@@ -93,6 +94,7 @@ progress_pareto3 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_run
 progress_uneducated <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_trapezoid.csv")
 progress_educated <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_greedystart_trapezoid.csv")
 
+# never re-ran these:
 #progress_apple <- read.csv("output/vic_trapezoid/vic_auc_pool50000_iters100_runs10_neigh3_trapezoid.csv")
 #progress_pear <- read.csv("output/vic_trapezoid/vic_auc_pool50000_iters100_runs10_neigh3_greedystart_trapezoid.csv")
 
@@ -117,11 +119,11 @@ load("output/vic_trapezoid/diagnostics_vic_pool_trapezoid.rds")
 load("output/vic_trapezoid/diagnostics_vic_neigh_trapezoid.rds")
 load("output/vic_trapezoid/diagnostics_vic_pareto_trapezoid.rds")
 load("output/vic_trapezoid/diagnostics_vic_greedy_trapezoid.rds")
-#load("output/vic_trapezoid/diagnostics_vic_50000_neigh3_greedy_trapezoid.rds")
-#load("output/vic_trapezoid/diagnostics_vic_50000_neigh3_trapezoid.rds")
+load("output/vic/diagnostics_vic_50000_neigh3_greedy.rds") # neve re-ran with updated AUF
+load("output/vic/diagnostics_vic_50000_neigh3.rds")
 final_fronts_apple_50000 <- final_fronts_apple
 final_fronts_pear_50000 <- final_fronts_pear
-#load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_greedy_trapezoid.rds")
+load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_greedy_trapezoid.rds")
 load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_trapezoid.rds")
 
 
@@ -167,7 +169,7 @@ load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_trapezoid.rds")
   loaded_lim <- auc_agg_fig(list(progress_uneducated,
                                  progress_educated),
                             legend_labs=c("Random", "Greedy"),
-                            legend_title="Starting pool",
+                            legend_title="Initialisation",
                             pal=iddu(4)[2:4],
                             ylim=ylim)
   
@@ -186,7 +188,7 @@ range(pool_lim, neigh_lim, pareto_lim, loaded_lim)
 #################################################################################
 # vic map figure
 message("Make sure this is our best guess: ")
-final_frontsdf <- final_fronts_apple %>%
+final_frontsdf <- final_fronts_apple %>% # might be WA ..
   append(final_fronts_pear) %>%
   append(final_fronts_apple_50000) %>%
   append(final_fronts_pear_50000) %>%
