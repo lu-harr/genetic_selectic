@@ -48,41 +48,69 @@ naive_pop <- c(objective_func(naive_pop,
 nrow(wa_mozzies)
   
 
-progress1000 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
-progress5000 <- read.csv("output/wa/wa_auc_pool5000_iters100_runs10.csv")
-progress10000 <- read.csv("output/wa/wa_auc_pool10000_iters100_runs10.csv")
-progress50000 <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10.csv")
+# progress1000 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
+# progress5000 <- read.csv("output/wa/wa_auc_pool5000_iters100_runs10.csv")
+# progress10000 <- read.csv("output/wa/wa_auc_pool10000_iters100_runs10.csv")
+# progress50000 <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10.csv")
+# 
+# progress_neigh1 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
+# progress_neigh2 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_neigh2.csv")
+# progress_neigh3 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_neigh3.csv")
+# progress_neigh4 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_neigh4.csv")
+# progress_neigh5 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_neigh5.csv")
+# 
+# progress_pareto1 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
+# progress_pareto2 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_pareto2.csv")
+# progress_pareto3 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_pareto3.csv")
+# 
+# progress_uneducated <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
+# progress_educated <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_greedystart.csv")
+# 
+# progress_apple <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10_neigh4.csv")
+# progress_pear <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10_neigh4_greedystart.csv")
 
-progress_neigh1 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
-progress_neigh2 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_neigh2.csv")
-progress_neigh3 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_neigh3.csv")
-progress_neigh4 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_neigh4.csv")
-progress_neigh5 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_neigh5.csv")
+progress1000 <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_trapezoid.csv")
+progress5000 <- read.csv("output/wa_trapezoid/wa_auc_pool5000_iters100_runs10_trapezoid.csv")
+progress10000 <- read.csv("output/wa_trapezoid/wa_auc_pool10000_iters100_runs10_trapezoid.csv")
+progress50000 <- read.csv("output/wa_trapezoid/wa_auc_pool50000_iters100_runs10_trapezoid.csv")
 
-progress_pareto1 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
-progress_pareto2 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_pareto2.csv")
-progress_pareto3 <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_pareto3.csv")
+progress_neigh1 <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_trapezoid.csv")
+progress_neigh2 <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_neigh2_trapezoid.csv")
+progress_neigh3 <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_neigh3_trapezoid.csv")
+progress_neigh4 <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_neigh4_trapezoid.csv")
+progress_neigh5 <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_neigh5_trapezoid.csv")
 
-progress_uneducated <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10.csv")
-progress_educated <- read.csv("output/wa/wa_auc_pool1000_iters100_runs10_greedystart.csv")
+progress_pareto1 <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_trapezoid.csv")
+progress_pareto2 <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_pareto2_trapezoid.csv")
+progress_pareto3 <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_pareto3_trapezoid.csv")
 
-progress_apple <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10_neigh4.csv")
-#progress_pear <- read.csv("output/wa/wa_auc_pool50000_iters100_runs10_neigh4_greedystart.csv")
-# oops overwrote it ... later problem
+progress_uneducated <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_trapezoid.csv")
+progress_educated <- read.csv("output/wa_trapezoid/wa_auc_pool1000_iters100_runs10_greedystart_trapezoid.csv")
 
-load("output/wa/diagnostics_wa_pool.rds")
-load("output/wa/diagnostics_wa_neigh.rds")
-load("output/wa/diagnostics_wa_pareto.rds")
-load("output/wa/diagnostics_wa_greedy.rds")
-load("output/wa/diagnostics_wa_apple.rds")
-load("output/wa/diagnostics_wa_pear.rds")
+progress_apple <- read.csv("output/wa_trapezoid/wa_auc_pool50000_iters100_runs10_neigh4_trapezoid.csv")
+progress_pear <- read.csv("output/wa_trapezoid/wa_auc_pool50000_iters100_runs10_neigh4_greedystart_trapezoid.csv")
+
+# load("output/wa/diagnostics_wa_pool.rds")
+# load("output/wa/diagnostics_wa_neigh.rds")
+# load("output/wa/diagnostics_wa_pareto.rds")
+# load("output/wa/diagnostics_wa_greedy.rds")
+# load("output/wa/diagnostics_wa_apple.rds")
+# load("output/wa/diagnostics_wa_pear.rds")
+
+
+load("output/wa_trapezoid/diagnostics_wa_pool_trapezoid.rds")
+load("output/wa_trapezoid/diagnostics_wa_neigh_trapezoid.rds")
+load("output/wa_trapezoid/diagnostics_wa_pareto_trapezoid.rds")
+load("output/wa_trapezoid/diagnostics_wa_greedy_trapezoid.rds")
+load("output/wa_trapezoid/diagnostics_wa_apple_trapezoid.rds")
+load("output/wa_trapezoid/diagnostics_wa_pear_trapezoid.rds")
 
 
 # mapped assessment given old surface
 # load("output/old_rasters/diagnostics_wa_greedy.rds")
 
 # incorporate the rest of the bits in once I've got them and set common ylim
-{png("figures/wa_sensitivity.png",
+{png("figures/wa_sensitivity_trapezoid.png",
      width=2400,
      height=2000,
      pointsize = 40)

@@ -51,48 +51,83 @@ existing_hpop <- objective_func(vic_mozzies$pix,
 
 nrow(vic_mozzies)
 
-progress1000 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
-progress5000 <- read.csv("output/vic/vic_auc_pool5000_iters100_runs10.csv")
-progress10000 <- read.csv("output/vic/vic_auc_pool10000_iters100_runs10.csv")
-progress50000 <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10.csv")
+# progress1000 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
+# progress5000 <- read.csv("output/vic/vic_auc_pool5000_iters100_runs10.csv")
+# progress10000 <- read.csv("output/vic/vic_auc_pool10000_iters100_runs10.csv")
+# progress50000 <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10.csv")
+# 
+# progress_neigh1 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
+# progress_neigh2 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_neigh2.csv")
+# progress_neigh3 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_neigh3.csv")
+# progress_neigh4 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_neigh4.csv")
+# progress_neigh5 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_neigh5.csv")
+# 
+# progress_pareto1 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
+# progress_pareto2 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_pareto2.csv")
+# progress_pareto3 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_pareto3.csv")
+# 
+# progress_uneducated <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
+# progress_educated <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_greedystart.csv")
+# 
+# progress_apple <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3.csv")
+# progress_pear <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3_greedystart.csv")
+# 
+# progress_apple_10000 <- read.csv("output/vic/vic_auc_pool100000_iters100_runs10_neigh3.csv")
+# progress_pear_10000 <- read.csv("output/vic/vic_auc_pool100000_iters100_runs10_neigh3_greedystart.csv")
 
-progress_neigh1 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
-progress_neigh2 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_neigh2.csv")
-progress_neigh3 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_neigh3.csv")
-progress_neigh4 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_neigh4.csv")
-progress_neigh5 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_neigh5.csv")
+progress1000 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_trapezoid.csv")
+progress5000 <- read.csv("output/vic_trapezoid/vic_auc_pool5000_iters100_runs10_trapezoid.csv")
+progress10000 <- read.csv("output/vic_trapezoid/vic_auc_pool10000_iters100_runs10_trapezoid.csv")
+progress50000 <- read.csv("output/vic_trapezoid/vic_auc_pool50000_iters100_runs10_trapezoid.csv")
 
-progress_pareto1 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
-progress_pareto2 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_pareto2.csv")
-progress_pareto3 <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_pareto3.csv")
+progress_neigh1 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_trapezoid.csv")
+progress_neigh2 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_neigh2_trapezoid.csv")
+progress_neigh3 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_neigh3_trapezoid.csv")
+progress_neigh4 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_neigh4_trapezoid.csv")
+progress_neigh5 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_neigh5_trapezoid.csv")
 
-progress_uneducated <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10.csv")
-progress_educated <- read.csv("output/vic/vic_auc_pool1000_iters100_runs10_greedystart.csv")
+progress_pareto1 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_trapezoid.csv")
+progress_pareto2 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_pareto2_trapezoid.csv")
+progress_pareto3 <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_pareto3_trapezoid.csv")
 
-progress_apple <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3.csv")
-progress_pear <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3_greedystart.csv")
+progress_uneducated <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_trapezoid.csv")
+progress_educated <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_greedystart_trapezoid.csv")
 
-progress_apple_10000 <- read.csv("output/vic/vic_auc_pool100000_iters100_runs10_neigh3.csv")
-progress_pear_10000 <- read.csv("output/vic/vic_auc_pool100000_iters100_runs10_neigh3_greedystart.csv")
+#progress_apple <- read.csv("output/vic_trapezoid/vic_auc_pool50000_iters100_runs10_neigh3_trapezoid.csv")
+#progress_pear <- read.csv("output/vic_trapezoid/vic_auc_pool50000_iters100_runs10_neigh3_greedystart_trapezoid.csv")
+
+progress_apple_10000 <- read.csv("output/vic_trapezoid/vic_auc_pool100000_iters100_runs10_neigh3_trapezoid.csv")
+#progress_pear_10000 <- read.csv("output/vic_trapezoid/vic_auc_pool100000_iters100_runs10_neigh3_greedystart_trapezoid.csv")
 
 #progress_educated <- read.csv("output/old_rasters/vic_auc_pool1000_iters100_runs10_greedystart.csv")
 #load("output/old_rasters/diagnostics_vic_greedy.rds")
 
-load("output/vic/diagnostics_vic_pool.rds")
-load("output/vic/diagnostics_vic_neigh.rds")
-load("output/vic/diagnostics_vic_pareto.rds")
-load("output/vic/diagnostics_vic_greedy.rds")
-load("output/vic/diagnostics_vic_50000_neigh3_greedy.rds")
-load("output/vic/diagnostics_vic_50000_neigh3.rds")
+# load("output/vic/diagnostics_vic_pool.rds")
+# load("output/vic/diagnostics_vic_neigh.rds")
+# load("output/vic/diagnostics_vic_pareto.rds")
+# load("output/vic/diagnostics_vic_greedy.rds")
+# load("output/vic/diagnostics_vic_50000_neigh3_greedy.rds")
+# load("output/vic/diagnostics_vic_50000_neigh3.rds")
+# final_fronts_apple_50000 <- final_fronts_apple
+# final_fronts_pear_50000 <- final_fronts_pear
+# load("output/vic/diagnostics_vic_100000_neigh3_greedy.rds")
+# load("output/vic/diagnostics_vic_100000_neigh3.rds")
+
+load("output/vic_trapezoid/diagnostics_vic_pool_trapezoid.rds")
+load("output/vic_trapezoid/diagnostics_vic_neigh_trapezoid.rds")
+load("output/vic_trapezoid/diagnostics_vic_pareto_trapezoid.rds")
+load("output/vic_trapezoid/diagnostics_vic_greedy_trapezoid.rds")
+#load("output/vic_trapezoid/diagnostics_vic_50000_neigh3_greedy_trapezoid.rds")
+#load("output/vic_trapezoid/diagnostics_vic_50000_neigh3_trapezoid.rds")
 final_fronts_apple_50000 <- final_fronts_apple
 final_fronts_pear_50000 <- final_fronts_pear
-load("output/vic/diagnostics_vic_100000_neigh3_greedy.rds")
-load("output/vic/diagnostics_vic_100000_neigh3.rds")
+#load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_greedy_trapezoid.rds")
+load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_trapezoid.rds")
 
 
 
 # incorporate the rest of the bits in once I've got them and set common ylim
-{png("figures/vic_sensitivity.png",
+{png("figures/vic_sensitivity_trapezoid.png",
      width=2400,
      height=2000,
      pointsize = 40)
