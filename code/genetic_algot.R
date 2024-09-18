@@ -300,6 +300,7 @@ auc_agg_fig <- function(inlst,
                         legend_title="",
                         ylim = c(),
                         ylab="Area between estimated and exact Pareto front",
+                        xlab="Iteration",
                         upper = TRUE){
   # visualisation of area between curve and exact solution 
   # (polygon shows min/max, heavy line is median progress)
@@ -335,7 +336,7 @@ auc_agg_fig <- function(inlst,
   
   message(paste("auc range:", ylim, collapse=" "))
   plot(0, type="n", xlim=c(1,niters), ylim=c(miny, maxy), 
-       xlab="Iteration", ylab=ylab,
+       xlab=xlab, ylab=ylab,
        main=main)
   
   # polygons first

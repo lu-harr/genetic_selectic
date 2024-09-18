@@ -451,30 +451,33 @@ dev.off()}
 # (b) fronts in objective space showing concavity
 
 {set.seed(834903)
-  t1 = Sys.time()
-  niters = 100
-  
-  neigh_mat <- focalWeight(id_ras, 0.12, "circle") # queens case
-  neigh_mat[!neigh_mat == 0] = 1
-  catchment_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
-  catchment_stack <- subset(catchment_stack, which(neigh_mat != 0))
-  catch_membership_mat <- values(catchment_stack, mat=TRUE)
-  
-  tstart <- Sys.time()
-  tmp <- genetic_algot(site_ids = vic_sites$id,
-                       nselect = nselect, 
-                       poolsize = 1000,
-                       niters = niters,
-                       sandpit = vic_objective$potent,
-                       potential_vec = site_ids$potent,
-                       pop_vec = site_ids$hpop,
-                       sample_method = "neighbours",
-                       catchment_matrix = catch_membership_mat,
-                       neighbourhood_matrix = catch_membership_mat,
-                       pool = educated_guess, # matrix of nselect columns
-                       top_level = 1,
-                       plot_out = FALSE)
-  tend <- Sys.time()
+  for (i in 1:2){
+    message(i)
+    t1 = Sys.time()
+    niters = 100
+    
+    neigh_mat <- focalWeight(id_ras, 0.12, "circle") # queens case
+    neigh_mat[!neigh_mat == 0] = 1
+    catchment_stack <- terra::focal(terra::rast(id_ras), neigh_mat, fun=c)
+    catchment_stack <- subset(catchment_stack, which(neigh_mat != 0))
+    catch_membership_mat <- values(catchment_stack, mat=TRUE)
+    
+    tstart <- Sys.time()
+    tmp <- genetic_algot(site_ids = vic_sites$id,
+                         nselect = nselect, 
+                         poolsize = 1000,
+                         niters = niters,
+                         sandpit = vic_objective$potent,
+                         potential_vec = site_ids$potent,
+                         pop_vec = site_ids$hpop,
+                         sample_method = "neighbours",
+                         catchment_matrix = catch_membership_mat,
+                         neighbourhood_matrix = catch_membership_mat,
+                         pool = educated_guess, # matrix of nselect columns
+                         top_level = 1,
+                         plot_out = FALSE)
+    tend <- Sys.time()
+  }
 }
 
 plot_front_in_objective_space <- function(front, obj1="sum_risk", obj2="sum_pop", col="blue"){
@@ -500,67 +503,65 @@ plot_front_in_objective_space_step <- function(front, obj1="sum_risk", obj2="sum
           col=alpha(col, 0.2), border=col, lwd=2)
 }
 
-select <- c(1,2,4)
-pal=viridis(4)[c(1,3,4)]
+
 xlab="Sum(Potential Risk)"
 ylab="Sum(Human Population Density)"
 
-
-{png("figures/auf_decreasing.png",
+{png("figures/auf_decreasing_trapezoidal.png",
     height=2000,
-    width=3000,
-    pointsize=45)
-par(mfrow=c(1,3), oma=c(0,0,2,0))
+    width=2500,
+    pointsize=40)
+par(mfrow=c(2,2), oma=c(3,2,0.2,0), mar=c(2.1,4.1,2.1,2.1), cex.lab=1.4)
+
+select <- 1:15
+pal=viridis(15)
 
 loaded_lim <- auc_agg_fig(list(progress_educated[1:15,]),
                           pal=iddu(4)[3],
                           niters=15,
-                          ylim=c(6050000, 6409262),
                           upper=FALSE,
-                          ylab="Area under estimated Pareto front")
-lines(1:15, pareto_progress_auc(tmp$pareto_progress[1:15]), col=iddu(4)[4], lwd=2)
-plot(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="trapezoid"), col=iddu(4)[2], lwd=2, type="l")
-#plot(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="spline"), col=iddu(4)[3], lwd=2, type="l")
-points(1:15, pareto_progress_auc(tmp$pareto_progress[1:15]), col=iddu(4)[4], lwd=4, cex=1.2)
-points(select, pareto_progress_auc(tmp$pareto_progress[select]), col=pal, cex=1.2, pch=16)
+                          ylab="", xlab="")
+lines(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="trapezoid"), col=iddu(4)[4], lwd=2)
+points(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="trapezoid"), col=iddu(4)[4], lwd=4, cex=1.2)
+points(select, pareto_progress_auc(tmp$pareto_progress[select], method="trapezoid"), col=pal, cex=1.2, pch=16)
 
-par(mfrow=c(2,3), mfg=c(1,2))
 plot(0, xlim=range(tmp$pareto_progress$`iter 1`$sum_risk), 
      ylim=range(tmp$pareto_progress$`iter 1`$sum_pop),
-     xlab=xlab, ylab=ylab)
-for (ind in 1:2){
-  plot_front_in_objective_space(tmp$pareto_progress[[select[ind]]], col=pal[ind])
-}
-plot(0, xlim=range(tmp$pareto_progress$`iter 1`$sum_risk), 
-     ylim=range(tmp$pareto_progress$`iter 1`$sum_pop),
-     xlab=xlab, ylab=ylab)
-for (ind in 2:3){
+     xlab=xlab, ylab="")
+for (ind in 15:1){
   plot_front_in_objective_space(tmp$pareto_progress[[select[ind]]], col=pal[ind])
 }
 
-par(mfrow=c(2,3), mfg=c(2,2))
+select <- 2:3
+pal=viridis(4)[c(1,3,4)]
+
+par(xpd=NA)
+loaded_lim <- auc_agg_fig(list(progress_educated[1:15,]),
+                          pal=iddu(4)[3],
+                          niters=15,
+                          upper=FALSE,
+                          ylab="")
+lines(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="trapezoid"), col=iddu(4)[4], lwd=2)
+points(1:15, pareto_progress_auc(tmp$pareto_progress[1:15], method="trapezoid"), col=iddu(4)[4], lwd=4, cex=1.2)
+points(select, pareto_progress_auc(tmp$pareto_progress[select], method="trapezoid"), col=pal, cex=1.2, pch=16)
+
 plot(0, xlim=range(tmp$pareto_progress$`iter 1`$sum_risk), 
      ylim=range(tmp$pareto_progress$`iter 1`$sum_pop),
-     xlab=xlab, ylab=ylab)
+     xlab=xlab, ylab="")
+par(xpd=FALSE)
 for (ind in 1:2){
-  plot_front_in_objective_space_step(tmp$pareto_progress[[select[ind]]], col=pal[ind])
-}
-plot(0, xlim=range(tmp$pareto_progress$`iter 1`$sum_risk), 
-     ylim=range(tmp$pareto_progress$`iter 1`$sum_pop),
-     xlab=xlab, ylab=ylab)
-for (ind in 2:3){
-  plot_front_in_objective_space_step(tmp$pareto_progress[[select[ind]]], col=pal[ind])
+  plot_front_in_objective_space(tmp$pareto_progress[[select[ind]]], col=pal[ind])
 }
 
 par(mfrow=c(1,1), new=TRUE, mar=rep(1,4), xpd=NA)
 plot(0, xlab="", ylab="", xlim=c(0,1), ylim=c(0,1), axes=FALSE, bty="n", type="n")
-text(0.7,1.1, "Area under front (trapezoid)", font=2, cex = 0.8)
-text(0.7,0.51, "Area under front (step)", font=2, cex = 0.8)
-subfigure_label(par()$usr, 0, 1.02, "(a)", cex.label = 0.8)
-subfigure_label(par()$usr, 0.33, 1.02, "(b)", cex.label = 0.8)
-subfigure_label(par()$usr, 0.68, 1.02, "(c)", cex.label = 0.8)
-subfigure_label(par()$usr, 0.33, 0.47, "(d)", cex.label = 0.8)
-subfigure_label(par()$usr, 0.68, 0.47, "(e)", cex.label = 0.8)
+text(0.49,0.5,ylab, srt=90, cex=1.2)
+mtext("Area under estimated Pareto front", 2, outer=TRUE, cex=1.2)
+subfigure_label(par()$usr, 0, 1.02, "(a)", cex.label = 1.2)
+subfigure_label(par()$usr, 0.52, 1.02, "(b)", cex.label = 1.2)
+subfigure_label(par()$usr, 0, 0.47, "(c)", cex.label = 1.2)
+subfigure_label(par()$usr, 0.52, 0.47, "(d)", cex.label = 1.2)
+# subfigure_label(par()$usr, 0.68, 0.47, "(e)", cex.label = 0.8)
 dev.off()}
 
 
