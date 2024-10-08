@@ -95,11 +95,11 @@ progress_uneducated <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_
 progress_educated <- read.csv("output/vic_trapezoid/vic_auc_pool1000_iters100_runs10_greedystart_trapezoid.csv")
 
 # never re-ran these:
-#progress_apple <- read.csv("output/vic_trapezoid/vic_auc_pool50000_iters100_runs10_neigh3_trapezoid.csv")
-#progress_pear <- read.csv("output/vic_trapezoid/vic_auc_pool50000_iters100_runs10_neigh3_greedystart_trapezoid.csv")
+progress_apple <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3.csv")
+progress_pear <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3_greedystart.csv")
 
 progress_apple_10000 <- read.csv("output/vic_trapezoid/vic_auc_pool100000_iters100_runs10_neigh3_trapezoid.csv")
-#progress_pear_10000 <- read.csv("output/vic_trapezoid/vic_auc_pool100000_iters100_runs10_neigh3_greedystart_trapezoid.csv")
+progress_pear_10000 <- read.csv("output/vic/vic_auc_pool100000_iters100_runs10_neigh3_greedystart.csv")
 
 #progress_educated <- read.csv("output/old_rasters/vic_auc_pool1000_iters100_runs10_greedystart.csv")
 #load("output/old_rasters/diagnostics_vic_greedy.rds")
@@ -123,8 +123,8 @@ load("output/vic/diagnostics_vic_50000_neigh3_greedy.rds") # neve re-ran with up
 load("output/vic/diagnostics_vic_50000_neigh3.rds")
 final_fronts_apple_50000 <- final_fronts_apple
 final_fronts_pear_50000 <- final_fronts_pear
-load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_greedy_trapezoid.rds")
-load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_trapezoid.rds")
+load("output/vic/diagnostics_vic_100000_neigh3_greedy.rds")
+load("output/vic/diagnostics_vic_100000_neigh3.rds")
 
 
 

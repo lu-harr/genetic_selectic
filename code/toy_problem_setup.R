@@ -4,17 +4,26 @@ getwd()
 AGG_FACTOR = 10
 
 # this is now the wrong raster :(
-guelphia_potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif') %>%
-  crop(c(141, 146, -37.9, -32.9)) %>%
-  aggregate(AGG_FACTOR) %>% # aggregated by mean .... just so you know ...
-  t() %>%
-  crop(c(-37.5, -36.65, 144.1, 144.9)) # don't ask :)
+# guelphia_potential <- raster('~/Desktop/jev/from_Freya_local/JEV/output/continuous suit vectors and avian.tif') %>%
+#   crop(c(141, 146, -37.9, -32.9)) %>%
+#   aggregate(AGG_FACTOR) %>% # aggregated by mean .... just so you know ...
+#   t() %>%
+#   crop(c(-37.5, -36.65, 144.1, 144.9)) # don't ask :)
+# 
+# guelphia_hpop <- raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif') %>%
+#   crop(c(141, 146, -37.9, -32.9)) %>%
+#   aggregate(AGG_FACTOR) %>%
+#   t() %>%
+#   crop(c(-37.5, -36.65, 144.1, 144.9))
 
-guelphia_hpop <- raster('~/Desktop/jev/from_Freya_local/JEV/output/hpop_blur_aus_0.2_res_0.008.tif') %>%
+# actually looks crazily similar ???
+guelphia_objective <- objective_rasters %>%
   crop(c(141, 146, -37.9, -32.9)) %>%
   aggregate(AGG_FACTOR) %>%
   t() %>%
   crop(c(-37.5, -36.65, 144.1, 144.9))
+guelphia_potential <- guelphia_objective$layer.1
+guelphia_hpop <- guelphia_objective$layer.2
 
 wtmat = matrix(1, nrow=3, ncol=3)
 # should I worry about boundary effects? probably ...
@@ -41,11 +50,12 @@ site_ids <- data.frame(id=1:ncell(toy_objective),
                        potent=values(toy_objective$potent),
                        hpop=values(toy_objective$hpop))
 
+# I forget how long this took? 30 mins babe
 # enumerate for all designs of five sites
 # {t1 = Sys.time()
 # enumerated <- combn(ncell(toy_objective$potent), 5, function(x){
-#   c(x, 
-#     sum(site_ids$hpop[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE), 
+#   c(x,
+#     sum(site_ids$hpop[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE),
 #     sum(site_ids$potent[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE))
 # })
 # t2 = Sys.time()}
@@ -70,7 +80,7 @@ exact_toy_pareto <- exact_toy_pareto[order(exact_toy_pareto$hpop)]
 plot(exact_toy_pareto[,c("hpop","potent")])
 
 pts_to_plot <- sample(nrow(enumerated), 20000)
-eg_designs <- c(1,11,21)
+eg_designs <- c(1, floor(nrow(exact_toy_pareto)/2), nrow(exact_toy_pareto))
 toy_lonlats <- rasterToPoints(toy_objective)
 eg_cols <- c("#c23375", "orange", "#8612ff")
 eg_cex <- rev(seq(1.5,4,length.out=3))
@@ -223,6 +233,7 @@ educated_guess <- matrix(c(sample(order(values(toy_objective$potent),
 names(educated_guess) <- paste("site", 1:5, sep="")
 
 # let's run some experiments ...
+# this could go on spartan ...
 
 {set.seed(834903)
   t1 = Sys.time()
@@ -260,8 +271,8 @@ names(educated_guess) <- paste("site", 1:5, sep="")
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool50000_iters100_runs10.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool50000_iters100_runs10.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool50000_iters100_runs10.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool50000_iters100_runs10.csv", row.names=FALSE)
 
 
 {set.seed(834903)

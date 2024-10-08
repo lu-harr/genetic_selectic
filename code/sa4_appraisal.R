@@ -27,6 +27,10 @@ wa_sa4s <- sa4s[sa4s$STE_NAME21 == "Western Australia",] %>%
 state_shp <- states[1:8,] %>%
   st_simplify(dTolerance = 10000)
 
+# {svg("output/very_simple_aus.svg")
+# plot(st_geometry(state_shp), bty="n")
+# dev.off()}
+
 lab_deets_vic <- do.call(rbind, st_geometry(st_centroid(vic_sa4s))) %>%
   as.data.frame() %>%
   setNames(c("centlon", "centlat")) %>%

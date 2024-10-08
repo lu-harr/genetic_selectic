@@ -306,18 +306,20 @@ values(actual_catch)[unique(as.vector(catch_membership_mat[wa_mozzies$pix,]))] <
   plot(final_frontsdf$sum_pop, final_frontsdf$sum_risk, 
        xlab="Sum(Human Population Density)",
        ylab="Sum(Potential Risk)",
-       cex.lab=1.6, cex.axis=1.6)
-  lines(rep(max(agg_pareto$sum_pop), 2), c(0, agg_pareto$sum_risk[nrow(agg_pareto)]), col="grey", lty=2, lwd=2)
-  lines(c(0, agg_pareto$sum_pop[1]), rep(max(agg_pareto$sum_risk), 2), col="grey", lty=2, lwd=2)
+       cex.lab=1.8, cex.axis=1.8)
+  lines(rep(max(agg_pareto$sum_pop), 2), c(0, agg_pareto$sum_risk[nrow(agg_pareto)]), 
+        col="grey", lty=2, lwd=2)
+  lines(c(0, agg_pareto$sum_pop[1]), rep(max(agg_pareto$sum_risk), 2), 
+        col="grey", lty=2, lwd=2)
   points(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, pch=16)
   lines(agg_pareto$sum_pop, agg_pareto$sum_risk, col=brat, lwd=2)
-  text(existing_hpop, 145, "Existing\n surveillance", col=iddu(2)[2], cex=1.6)
+  text(existing_hpop, 145, "Existing\n surveillance", col=iddu(2)[2], cex=1.8)
   points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
-         col=c(berry, "orange", purp), pch=16, cex=1.5)
+         col=c(berry, "orange", purp), pch=16, cex=1.6)
   points(agg_pareto[c(1,mid,nrow(agg_pareto)), c("sum_pop", "sum_risk")], 
-         col=c(berry, "orange", purp), cex=3, lwd=2)
-  points(existing_hpop, existing_potent, col=iddu(2)[2], pch=16, cex=1.5) # make this a little easier to see?
-  points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
+         col=c(berry, "orange", purp), cex=3.2, lwd=2)
+  points(existing_hpop, existing_potent, col=iddu(2)[2], pch=16, cex=1.6) # make this a little easier to see?
+  points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3.2, lwd=2)
   
   # points(c(naive_risk[2], naive_pop[2]), c(naive_risk[1], naive_pop[1]),
   #        col="blue")
@@ -347,17 +349,48 @@ values(actual_catch)[unique(as.vector(catch_membership_mat[wa_mozzies$pix,]))] <
   
   par(mfrow=c(1,1), oma=c(0,0,0,0), mar=c(2,2,2,2), new=TRUE, bty="o", xpd=NA)
   empty_plot_for_legend()
-  subfigure_label(par()$usr, 0,1,"(a)", 1.2)
-  subfigure_label(par()$usr, 0.33,1,"(b)", 1.2)
-  subfigure_label(par()$usr, 0.68,1,"(c)", 1.2)
-  subfigure_label(par()$usr, 0,0.5,"(d)", 1.2)
-  subfigure_label(par()$usr, 0.33,0.5,"(e)", 1.2)
-  subfigure_label(par()$usr, 0.68,0.5,"(f)", 1.2)
+  subfigure_label(par()$usr, 0,1,"(a)", 1.4)
+  subfigure_label(par()$usr, 0.33,1,"(b)", 1.4)
+  subfigure_label(par()$usr, 0.68,1,"(c)", 1.4)
+  subfigure_label(par()$usr, 0,0.5,"(d)", 1.4)
+  subfigure_label(par()$usr, 0.33,0.5,"(e)", 1.4)
+  subfigure_label(par()$usr, 0.68,0.5,"(f)", 1.4)
   
   plot(agg_map, col=greens(100), legend.only=TRUE, 
        horizontal=TRUE,
        smallplot= c(0.38, 0.38 + 0.12, 0.96, 0.968),
-       legend.args=list(text="Frequency selected", side=1, cex=1.1, line=2.5))
+       legend.args=list(text="Frequency selected", side=1, cex=1.3, line=2.5))
   
   dev.off()}
+
+################################################################################
+
+{png("figures/wa_optimal_fronts.png",
+    height=3000,
+    width=2500,
+    pointsize=45)
+par(mfrow=c(5,5), oma=c(0,0,2,0), mar=c(0,0,0,0))
+picks <- seq(2,nrow(agg_pareto), 2)
+for (ind in picks){
+  razzes <- give_me_design_and_catch(wa_objective$potent,
+                                     catch_membership_mat,
+                                     agg_pareto,
+                                     ind)
+  plot(razzes$catch, col=alpha("orange", 0.2), axes=FALSE, bty="n", 
+       legend=FALSE, legend.mar=0)
+  plot(razzes$design, add=TRUE, col="orange", 
+       legend=FALSE, legend.mar=0)
+  plot(st_geometry(wa_shp), add=TRUE)
+  text(117,-17,ind, cex=2)
+}
+dev.off()}
+
+
+
+
+
+
+
+
+
 

@@ -1,20 +1,30 @@
-## Appraisal + Approximately optimal mosquito surveillance in Victoria
+## Appraisal + iterative optimisation of mosquito surveillance in Australia
 
-TODO
-- Stopping condition! (No change after n attempts)
-- Option to extend chain!
-- Redundancy? What proportion of designs do I have to look at to get close to exact Pareto front in toy problem? How many do I look at more than once? Would need vector of all possible sites ... this would make things take longer ...
+Welcome to the repo for Chapter 6 of my thesis, *Appraisal and iterative selection 
+of sites for surveillance of Japanese encephalitis virus in mosquitoes*. 
 
-- Figure plan
-  - Methods
-    - ~Objective surfaces: toy problem, Victoria (2x2?)~
-    - ~Cute lil genetic algot diagram~
-    - ~Catchment diagram - check this is the same for appraisal and for GA~ (probably should simplify for GA)
-  - Results
-    - ~Victoria: results of appraisal (also a table)~
-    - ~Toy problem: exact Pareto front. show what the front looks like in geographic space? (e.g. design good for risk, design good for pop, design balancing two objectives)~
-    - ~Toy problem: performance under different algorithm knobs~
-    - Table: time to calculate stuff (enumerate, single run of genetic algot)
-    - Victoria: performance under different algorithm knobs
-    - Victoria: geographic space + best objective space. 5 panel sketch including three examples in geog space (one good under risk objective, one good under pop objective, one that balances both)
-    
+In `/code/` directory you will find:
+
+- `main.R`: opens up libraries and reads in data
+
+- `genetic_algot.R`: includes all functions for genetic algorithm, including 
+some plotting and analysis functions
+
+- `*_setup.R`: organises data for specific jurisdictions, one of Victoria (`vic`) and 
+Western Australia (`wa`)
+
+- `*_pool.R`, `*_neigh.R`, `*_pareto.R`, `*_greedy.R`, etc.: runs the genetic algorithm 
+for a particular jurisdiction, for a particular set of settings (e.g., `pool` is for 
+scripts with different pool sizes); saves results (in `/output/`) to `.csv`s of area 
+under the Pareto front and `.rds` objects of simulation times and members of the final 
+simulated Pareto fronts
+
+- `*_outs.R`: generates figures for the body of the chapter for a particular jurisdiction. 
+(`vic_outs.R` also includes the code for a couple of supp figures investigating the area 
+under the Pareto front metric)
+
+- `sa4_appraisal.R`: completes the SA4-level "appraisal" of current mosquito surveillance effort
+and creates the map and table outputs for the chapter
+
+(Don't be afraid of the `trapezoid`: these snippets/results are more up to date as 
+I changed the method I was using to calculate the area under the front)
