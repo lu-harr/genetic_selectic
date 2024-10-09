@@ -414,31 +414,31 @@ plot(final_frontsdf2$sum_pop, final_frontsdf2$sum_risk,
      cex.lab=1.2, cex.axis=1.2,
      xlim=c(0, max(final_frontsdf$sum_pop)),
      ylim=c(0, max(final_frontsdf2$sum_risk)),
-     col=alpha(iddu(4)[2], 0.7),
+     col=alpha(brat, 0.7),
      main="Two fronts with similar AUFs have different shapes",
      cex.main=1.3, cex=0.8)
-points(final_frontsdf$sum_pop, final_frontsdf$sum_risk, col=alpha(brat, 0.7), cex=0.8)
+points(final_frontsdf$sum_pop, final_frontsdf$sum_risk, col=alpha(iddu(4)[2], 0.7), cex=0.8)
 
 lines(rep(max(pareto1$sum_pop), 2), 
       c(0, pareto1$sum_risk[nrow(pareto1)]), 
-      col=brat, lty=2, lwd=2)
+      col=iddu(4)[2], lty=2, lwd=2)
 lines(c(0, pareto1$sum_pop[1]), rep(max(pareto1$sum_risk), 2), 
-      col=brat, lty=2, lwd=2)
-lines(pareto1$sum_pop, pareto1$sum_risk, col=brat, lwd=2)
-lines(pareto2$sum_pop, pareto2$sum_risk, col=iddu(4)[2], lwd=2)
+      col=iddu(4)[2], lty=2, lwd=2)
+lines(pareto1$sum_pop, pareto1$sum_risk, col=iddu(4)[2], lwd=2)
+lines(pareto2$sum_pop, pareto2$sum_risk, col=brat, lwd=2)
 lines(rep(max(pareto2$sum_pop), 2), 
       c(0, pareto2$sum_risk[nrow(pareto2)]), 
-      col=iddu(4)[2], lty=2, lwd=2)
+      col=brat, lty=2, lwd=2)
 lines(c(0, pareto2$sum_pop[1]), rep(max(pareto2$sum_risk), 2), 
-      col=iddu(4)[2], lty=2, lwd=2)
+      col=brat, lty=2, lwd=2)
 
-points(pareto1$sum_pop, pareto1$sum_risk, col=brat, pch=16)
-points(pareto2$sum_pop, pareto2$sum_risk, col=iddu(4)[2], pch=16)
+points(pareto1$sum_pop, pareto1$sum_risk, col=iddu(4)[2], pch=16)
+points(pareto2$sum_pop, pareto2$sum_risk, col=brat, pch=16)
 
 legend("bottomleft", 
        c(paste0("Pool size 50,000"),# (AUF ", format(final_front_auf(pareto1), big.mark=","), ")"),
          paste0("Greedy start")),# (AUF ", format(final_front_auf(pareto2), big.mark=","), ")")),
-       fill=c(brat, alpha(iddu(4)[2])),
+       fill=c(iddu(4)[2], brat),
        cex=1.2)
 dev.off()}
 

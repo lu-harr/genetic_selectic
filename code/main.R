@@ -6,6 +6,8 @@ getwd()
 
 message(.libPaths())
 
+# devtools::install_github("idem-lab/idpalette")
+
 library(sf)
 library(raster)
 library(dplyr)
@@ -21,6 +23,8 @@ library(data.table)
 library(rPref, lib.loc="~/R_libs/4.2.1")
 library(idpalette, lib.loc="~/R_libs/4.2.1")
 library(bayestestR, lib.loc="~/R_libs/4.2.1")
+
+
 
 AGG_FACTOR <- 10
 

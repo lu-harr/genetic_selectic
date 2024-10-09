@@ -39,7 +39,7 @@ message("neigh 2")
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
                          neighbourhood_matrix = neigh_membership_mat,
-                         pool = starting_point, # matrix of nselect columns
+                         pool = starting_point[[ind]], # matrix of nselect columns
                          top_level = 1,
                          plot_out = FALSE)
     tend <- Sys.time()
@@ -91,7 +91,7 @@ message(paste("neigh 3: ", Sys.time() - start_script))
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
                          neighbourhood_matrix = neigh_membership_mat,
-                         pool = starting_point, # matrix of nselect columns
+                         pool = starting_point[[ind]], # matrix of nselect columns
                          top_level = 1,
                          plot_out = FALSE)
     tend <- Sys.time()
@@ -143,7 +143,7 @@ message(paste("neigh 4: ", Sys.time() - start_script))
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
                          neighbourhood_matrix = neigh_membership_mat,
-                         pool = starting_point, # matrix of nselect columns
+                         pool = starting_point[[ind]], # matrix of nselect columns
                          top_level = 1,
                          plot_out = FALSE)
     tend <- Sys.time()
@@ -195,7 +195,7 @@ message(paste("neigh 5: ", Sys.time() - start_script))
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
                          neighbourhood_matrix = neigh_membership_mat,
-                         pool = starting_point, # matrix of nselect columns
+                         pool = starting_point[[ind]], # matrix of nselect columns
                          top_level = 1,
                          plot_out = FALSE)
     tend <- Sys.time()

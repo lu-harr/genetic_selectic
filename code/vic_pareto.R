@@ -35,7 +35,7 @@ message("pareto2")
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
                          neighbourhood_matrix = catch_membership_mat,
-                         pool = starting_point, # matrix of nselect columns
+                         pool = starting_point[[ind]], # matrix of nselect columns
                          top_level = 2,
                          plot_out = FALSE)
     tend <- Sys.time()
@@ -82,7 +82,7 @@ message("pareto3")
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
                          neighbourhood_matrix = catch_membership_mat,
-                         pool = starting_point, # matrix of nselect columns
+                         pool = starting_point[[ind]], # matrix of nselect columns
                          top_level = 3,
                          plot_out = FALSE)
     tend <- Sys.time()

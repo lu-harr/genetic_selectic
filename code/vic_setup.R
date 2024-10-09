@@ -45,16 +45,27 @@ site_ids$id <- 1:ncell(vic_objective)
 vic_sites <- site_ids[!is.na(values(vic_objective$potent)),]
 
 nselect <- 100
+nruns <- 10
+starting_pool_size <- 1000
 
 set.seed(834904)
-starting_point <- matrix(sample(vic_sites$id, 100000, replace=TRUE), ncol=nselect) %>%
-  as.data.frame()
-names(starting_point) <- paste("site", 1:nselect, sep="")
+# starting_point <- matrix(sample(vic_sites$id, 100000, replace=TRUE), ncol=nselect) %>%
+#   as.data.frame()
+# names(starting_point) <- paste("site", 1:nselect, sep="")
+
+starting_point <- lapply(1:nruns, function(x){
+  matrix(sample(vic_sites$id, nselect*starting_pool_size, replace=TRUE),
+         ncol = nselect) %>%
+    as.data.frame() %>%
+    setNames(paste("site", 1:nselect, sep=""))
+})
 
 educated_guess <- matrix(c(sample(vic_sites$id[order(vic_sites$potent, 
-                                                     decreasing = TRUE)][1:200], 50000, replace = TRUE),
+                                                     decreasing = TRUE)][1:200], 
+                                  starting_pool_size*nselect/2, replace = TRUE),
                            sample(vic_sites$id[order(vic_sites$hpop, 
-                                                     decreasing = TRUE)][1:200], 50000, replace = TRUE)),
+                                                     decreasing = TRUE)][1:200], 
+                                  starting_pool_size*nselect/2, replace = TRUE)),
                          ncol=nselect, byrow=TRUE) %>%
   as.data.frame()
 names(educated_guess) <- paste("site", 1:nselect, sep="")

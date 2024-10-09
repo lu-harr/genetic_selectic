@@ -66,17 +66,28 @@ nrow(wa_sites)
 # let's deploy GA 
 
 nselect <- 100 # leave the same as Vic even though it's a much larger area ........
+nruns <- 10
+starting_pool_size <- 1000
 
 set.seed(834904)
-starting_point <- matrix(sample(wa_sites$id, 100000, replace=TRUE), ncol=nselect) %>%
-  as.data.frame()
-names(starting_point) <- paste("site", 1:nselect, sep="")
+# starting_point <- matrix(sample(wa_sites$id, 100000, replace=TRUE), ncol=nselect) %>%
+#   as.data.frame()
+# names(starting_point) <- paste("site", 1:nselect, sep="")
+
+starting_point <- lapply(1:nruns, function(x){
+  matrix(sample(wa_sites$id, nselect*starting_pool_size, replace=TRUE),
+         ncol = nselect) %>%
+    as.data.frame() %>%
+    setNames(paste("site", 1:nselect, sep=""))
+})
 
 # educated guess starting point
 educated_guess <- matrix(c(sample(wa_sites$id[order(wa_sites$potent, 
-                                                     decreasing = TRUE)][1:200], 50000, replace = TRUE),
+                                                     decreasing = TRUE)][1:200], 
+                                  nselect*starting_pool_size/2, replace = TRUE),
                            sample(wa_sites$id[order(wa_sites$hpop, 
-                                                     decreasing = TRUE)][1:200], 50000, replace = TRUE)),
+                                                     decreasing = TRUE)][1:200], 
+                                  nselect*starting_pool_size/2, replace = TRUE)),
                          ncol=nselect, byrow=TRUE) %>%
   as.data.frame()
 names(educated_guess) <- paste("site", 1:nselect, sep="")

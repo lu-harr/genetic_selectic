@@ -38,7 +38,7 @@ neigh_membership_mat <- values(neigh_stack, mat=TRUE)
                          sample_method = "neighbours",
                          catchment_matrix = catch_membership_mat,
                          neighbourhood_matrix = neigh_membership_mat,
-                         pool = starting_point, # matrix of nselect columns
+                         pool = starting_point[[ind]], # matrix of nselect columns
                          top_level = 1,
                          plot_out = FALSE)
     tend <- Sys.time()
