@@ -101,9 +101,6 @@ progress_pear <- read.csv("output/vic/vic_auc_pool50000_iters100_runs10_neigh3_g
 progress_apple_10000 <- read.csv("output/vic_trapezoid/vic_auc_pool100000_iters100_runs10_neigh3_trapezoid.csv")
 progress_pear_10000 <- read.csv("output/vic/vic_auc_pool100000_iters100_runs10_neigh3_greedystart.csv")
 
-#progress_educated <- read.csv("output/old_rasters/vic_auc_pool1000_iters100_runs10_greedystart.csv")
-#load("output/old_rasters/diagnostics_vic_greedy.rds")
-
 # load("output/vic/diagnostics_vic_pool.rds")
 # load("output/vic/diagnostics_vic_neigh.rds")
 # load("output/vic/diagnostics_vic_pareto.rds")
@@ -119,12 +116,12 @@ load("output/vic_trapezoid/diagnostics_vic_pool_trapezoid.rds")
 load("output/vic_trapezoid/diagnostics_vic_neigh_trapezoid.rds")
 load("output/vic_trapezoid/diagnostics_vic_pareto_trapezoid.rds")
 load("output/vic_trapezoid/diagnostics_vic_greedy_trapezoid.rds")
-load("output/vic/diagnostics_vic_50000_neigh3_greedy.rds") # neve re-ran with updated AUF
-load("output/vic/diagnostics_vic_50000_neigh3.rds")
+load("output/vic_trapezoid/diagnostics_vic_50000_neigh3_greedy_trapezoid.rds")
+load("output/vic_trapezoid/diagnostics_vic_50000_neigh3_trapezoid.rds")
 final_fronts_apple_50000 <- final_fronts_apple
 final_fronts_pear_50000 <- final_fronts_pear
-load("output/vic/diagnostics_vic_100000_neigh3_greedy.rds")
-load("output/vic/diagnostics_vic_100000_neigh3.rds")
+load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_greedy_trapezoid.rds") # they're named the same thing as the ones in the 50,000 outputs :)
+load("output/vic_trapezoid/diagnostics_vic_100000_neigh3_trapezoid.rds")
 
 
 
@@ -135,7 +132,7 @@ load("output/vic/diagnostics_vic_100000_neigh3.rds")
      pointsize = 40)
   
   par(mfrow=c(2,2), mar=c(2.1,2.1,2.1,2.1), oma=c(3,4,1,0))
-  ylim=c(3397865,6691487)
+  ylim=c(3182027, 6589714) # this upper bound is from largest pool size
   
   pool_lim <- auc_agg_fig(list(progress1000,
                                progress5000,
@@ -391,24 +388,27 @@ points(existing_hpop, existing_potent, col=iddu(2)[2], cex=3, lwd=2)
 # one or three panels? (a) fronts of similar auf in objective space, 
 # (b)(c) fronts of similar auf but different construction in geographic space (potentially overkill)
 
-final_frontsdf <- final_fronts50000 %>%
+final_frontsdf <- final_fronts10000 %>%
   rbindlist() %>%
   as.data.frame()
-pareto1 <- final_fronts50000[[9]] %>%
+pareto1 <- final_fronts50000[[2]] %>%
   arrange(sum_pop)
 
 final_frontsdf2 <- final_frontsgreedy %>%
   rbindlist() %>%
   as.data.frame()
-pareto2 <- final_frontsgreedy[[7]] %>%
+pareto2 <- final_frontsgreedy[[6]] %>%
   arrange(sum_pop)
+
+unlist(lapply(final_fronts50000, final_front_auf))
+unlist(lapply(final_frontsgreedy, final_front_auf))
 
 
 {png("figures/supp_front_shape.png",
     height=1000,
     width=1300,
     pointsize=30)
-plot(final_frontsdf2$sum_pop, final_frontsdf2$sum_risk, 
+plot(pareto2$sum_pop, pareto2$sum_risk, 
      xlab="Sum(Human Population Density)",
      ylab="Sum(Potential Risk)",
      cex.lab=1.2, cex.axis=1.2,
@@ -416,8 +416,9 @@ plot(final_frontsdf2$sum_pop, final_frontsdf2$sum_risk,
      ylim=c(0, max(final_frontsdf2$sum_risk)),
      col=alpha(brat, 0.7),
      main="Two fronts with similar AUFs have different shapes",
-     cex.main=1.3, cex=0.8)
-points(final_frontsdf$sum_pop, final_frontsdf$sum_risk, col=alpha(iddu(4)[2], 0.7), cex=0.8)
+     cex.main=1.3, pch=16)
+# points(final_frontsdf$sum_pop, final_frontsdf$sum_risk, col=alpha(iddu(4)[2], 0.7), cex=0.8)
+points(pareto1$sum_pop, pareto1$sum_risk, col=iddu(4)[2], pch=16)
 
 lines(rep(max(pareto1$sum_pop), 2), 
       c(0, pareto1$sum_risk[nrow(pareto1)]), 
@@ -432,8 +433,8 @@ lines(rep(max(pareto2$sum_pop), 2),
 lines(c(0, pareto2$sum_pop[1]), rep(max(pareto2$sum_risk), 2), 
       col=brat, lty=2, lwd=2)
 
-points(pareto1$sum_pop, pareto1$sum_risk, col=iddu(4)[2], pch=16)
-points(pareto2$sum_pop, pareto2$sum_risk, col=brat, pch=16)
+# points(pareto1$sum_pop, pareto1$sum_risk, col=iddu(4)[2], pch=16)
+# points(pareto2$sum_pop, pareto2$sum_risk, col=brat, pch=16)
 
 legend("bottomleft", 
        c(paste0("Pool size 50,000"),# (AUF ", format(final_front_auf(pareto1), big.mark=","), ")"),
@@ -441,8 +442,6 @@ legend("bottomleft",
        fill=c(iddu(4)[2], brat),
        cex=1.2)
 dev.off()}
-
-
 
 
 ##############################################################################

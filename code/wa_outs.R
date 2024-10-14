@@ -116,6 +116,7 @@ load("output/wa_trapezoid/diagnostics_wa_pear_trapezoid.rds")
      pointsize = 40)
   
   par(mfrow=c(2,2), mar=c(2.1,2.1,2.1,2.1), oma=c(3,4,1,0))
+  ylim = c(508123.6,2997466.3)
   
   pool_lim <- auc_agg_fig(list(progress1000,
                                progress5000,
@@ -124,7 +125,7 @@ load("output/wa_trapezoid/diagnostics_wa_pear_trapezoid.rds")
                           legend_labs=c("1,000", "5,000", "10,000", "50,000"),
                           legend_title="Pool size",
                           pal=c(iddu(4)[2:4], brat),
-                          ylim=c(463220.9, 3018271.0))
+                          ylim=ylim)
   
   # a bit concerned that this line goes down ....... investigate ....
   # could be because of concavitity but doubt it happens as much as appears?
@@ -139,7 +140,7 @@ load("output/wa_trapezoid/diagnostics_wa_pear_trapezoid.rds")
                                          "3-neighbours", "4-neighbours","5-neighbours"),# "10-neighbours"),
                            legend_title="Neighbourhood size",
                            pal=c(iddu(4)[2:4], brat, iddu(4)[1]),
-                           ylim=c(463220.9, 3018271.0))
+                           ylim=ylim)
   # how interesting !
   
   pareto_lim <- auc_agg_fig(list(progress_pareto1,
@@ -148,14 +149,14 @@ load("output/wa_trapezoid/diagnostics_wa_pear_trapezoid.rds")
                             legend_labs=c("Rank 1", "Rank 2", "Rank 3"),
                             legend_title="Goldberg ranking cutoff",
                             pal=iddu(4)[2:4],
-                            ylim=c(463220.9, 3018271.0))
+                            ylim=ylim)
   
   loaded_lim <- auc_agg_fig(list(progress_uneducated,
                                  progress_educated),
                             legend_labs=c("Random", "Greedy"),
                             legend_title="Initialisation",
                             pal=iddu(4)[2:4],
-                            ylim=c(463220.9, 3018271.0))
+                            ylim=ylim)
   
   mtext("Area under estimated Pareto front", 2, outer=TRUE, line=2, cex=1.2)
   mtext("Iteration", 1, outer=TRUE, line=1, cex=1.2)
@@ -176,7 +177,7 @@ final_frontsdf <- final_fronts_apple %>%
   append(final_fronts_pear) %>%
   append(final_fronts_neigh4) %>% 
   #append(final_fronts_greedy) %>%
-  #append(final_fronts50000) %>%
+  append(final_fronts50000) %>%
   rbindlist() %>%
   as.data.frame()
 

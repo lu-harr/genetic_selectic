@@ -391,13 +391,21 @@ dev.off()}
 # points(wa_mozzies[!is.na(tmp),c("longitude","latitude")], pch=4, cex=0.8, col="purple")
 # points(wa_mozzies[is.na(tmp),c("longitude","latitude")], pch=4, cex=0.8, col="red")
 
-# I don't reckon there's enough room for an inset figure here
+# I don't reckon there's enough room for an inset figure up there
+# widen this up and add SA4 labels to the west
+# this is a bit tedious but it is what it is
+lab_deets_zoomwa <- lab_deets_wa
+lab_deets_zoomwa$lablon[lab_deets_zoomwa$lablon == 113] <- 114
+lab_deets_zoomwa$lablat[lab_deets_zoomwa$lablat > -34] <- lab_deets_zoomwa$lablat[lab_deets_zoomwa$lablat > -34] + 0.7
+lab_deets_zoomwa$lablat[lab_deets_zoomwa$lablat < -34] <- lab_deets_zoomwa$lablat[lab_deets_zoomwa$lablat < -34] + 0.9
+
+
 {png("figures/surveillance_potential_swwa.png",
     height=1950,
-    width=2200,
+    width=2500,
     pointsize=45)
 par(mar=c(5.1,4.1,4.1,10.1))
-plot(wa_surveil$potent, xlim=c(114,120), ylim=c(-35.1,-30), col=pn_cols,
+plot(wa_surveil$potent, xlim=c(112,120), ylim=c(-35.2,-30), col=pn_cols,
      bty="n", xlab="Longitude", ylab="Latitude", legend.mar=0, legend=FALSE,
      main="Transmission suitability: south-west WA", cex.lab=1.2, cex.main=1.4)
      #legend.args=list(text ="Transmission suitability", side=4))
@@ -405,12 +413,26 @@ plot(wa_surveil$at_risk, col=alpha("orange", 0.5), add=TRUE, legend=FALSE)
 par(xpd=FALSE)
 plot(st_geometry(wa_sa4s), lwd=2, add=TRUE)
 points(wa_mozzies[,c("longitude","latitude")], pch=0, col="purple", lwd=3)
+text(lab_deets_zoomwa$lablon[1:7], 
+     lab_deets_zoomwa$lablat[1:7], 
+     labels=lab_deets_zoomwa$name[1:7], 
+     offset=0.5, pos=lab_deets_zoomwa$pos[1:7],
+     cex=1.1)
+for (i in 1:7){
+  lines(lab_deets_zoomwa[i, c("lablon", "centlon")], 
+        lab_deets_zoomwa[i, c("lablat", "centlat")], lwd=2)
+}
+text(lab_deets_zoomwa[8,c("centlon","centlat")],
+     labels=lab_deets_zoomwa$name[8],
+     cex=1.1)
+
 par(mar=c(5.1,4.1,4.1,2.1), new=TRUE)
 plot(wa_surveil$potent, xlim=c(114,120), ylim=c(-35.1,-30), col=pn_cols,
      legend.only=TRUE, legend.args=list(text ="Transmission suitability", side=4, line=-3, cex=1.2))
+
 par(mfrow=c(1,1), new=TRUE, mar=c(2.1,1.1,0,1.1), xpd=NA, bty="n")
 plot(0, type="n", xaxt="n", yaxt="n", xlab="", ylab="", xlim=c(0,1), ylim=c(0,1))
-legend(0.8, 0.2, "Areas of highest\ntransmission\nsuitability", 
+legend(0.83, 0.2, "Areas of highest\ntransmission\nsuitability", 
        fill=alpha("orange", 0.5), bty="n", cex=1.1)
 dev.off()}
 
@@ -548,7 +570,7 @@ vic_surveil_df = surveil_df("Victoria",
                             vic_shp,
                             hpop,
                             vic_mozzies,
-                            9)
+                            0.5*nrow(vic_sa4s))#9)
 
 wa_sa4s$SA4_NAME21 <- gsub("Western Australia - ", "", wa_sa4s$SA4_NAME21)
 wa_surveil_df = surveil_df("Western Australia",
@@ -557,8 +579,7 @@ wa_surveil_df = surveil_df("Western Australia",
                            wa_shp,
                            hpop,
                            wa_mozzies,
-                           6)
-
+                           0.5*nrow(wa_sa4s))#6)
 
 library(xtable)
 

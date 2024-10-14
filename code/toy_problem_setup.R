@@ -55,24 +55,24 @@ site_ids <- data.frame(id=1:ncell(toy_objective),
 
 # I forget how long this took? 30 mins babe
 # enumerate for all designs of five sites
-{t1 = Sys.time()
-enumerated <- combn(ncell(toy_objective$potent), 5, function(x){
-  c(x,
-    sum(site_ids$hpop[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE),
-    sum(site_ids$potent[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE))
-})
-t2 = Sys.time()}
-t2-t1 # 31 mins
-dim(enumerated)
+# {t1 = Sys.time()
+# enumerated <- combn(ncell(toy_objective$potent), 5, function(x){
+#   c(x,
+#     sum(site_ids$hpop[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE),
+#     sum(site_ids$potent[unique(as.vector(catch_membership_mat[x,]))], na.rm=TRUE))
+# })
+# t2 = Sys.time()}
+# t2-t1 # 31 mins
+# dim(enumerated)
 
-{t1 = Sys.time()
-fwrite(t(enumerated),
-     file="output/toy_enumerated.csv")
-t2 = Sys.time()}
+# {t1 = Sys.time()
+# fwrite(t(enumerated),
+#      file="output/toy/toy_enumerated.csv")
+# t2 = Sys.time()}
 # it's 3 gigs!!
 
 # {t1 = Sys.time()
-enumerated <- fread("output/toy_enumerated.csv")
+enumerated <- fread("output/toy/toy_enumerated.csv")
 # t2 = Sys.time()}
 names(enumerated) <- c(paste0("site", 1:5), "hpop", "potent")
 
@@ -321,8 +321,8 @@ write.csv(progress_pc_pts, "output/toy/toy_pts_pool50000_iters100_runs10.csv", r
   
   t2 = Sys.time()
   t2-t1} # 2.5 mins per run ...
-write.csv(progress_auc, "output/toy_auc_pool10000_iters100_runs10.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool10000_iters100_runs10.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool10000_iters100_runs10.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool10000_iters100_runs10.csv", row.names=FALSE)
 
 
 {set.seed(834903)
@@ -362,8 +362,8 @@ write.csv(progress_pc_pts, "output/toy_pts_pool10000_iters100_runs10.csv", row.n
   
   t2 = Sys.time()
   t2-t1} # 2.5 mins per run ...
-write.csv(progress_auc, "output/toy_auc_pool5000_iters100_runs10.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool5000_iters100_runs10.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool5000_iters100_runs10.csv", row.names=FALSE)
 
 
 {set.seed(834903)
@@ -403,17 +403,17 @@ write.csv(progress_pc_pts, "output/toy_pts_pool5000_iters100_runs10.csv", row.na
   
 t2 = Sys.time()
 t2-t1} #3.5 mins for 10 runs
-write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool1000_iters100_runs10.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool1000_iters100_runs10.csv", row.names=FALSE)
 
 # save(times1000, times5000, times10000, times50000,
 #      final_fronts1000, final_fronts5000, final_fronts10000, final_fronts50000,
-#      file="output/toy_diagnostics.rds")
+#      file="output/toy/toy_diagnostics.rds")
 
-progress_auc_1000 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
-progress_auc_5000 <- read.csv("output/toy_auc_pool5000_iters100_runs10.csv")
-progress_auc_10000 <- read.csv("output/toy_auc_pool10000_iters100_runs10.csv")
-progress_auc_50000 <- read.csv("output/toy_auc_pool50000_iters100_runs10.csv")
+progress_auc_1000 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10.csv")
+progress_auc_5000 <- read.csv("output/toy/toy_auc_pool5000_iters100_runs10.csv")
+progress_auc_10000 <- read.csv("output/toy/toy_auc_pool10000_iters100_runs10.csv")
+progress_auc_50000 <- read.csv("output/toy/toy_auc_pool50000_iters100_runs10.csv")
 # can restart by giving it current pool ...
 # perhaps make it more explorative ?
 # ... that would be change neighbourhood size .... from which we're sampling
@@ -480,8 +480,8 @@ progress_auc_50000 <- read.csv("output/toy_auc_pool50000_iters100_runs10.csv")
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
 
 {set.seed(834903)
   t1 = Sys.time()
@@ -522,13 +522,13 @@ write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh2.csv",
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
 
 
-progress_neigh1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
-progress_neigh2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh2.csv")
-progress_neigh3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh3.csv")
+progress_neigh1 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10.csv")
+progress_neigh2 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_neigh2.csv")
+progress_neigh3 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_neigh3.csv")
 
 # auc_agg_fig(list(progress_neigh1[,2:ncol(progress_neigh1)],
 #                   progress_neigh2,
@@ -577,8 +577,8 @@ progress_neigh3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh3.csv"
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool1000_iters100_runs10_neigh2.csv", row.names=FALSE)
 
 
 {set.seed(834903)
@@ -620,8 +620,8 @@ write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh2.csv",
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool1000_iters100_runs10_neigh3.csv", row.names=FALSE)
 
                            
 {set.seed(834903)
@@ -654,11 +654,11 @@ write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_neigh3.csv",
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_loaded_start.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_loaded_start.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool1000_iters100_runs10_loaded_start.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool1000_iters100_runs10_loaded_start.csv", row.names=FALSE)
 
-progress_uneducated <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
-progress_educated <- read.csv("output/toy_auc_pool1000_iters100_runs10_loaded_start.csv")
+progress_uneducated <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10.csv")
+progress_educated <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_loaded_start.csv")
 
 # auc_agg_fig(list(progress_uneducated,
 #                   progress_educated),
@@ -698,8 +698,8 @@ progress_educated <- read.csv("output/toy_auc_pool1000_iters100_runs10_loaded_st
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_pareto2.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_pareto2.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool1000_iters100_runs10_pareto2.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool1000_iters100_runs10_pareto2.csv", row.names=FALSE)
 
 {set.seed(834903)
   t1 = Sys.time()
@@ -731,12 +731,12 @@ write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_pareto2.csv"
   
   t2 = Sys.time()
   t2-t1}
-write.csv(progress_auc, "output/toy_auc_pool1000_iters100_runs10_pareto3.csv", row.names=FALSE)
-write.csv(progress_pc_pts, "output/toy_pts_pool1000_iters100_runs10_pareto3.csv", row.names=FALSE)
+write.csv(progress_auc, "output/toy/toy_auc_pool1000_iters100_runs10_pareto3.csv", row.names=FALSE)
+write.csv(progress_pc_pts, "output/toy/toy_pts_pool1000_iters100_runs10_pareto3.csv", row.names=FALSE)
 
-progress_pareto1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
-progress_pareto2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto2.csv")
-progress_pareto3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto3.csv")
+progress_pareto1 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10.csv")
+progress_pareto2 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_pareto2.csv")
+progress_pareto3 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_pareto3.csv")
 
 auc_agg_fig(list(progress_pareto1,
                  progress_pareto2,
@@ -764,21 +764,21 @@ auc_agg_fig(list(progress_pareto1,
 # plot(alltimes)
 
 
-progress_auc_1000 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
-progress_auc_5000 <- read.csv("output/toy_auc_pool5000_iters100_runs10.csv")
-progress_auc_10000 <- read.csv("output/toy_auc_pool10000_iters100_runs10.csv")
-progress_auc_50000 <- read.csv("output/toy_auc_pool50000_iters100_runs10.csv")
+progress_auc_1000 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10.csv")
+progress_auc_5000 <- read.csv("output/toy/toy_auc_pool5000_iters100_runs10.csv")
+progress_auc_10000 <- read.csv("output/toy/toy_auc_pool10000_iters100_runs10.csv")
+progress_auc_50000 <- read.csv("output/toy/toy_auc_pool50000_iters100_runs10.csv")
 
-progress_neigh1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
-progress_neigh2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh2.csv")
-progress_neigh3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_neigh3.csv")
+progress_neigh1 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10.csv")
+progress_neigh2 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_neigh2.csv")
+progress_neigh3 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_neigh3.csv")
 
-progress_uneducated <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
-progress_educated <- read.csv("output/toy_auc_pool1000_iters100_runs10_loaded_start.csv")
+progress_uneducated <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10.csv")
+progress_educated <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_loaded_start.csv")
 
-progress_pareto1 <- read.csv("output/toy_auc_pool1000_iters100_runs10.csv")
-progress_pareto2 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto2.csv")
-progress_pareto3 <- read.csv("output/toy_auc_pool1000_iters100_runs10_pareto3.csv")
+progress_pareto1 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10.csv")
+progress_pareto2 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_pareto2.csv")
+progress_pareto3 <- read.csv("output/toy/toy_auc_pool1000_iters100_runs10_pareto3.csv")
 
 # Oh no! Now I need to un-subtract exact AUC from all the progress_paretooooooss!
 
@@ -802,7 +802,7 @@ auc_agg_fig(list(progress_auc_1000,
                 progress_auc_50000),
              legend_labs=c("1,000", "5,000", "10,000", "50,000"),
              legend_title="Pool size",
-              ylim = c(890, exact_auc),
+              ylim = c(600, exact_auc),
               pal=c(iddu(4)[2:4], brat))#,
                  #main="Increased pool size finds exact solution faster")
 
@@ -811,7 +811,7 @@ auc_agg_fig(list(progress_neigh1,
                  progress_neigh3),
             legend_labs=c("1-neighbours", "2-neighbours", "3-neighbours"),
             legend_title="Neighbourhood size",
-            ylim = c(890, exact_auc),
+            ylim = c(600, exact_auc),
             pal=iddu(4)[2:4])
                   #main="What do neighbours become?")
 
@@ -820,7 +820,7 @@ auc_agg_fig(list(progress_pareto1,
                  progress_pareto3),
             legend_labs=c("Rank 1", "Rank 2", "Rank 3"),
             legend_title="Goldberg ranking cutoff",
-            ylim = c(890, exact_auc),
+            ylim = c(600, exact_auc),
             pal=iddu(4)[2:4])
             #main="Making selection more lenient doesn't seem to change performance?")
 
@@ -828,7 +828,7 @@ auc_agg_fig(list(progress_uneducated,
                  progress_educated),
             legend_labs=c("Random", "Greedy"),
             legend_title="Starting pool",
-            ylim = c(890, exact_auc),
+            ylim = c(600, exact_auc),
             pal=iddu(4)[2:4])
 #main="Educated guess doesn't seem to help?")
 

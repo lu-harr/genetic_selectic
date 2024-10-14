@@ -45,7 +45,7 @@ start_script <- Sys.time()
                          plot_out = FALSE)
     tend <- Sys.time()
     message(paste("uninformed: ", ind, ";",tend-tstart))
-    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress)
+    progress_auc[,ind] <- pareto_progress_auc(tmp$pareto_progress, method="trapezoid")
     times_apple[ind] <- tend - tstart
     final_fronts_apple[[ind]] <- tmp$pareto_progress[[length(tmp$pareto_progress)]]
   }
@@ -53,10 +53,10 @@ start_script <- Sys.time()
   t2 = Sys.time()
   t2-t1}
 
-write.csv(progress_auc, "output/vic_auc_pool50000_iters100_runs10_neigh3.csv", row.names=FALSE)
+write.csv(progress_auc, "output/vic_auc_pool50000_iters100_runs10_neigh3_trapezoid.csv", row.names=FALSE)
 save(times_apple,
      final_fronts_apple,
-     file="output/diagnostics_vic_50000_neigh3.rds")
+     file="output/diagnostics_vic_50000_neigh3_trapezoid.rds")
 
 {set.seed(834903)
   t1 = Sys.time()

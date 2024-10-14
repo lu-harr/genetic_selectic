@@ -1,7 +1,7 @@
 # working from jev_multi_site
 getwd()
 # setwd("~/Desktop/knowlesi/multi_site")
-setwd("/data/gpfs/projects/punim1228/jev_spartan")
+#setwd("/data/gpfs/projects/punim1228/jev_spartan")
 getwd()
 
 message(.libPaths())
@@ -17,12 +17,12 @@ library(RColorBrewer)
 library(scales)
 library(viridisLite)
 library(data.table)
-# library(rPref)
-# library(idpalette)
-# library(bayestestR)
-library(rPref, lib.loc="~/R_libs/4.2.1")
-library(idpalette, lib.loc="~/R_libs/4.2.1")
-library(bayestestR, lib.loc="~/R_libs/4.2.1")
+library(rPref)
+library(idpalette)
+library(bayestestR)
+#library(rPref, lib.loc="~/R_libs/4.2.1")
+#library(idpalette, lib.loc="~/R_libs/4.2.1")
+#library(bayestestR, lib.loc="~/R_libs/4.2.1")
 
 
 

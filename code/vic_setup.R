@@ -1,5 +1,5 @@
 # set myself up for Victorian runs
-
+# (watch out there was some masking happening here from other loaded libraries :( )
 vic_shp <- states %>%
   filter(STE_NAME21 == "Victoria") %>%
   st_simplify(dTolerance = 1000)
